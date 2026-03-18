@@ -1076,4 +1076,49 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get legalInfoDesc => 'Política de privacidad y términos';
+
+  @override
+  String get acceptTermsPrefix => 'Acepto los ';
+
+  @override
+  String get acceptTermsSuffix => ' y la ';
+
+  @override
+  String get mustAcceptTerms =>
+      'Debes aceptar los términos y la política de privacidad';
+
+  @override
+  String get forgotPassword => '¿Olvidaste tu contraseña?';
+
+  @override
+  String get resetPassword => 'Restablecer Contraseña';
+
+  @override
+  String get enterEmailToReset =>
+      'Ingresa tu email para recibir un código de restablecimiento';
+
+  @override
+  String get sendResetCode => 'ENVIAR CÓDIGO';
+
+  @override
+  String get resetCodeSent =>
+      'Se ha enviado un código de restablecimiento a tu email';
+
+  @override
+  String get enterResetCode => 'Ingresa el código que recibiste';
+
+  @override
+  String get newPassword => 'Nueva Contraseña';
+
+  @override
+  String get confirmNewPassword => 'Confirmar Nueva Contraseña';
+
+  @override
+  String get changePassword => 'CAMBIAR CONTRASEÑA';
+
+  @override
+  String get passwordChanged => 'Contraseña cambiada exitosamente';
+
+  @override
+  String get resetCodeInvalid => 'Código inválido o expirado';
 }

@@ -32,6 +32,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isRegistering = false;
+  bool _acceptedTerms = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -104,6 +105,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Future<void> _handleUserAuth() async {
     if (!_formKeyUser.currentState!.validate()) return;
+    if (_isRegistering && !_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).mustAcceptTerms)),
+      );
+      return;
+    }
     if (_isLockedOut()) return;
     try {
       if (_isRegistering) {
@@ -339,6 +346,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         },
                                       ),
                                     ],
+                                    if (_isRegistering) ...[
+                                      const SizedBox(height: 12),
+                                      _TermsCheckbox(
+                                        accepted: _acceptedTerms,
+                                        onChanged: (v) => setState(() => _acceptedTerms = v),
+                                      ),
+                                    ],
                                     const SizedBox(height: 16),
                                     NeonButton(
                                       text: (_isRegistering
@@ -348,6 +362,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       isLoading: isLoading,
                                       onPressed: _handleUserAuth,
                                     ),
+                                    if (!_isRegistering) ...[
+                                      const SizedBox(height: 4),
+                                      TextButton(
+                                        onPressed: () => context.go('/reset-password'),
+                                        child: Text(
+                                          l10n.forgotPassword,
+                                          style: TextStyle(
+                                            color: AppTheme.neonBlue.withValues(alpha: 0.8),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(height: 4),
                                     TextButton(
                                       onPressed: () => setState(() =>
@@ -498,6 +525,65 @@ class _PasswordStrengthIndicator extends StatelessWidget {
         rule(l10n.passwordRuleLowercase, hasLowercase),
         rule(l10n.passwordRuleNumber, hasNumber),
         rule(l10n.passwordRuleSpecial, hasSpecial),
+      ],
+    );
+  }
+}
+
+class _TermsCheckbox extends StatelessWidget {
+  final bool accepted;
+  final ValueChanged<bool> onChanged;
+
+  const _TermsCheckbox({required this.accepted, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final linkColor = AppTheme.neonBlue;
+    final textColor = isDark ? Colors.white70 : Colors.black54;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Checkbox(
+            value: accepted,
+            onChanged: (v) => onChanged(v ?? false),
+            activeColor: linkColor,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onChanged(!accepted),
+            child: Text.rich(
+              TextSpan(
+                style: TextStyle(fontSize: 12, color: textColor),
+                children: [
+                  TextSpan(text: l10n.acceptTermsPrefix),
+                  TextSpan(
+                    text: l10n.termsOfService,
+                    style: TextStyle(
+                      color: linkColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  TextSpan(text: l10n.acceptTermsSuffix),
+                  TextSpan(
+                    text: l10n.privacyPolicy,
+                    style: TextStyle(
+                      color: linkColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

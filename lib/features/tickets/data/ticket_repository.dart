@@ -46,6 +46,12 @@ class TicketRepository {
     };
 
     try {
+      // Ensure session is fresh before calling Edge Function
+      final session = _client.auth.currentSession;
+      if (session != null && session.isExpired) {
+        await _client.auth.refreshSession();
+      }
+
       final response = await _client.functions.invoke('create_ticket', body: payload);
 
       if (response.status != 200) {

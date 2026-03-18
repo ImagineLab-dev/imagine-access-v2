@@ -1076,4 +1076,49 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get legalInfoDesc => 'Política de privacidade e termos';
+
+  @override
+  String get acceptTermsPrefix => 'Aceito os ';
+
+  @override
+  String get acceptTermsSuffix => ' e a ';
+
+  @override
+  String get mustAcceptTerms =>
+      'Você deve aceitar os termos e a política de privacidade';
+
+  @override
+  String get forgotPassword => 'Esqueceu sua senha?';
+
+  @override
+  String get resetPassword => 'Redefinir Senha';
+
+  @override
+  String get enterEmailToReset =>
+      'Digite seu email para receber um código de redefinição';
+
+  @override
+  String get sendResetCode => 'ENVIAR CÓDIGO';
+
+  @override
+  String get resetCodeSent =>
+      'Um código de redefinição foi enviado para seu email';
+
+  @override
+  String get enterResetCode => 'Digite o código que você recebeu';
+
+  @override
+  String get newPassword => 'Nova Senha';
+
+  @override
+  String get confirmNewPassword => 'Confirmar Nova Senha';
+
+  @override
+  String get changePassword => 'ALTERAR SENHA';
+
+  @override
+  String get passwordChanged => 'Senha alterada com sucesso';
+
+  @override
+  String get resetCodeInvalid => 'Código inválido ou expirado';
 }

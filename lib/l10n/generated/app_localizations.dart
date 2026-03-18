@@ -2115,6 +2115,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy policy and terms'**
   String get legalInfoDesc;
+
+  /// No description provided for @acceptTermsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I accept the '**
+  String get acceptTermsPrefix;
+
+  /// No description provided for @acceptTermsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' and the '**
+  String get acceptTermsSuffix;
+
+  /// No description provided for @mustAcceptTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'You must accept the terms and privacy policy'**
+  String get mustAcceptTerms;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get forgotPassword;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @enterEmailToReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email to receive a reset code'**
+  String get enterEmailToReset;
+
+  /// No description provided for @sendResetCode.
+  ///
+  /// In en, this message translates to:
+  /// **'SEND CODE'**
+  String get sendResetCode;
+
+  /// No description provided for @resetCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A reset code has been sent to your email'**
+  String get resetCodeSent;
+
+  /// No description provided for @enterResetCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code you received'**
+  String get enterResetCode;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'CHANGE PASSWORD'**
+  String get changePassword;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChanged;
+
+  /// No description provided for @resetCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired code'**
+  String get resetCodeInvalid;
 }
 
 class _AppLocalizationsDelegate

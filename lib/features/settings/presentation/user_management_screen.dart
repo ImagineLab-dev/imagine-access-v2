@@ -46,6 +46,8 @@ class UserManagementScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final user = users[index];
               final role = user['role'] as String;
+              final currentUserId = ref.read(userProvider)?.id;
+              final isSelf = user['user_id'] == currentUserId;
 
               final theme = Theme.of(context);
               final isDark = theme.brightness == Brightness.dark;
@@ -58,24 +60,31 @@ class UserManagementScreen extends ConsumerWidget {
                       backgroundColor: _getRoleColor(role).withValues(alpha: 0.2),
                       child: Icon(Icons.person, color: _getRoleColor(role)),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user['display_name'] ?? l10n.unknown,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        user['display_name'] ?? l10n.unknown,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
                       ),
                     ),
-                    if (!AppRoles.all.contains(role))
+                    const Spacer(),
+                    if (isSelf)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          AppRoles.label(role),
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    else if (!AppRoles.all.contains(role))
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -139,11 +148,13 @@ class UserManagementScreen extends ConsumerWidget {
                           }
                         },
                       ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                        onPressed: () => _confirmDelete(context, ref, user),
-                      ),
+                    if (!isSelf) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                          onPressed: () => _confirmDelete(context, ref, user),
+                        ),
+                    ],
                   ],
                 ),
               );

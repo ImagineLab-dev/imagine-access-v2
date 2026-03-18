@@ -468,5 +468,19 @@
   "privacyPolicy": "Política de Privacidade",
   "termsOfService": "Termos de Serviço",
   "legalInfo": "Informação Legal",
-  "legalInfoDesc": "Política de privacidade e termos"
+  "legalInfoDesc": "Política de privacidade e termos",
+  "acceptTermsPrefix": "Aceito os ",
+  "acceptTermsSuffix": " e a ",
+  "mustAcceptTerms": "Você deve aceitar os termos e a política de privacidade",
+  "forgotPassword": "Esqueceu sua senha?",
+  "resetPassword": "Redefinir Senha",
+  "enterEmailToReset": "Digite seu email para receber um código de redefinição",
+  "sendResetCode": "ENVIAR CÓDIGO",
+  "resetCodeSent": "Um código de redefinição foi enviado para seu email",
+  "enterResetCode": "Digite o código que você recebeu",
+  "newPassword": "Nova Senha",
+  "confirmNewPassword": "Confirmar Nova Senha",
+  "changePassword": "ALTERAR SENHA",
+  "passwordChanged": "Senha alterada com sucesso",
+  "resetCodeInvalid": "Código inválido ou expirado"
 }

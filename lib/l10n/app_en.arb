@@ -468,5 +468,19 @@
   "privacyPolicy": "Privacy Policy",
   "termsOfService": "Terms of Service",
   "legalInfo": "Legal Information",
-  "legalInfoDesc": "Privacy policy and terms"
+  "legalInfoDesc": "Privacy policy and terms",
+  "acceptTermsPrefix": "I accept the ",
+  "acceptTermsSuffix": " and the ",
+  "mustAcceptTerms": "You must accept the terms and privacy policy",
+  "forgotPassword": "Forgot your password?",
+  "resetPassword": "Reset Password",
+  "enterEmailToReset": "Enter your email to receive a reset code",
+  "sendResetCode": "SEND CODE",
+  "resetCodeSent": "A reset code has been sent to your email",
+  "enterResetCode": "Enter the code you received",
+  "newPassword": "New Password",
+  "confirmNewPassword": "Confirm New Password",
+  "changePassword": "CHANGE PASSWORD",
+  "passwordChanged": "Password changed successfully",
+  "resetCodeInvalid": "Invalid or expired code"
 }

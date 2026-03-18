@@ -5,6 +5,7 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/tickets/presentation/create_ticket_wizard.dart';
 import '../../features/scanner/presentation/scanner_screen.dart';
@@ -31,7 +32,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isPublicEntry = state.matchedLocation == '/login' ||
           state.matchedLocation == '/welcome' ||
-          state.matchedLocation == '/verify-email';
+          state.matchedLocation == '/verify-email' ||
+          state.matchedLocation == '/reset-password';
       final isAuth = user != null || deviceSession != null;
 
       if (!isAuth && !isPublicEntry) return '/welcome';
@@ -92,6 +94,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             organizationName: extra['organizationName'] as String,
           );
         },
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
       GoRoute(
         path: '/events',
