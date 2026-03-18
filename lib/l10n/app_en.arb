@@ -1,0 +1,472 @@
+{
+  "@@locale": "en",
+  "appTitle": "Imagine Access",
+  "adminRRPP": "Admin / RRPP",
+  "doorAccess": "Door Access",
+  "email": "Email",
+  "password": "Password",
+  "deviceID": "Device Alias",
+  "pinCode": "PIN Code",
+  "login": "LOGIN",
+  "startAccess": "START ACCESS",
+  "required": "Required",
+  "logout": "Logout",
+  "dashboard": "Dashboard",
+  "totalTickets": "Total Tickets",
+  "checkedIn": "Checked In",
+  "scanned": "Scanned",
+  "sales": "Sales",
+  "capacity": "Capacity",
+  "createTicket": "Create Ticket",
+  "viewTickets": "View Tickets",
+  "scanMode": "Scan Mode",
+  "reports": "Reports",
+  "settings": "Settings",
+  "general": "General",
+  "defaultCurrency": "Default Currency",
+  "language": "Language",
+  "accessControl": "Access Control",
+  "userManagement": "User Management",
+  "userManagementDesc": "Manage Admins, RRPP, and Staff roles",
+  "deviceManagement": "Device Management",
+  "deviceManagementDesc": "Manage scanning devices and PINs",
+  "signOut": "Sign Out",
+  "signOutDesc": "Exit application",
+  "teamMembers": "Team Members",
+  "noUsersFound": "No users found",
+  "admin": "Admin",
+  "rrpp": "RRPP",
+  "door": "Door",
+  "devices": "Devices",
+  "noDevicesRegistered": "No devices registered",
+  "addNewDevice": "Add New Device",
+  "alias": "Alias (e.g. Gate 1)",
+  "deviceIdLabel": "Device ID",
+  "pinLabel": "PIN",
+  "savePinWarning": "⚠️ Save this PIN now. It cannot be viewed again",
+  "cancel": "Cancel",
+  "create": "Create",
+  "disabled": "Disabled",
+  "manageEvents": "Manage Events",
+  "events": "Events",
+  "active": "Active",
+  "archived": "Archived",
+  "noEventsFound": "No events found",
+  "createEvent": "Create Event",
+  "editEvent": "Edit Event",
+  "eventDetails": "Event Details",
+  "eventName": "Event Name",
+  "slug": "Slug (URL ID)",
+  "date": "Date",
+  "time": "Time",
+  "venueName": "Venue Name",
+  "address": "Address",
+  "city": "City",
+  "currency": "Currency",
+  "ticketTypes": "Ticket Types",
+  "addTicketType": "Add Ticket Type",
+  "saveEvent": "SAVE EVENT",
+  "name": "Name",
+  "price": "Price",
+  "tickets": "Tickets",
+  "newTicket": "New Ticket",
+  "buyerInfo": "Buyer Info",
+  "fullName": "Full Name",
+  "idNumber": "ID Number",
+  "phoneNumber": "Phone Number",
+  "ticketDetails": "Ticket Details",
+  "event": "Event",
+  "ticketType": "Ticket Type",
+  "quantity": "Quantity",
+  "totalAmount": "Total Amount",
+  "next": "NEXT",
+  "back": "BACK",
+  "confirmPurchase": "CONFIRM PURCHASE",
+  "searchTickets": "Search tickets...",
+  "filterByEvent": "Filter by Event",
+  "allEvents": "All Events",
+  "valid": "Valid",
+  "used": "Used",
+  "voided": "Void",
+  "scanner": "Scanner",
+  "scanQRCode": "Scan QR Code",
+  "accessGranted": "ACCESS GRANTED",
+  "accessDenied": "ACCESS DENIED",
+  "alreadyUsed": "ALREADY USED",
+  "invalidTicket": "INVALID TICKET",
+  "tapToScan": "Tap to Scan",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "close": "Close",
+  "enableStaffTickets": "Enable Staff/Crew Tickets",
+  "enableGuestTickets": "Enable Guest List/Invitations",
+  "confirm": "Confirm",
+  "yes": "Yes",
+  "no": "No",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "quickActions": "Quick Actions",
+  "recentActivity": "Recent Activity",
+  "viewAll": "View All",
+  "standardGuests": "Standard Guests",
+  "statistics": "Statistics",
+  "enteringPerHour": "Entering Per Hour",
+  "rrppPerformance": "RRPP Performance",
+  "salesTrend": "Sales Trend",
+  "pleaseSelectEvent": "Please select an event first!",
+  "selectEvent": "Select Event",
+  "couldNotLoadActivity": "Could not load activity",
+  "noRecentScans": "No recent scans",
+  "viewAllTickets": "VIEW ALL TICKETS",
+  "ticketCreated": "Ticket Created!",
+  "pdfGeneratedDesc": "PDF generated and email sent successfully.",
+  "createAnother": "Create Another",
+  "selectTicketType": "Select Ticket Type",
+  "noTicketTypesAvailable": "No ticket types available for this event.",
+  "reviewDetails": "Review Details",
+  "guest": "Guest",
+  "createAndSend": "CREATE & SEND",
+  "pleaseSelectTicketType": "Please select a ticket type",
+  "deleteEventQuery": "Delete Event?",
+  "deleteEventConfirm": "Delete event? This cannot be undone if tickets exist.",
+  "deleteErrorMessage": "Cannot delete: Tickets likely exist. Archive instead.",
+  "whatToDo": "What would you like to do?",
+  "selectForScanning": "SELECT FOR SCANNING",
+  "selected": "Selected",
+  "types": "Types",
+  "guestList": "GUEST LIST",
+  "noTicketsFound": "No tickets found",
+  "search": "Search",
+  "searchHint": "Search guest or email...",
+  "all": "ALL",
+  "validCaps": "VALID",
+  "usedCaps": "USED",
+  "voidCaps": "VOID",
+  "readyToScan": "Ready to Scan",
+  "firstEntry": "FIRST ENTRY:",
+  "tapToDismiss": "TAP TO DISMISS",
+  "newEvent": "New Event",
+  "location": "Location",
+  "currencyLabel": "CURRENCY",
+  "addType": "Add Type",
+  "noTicketTypesAdded": "No ticket types added yet.",
+  "forceRefresh": "Force App Refresh",
+  "refreshing": "Refreshing data...",
+  "resendEmail": "Resend Email",
+  "voidTicket": "Void Ticket",
+  "confirmVoid": "Are you sure you want to void this ticket?",
+  "ticketVoided": "Ticket voided successfully",
+  "emailResent": "Email resent successfully",
+  "sending": "Sending...",
+  "voiding": "Voiding...",
+  "emailSent": "Email Sent",
+  "details": "Details",
+  "themeMode": "Theme Mode",
+  "select": "Select",
+  "register": "REGISTER",
+  "signUp": "Create Account",
+  "displayName": "Display Name",
+  "doNotHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "manageTeam": "Manage Team",
+  "mySales": "MY SALES",
+  "validated": "VALIDATED",
+  "guestsIn": "GUESTS IN",
+  "myQuotas": "MY QUOTAS",
+  "commission": "COMMISSION",
+  "pending": "PENDING",
+  "toEnter": "TO ENTER",
+  "guestEntry": "GUEST ENTRY",
+  "refresh": "REFRESH",
+  "staff": "STAFF",
+  "guests": "GUESTS",
+  "normal": "STANDARD",
+  "view": "VIEW",
+  "newTicketInvitation": "NEW TICKET / INVITATION",
+  "searchTicketBtn": "SEARCH TICKET",
+  "salesTitle": "SALES",
+  "totalIssued": "TOTAL ISSUED",
+  "today": "TODAY",
+  "remaining": "REMAINING",
+  "invitationsStandard": "STANDARD INVITATIONS",
+  "invitationsGuest": "GUEST INVITATIONS",
+  "entered": "ENTERED",
+  "toEnterTitle": "TO ENTER",
+  "paidShort": "P",
+  "inviteShort": "I",
+  "welcomeTagline": "Control access, tickets, and validation with elegance and precision",
+  "welcomeMainFeatures": "MAIN FEATURES",
+  "systemOnline": "System online",
+  "lockoutWaitSeconds": "Too many attempts. Wait {seconds}s.",
+  "@lockoutWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "invalidCredentials": "Invalid credentials.",
+  "emailAlreadyRegistered": "This email is already registered. Try logging in.",
+  "registrationFailed": "Registration failed. Please try again.",
+  "tooManyAttempts": "Too many attempts. Please wait a moment.",
+  "companyName": "Company Name",
+  "enterCompanyName": "Enter your company name",
+  "invalidEmail": "Invalid email",
+  "passwordMinLength": "Password must be at least 8 characters",
+  "confirmPassword": "Confirm Password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordRuleMinLength": "At least 8 characters",
+  "passwordRuleUppercase": "At least one uppercase letter",
+  "passwordRuleLowercase": "At least one lowercase letter",
+  "passwordRuleNumber": "At least one number",
+  "passwordRuleSpecial": "At least one special character (!@#$%^&*)",
+  "retry": "RETRY",
+  "darkMode": "Dark",
+  "lightMode": "Light",
+  "reloadLocaleData": "Reload locale & data",
+  "updated": "Updated!",
+  "addMember": "Add Member",
+  "unknown": "Unknown",
+  "deleteMemberQuestion": "Delete Member?",
+  "confirmRemoveMember": "Are you sure you want to remove {name}?",
+  "@confirmRemoveMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addTeamMember": "Add Team Member",
+  "roleLabel": "Role",
+  "userCreatedSuccessfully": "User created successfully!",
+  "createUser": "Create User",
+  "thisDevice": "THIS DEVICE",
+  "deviceEnabled": "Device enabled",
+  "deviceDisabled": "Device disabled",
+  "deleteDeviceQuestion": "Delete Device?",
+  "confirmDeleteAlias": "Are you sure you want to delete \"{alias}\"?",
+  "@confirmDeleteAlias": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceDeleted": "Device deleted",
+  "errorDeletingDevice": "Error deleting: {error}",
+  "@errorDeletingDevice": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pinCopied": "PIN copied!",
+  "deviceCreatedSuccessfully": "Device created successfully!",
+  "failedToCreateDevice": "Failed to create device: {error}",
+  "@failedToCreateDevice": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "teamForEvent": "Team: {eventName}",
+  "@teamForEvent": {
+    "placeholders": {
+      "eventName": {
+        "type": "String"
+      }
+    }
+  },
+  "addStaffToEvent": "Add Staff to Event",
+  "noStaffAssignedToEvent": "No staff assigned to this event.",
+  "unknownUser": "Unknown User",
+  "user": "User",
+  "standardShort": "STANDARD",
+  "invitationShort": "INVIT",
+  "vipShort": "VIP",
+  "selectUser": "Select User",
+  "roleInEvent": "Role in Event",
+  "addAction": "Add",
+  "editQuotasFor": "Edit Quotas: {userName}",
+  "@editQuotasFor": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "standardTicketQuota": "Standard Ticket Quota",
+  "guestListQuotaVip": "Guest List Quota (VIP)",
+  "invitationQuotaNormal": "Invitation Quota (Normal)",
+  "manualUpper": "MANUAL",
+  "systemUser": "System",
+  "activityByLine": "{buyer} • by {validator}",
+  "@activityByLine": {
+    "placeholders": {
+      "buyer": {
+        "type": "String"
+      },
+      "validator": {
+        "type": "String"
+      }
+    }
+  },
+  "sentByLine": "Sent by: {sender}",
+  "@sentByLine": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
+  },
+  "statusLabel": "Status",
+  "share": "Share",
+  "sharedTicketMessage": "Shared ticket\n{link}\n\nID: {id}",
+  "@sharedTicketMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "errorWithDetail": "Error: {error}",
+  "@errorWithDetail": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "manualSearchTitle": "MANUAL SEARCH",
+  "manualSearchDescription": "Select the search type and enter data to validate entry.",
+  "searchByLabel": "SEARCH BY",
+  "searchByDocument": "DOCUMENT (ID)",
+  "searchByPhone": "PHONE",
+  "documentNumberLabel": "DOCUMENT NUMBER",
+  "phoneNumberLabelUpper": "PHONE NUMBER",
+  "searchAttendee": "SEARCH ATTENDEE",
+  "resultsFoundCount": "{count} RESULTS FOUND:",
+  "@resultsFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dniCiLabel": "ID:",
+  "phoneShortLabel": "PHONE:",
+  "validationReason": "VALIDATION REASON",
+  "qrNotReadable": "QR not readable",
+  "emailNotReceived": "Email not received",
+  "manualValidation": "Manual Validation",
+  "otherManualValidation": "Other / Manual Validation",
+  "confirmAndValidate": "CONFIRM AND VALIDATE",
+  "ticketAlreadyUsedInvalid": "THIS TICKET WAS ALREADY USED OR IS NOT VALID",
+  "manualValidationAudited": "AUDITED MANUAL VALIDATION",
+  "noRecordFound": "No record found",
+  "eventCreatedSuccessfully": "Event created successfully!",
+  "ticketLoadedFromDeepLink": "Ticket loaded from deep link.",
+  "couldNotOpenSharedTicket": "Could not open the shared ticket.",
+  "professionalAccessStaff": "Professional Access (Staff)",
+  "createsStaffAccessTicket": "Creates 'Staff Access' ticket (Price: 0)",
+  "enableInvitationsNormal": "Enable Invitations (Normal)",
+  "createsInvitationTicketForQuotas": "Creates 'Invitation' ticket (Price: 0) - For RRPP Quotas",
+  "setValidUntilTimeOptional": "Set Valid Until Time (Optional)",
+  "validUntilTime": "Valid until: {time}",
+  "@validUntilTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "enableVipGuestList": "Enable VIP Guest List",
+  "createsVipGuestTicketForQuotas": "Creates 'Special Guest' ticket (Price: 0) - For VIP Quotas",
+  "eventNotFound": "Event not found.",
+  "eventSelectedFromDeepLink": "Event selected from deep link.",
+  "couldNotOpenSharedEvent": "Could not open the shared event.",
+  "selectColor": "Select Color",
+  "offlineTicketQueued": "Offline. Ticket queued for automatic sync.",
+  "ticketCreatedEmailFailed": "Ticket created, but email could not be sent.",
+  "ticketCreatedEmailError": "Ticket created, email failed: {error}",
+  "@ticketCreatedEmailError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyEmailTitle": "Verify Email",
+  "verifyEmailSubtitle": "Enter the 6-digit code sent to {email}",
+  "@verifyEmailSubtitle": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyEmailButton": "Verify",
+  "verifyEmailInvalidCode": "Enter a 6-digit code",
+  "verifyEmailResendButton": "Resend code",
+  "verifyEmailResendWait": "Resend in {seconds}s",
+  "@verifyEmailResendWait": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "verifyEmailResent": "Code resent successfully",
+  "invalidEntry": "INVALID ENTRY",
+  "entryNoLongerValid": "This entry is no longer valid.",
+  "validOnlyUntil": "Valid only until: {date}",
+  "@validOnlyUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketMarkedVoid": "The ticket has been marked as VOID.",
+  "closeAction": "CLOSE",
+  "userCreatedTitle": "User Created",
+  "temporaryPassword": "Temporary password:",
+  "passwordCopied": "Password copied",
+  "savePasswordWarning": "Save this password. The user will need it to log in.",
+  "understood": "Understood",
+  "cannotChangeOwnRole": "You cannot change your own role",
+  "cannotDeleteSelf": "You cannot delete your own account",
+  "restoreEvent": "RESTORE",
+  "noPermission": "You do not have permission to access this section",
+  "specialAccess": "Special Access",
+  "free": "FREE",
+  "removeStaff": "Remove Staff",
+  "confirmRemoveStaff": "Are you sure you want to remove {name} from this event?",
+  "@confirmRemoveStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyEmailError": "The verification code is invalid or has expired.",
+  "resendCodeError": "Could not resend the code. Please try again later.",
+  "eventArchived": "Event archived successfully.",
+  "eventArchiveError": "Could not archive the event.",
+  "duplicateTicketTypeNames": "Ticket types must have unique names. Found duplicates: {names}",
+  "@duplicateTicketTypeNames": {"placeholders": {"names": {"type": "String"}}},
+  "eventSaveError": "Could not save the event. Please try again.",
+  "voidTicketError": "Could not void the ticket.",
+  "scanError": "Scan validation failed. Please try again.",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "legalInfo": "Legal Information",
+  "legalInfoDesc": "Privacy policy and terms"
+}

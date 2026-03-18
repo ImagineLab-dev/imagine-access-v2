@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!-- Variante C: Escudo grueso + QR circuito simétrico, todo blanco -->
+
+  <!-- Escudo -->
+  <path d="M256 44 L416 112 C420 114 424 118 424 122 L424 276 C424 380 344 456 256 492 C168 456 88 380 88 276 L88 122 C88 118 92 114 96 112 Z"
+        fill="none" stroke="white" stroke-width="14" stroke-linejoin="round"/>
+
+  <clipPath id="sc">
+    <path d="M256 64 L406 126 L406 276 C406 372 336 444 256 478 C176 444 106 372 106 276 L106 126 Z"/>
+  </clipPath>
+
+  <g clip-path="url(#sc)" stroke="white" fill="none" stroke-linecap="round">
+    <!-- Líneas horizontales simétricas con nodos -->
+    <!-- y=160 -->
+    <line x1="124" y1="160" x2="208" y2="160" stroke-width="2.5"/>
+    <line x1="304" y1="160" x2="388" y2="160" stroke-width="2.5"/>
+    <circle cx="124" cy="160" r="4" fill="white"/>
+    <circle cx="388" cy="160" r="4" fill="white"/>
+    <circle cx="208" cy="160" r="4" fill="white"/>
+    <circle cx="304" cy="160" r="4" fill="white"/>
+
+    <!-- y=192 -->
+    <line x1="136" y1="192" x2="196" y2="192" stroke-width="2.5"/>
+    <line x1="316" y1="192" x2="376" y2="192" stroke-width="2.5"/>
+    <rect x="192" y="188" width="8" height="8" fill="white"/>
+    <rect x="312" y="188" width="8" height="8" fill="white"/>
+
+    <!-- y=224 -->
+    <line x1="128" y1="224" x2="212" y2="224" stroke-width="2.5"/>
+    <line x1="300" y1="224" x2="384" y2="224" stroke-width="2.5"/>
+    <circle cx="128" cy="224" r="4" fill="white"/>
+    <circle cx="384" cy="224" r="4" fill="white"/>
+
+    <!-- y=256 -->
+    <line x1="124" y1="256" x2="216" y2="256" stroke-width="2.5"/>
+    <line x1="296" y1="256" x2="388" y2="256" stroke-width="2.5"/>
+    <rect x="212" y="252" width="8" height="8" fill="white"/>
+    <rect x="292" y="252" width="8" height="8" fill="white"/>
+
+    <!-- y=288 -->
+    <line x1="132" y1="288" x2="208" y2="288" stroke-width="2.5"/>
+    <line x1="304" y1="288" x2="380" y2="288" stroke-width="2.5"/>
+    <circle cx="208" cy="288" r="4" fill="white"/>
+    <circle cx="304" cy="288" r="4" fill="white"/>
+
+    <!-- y=320 -->
+    <line x1="144" y1="320" x2="200" y2="320" stroke-width="2.5"/>
+    <line x1="312" y1="320" x2="368" y2="320" stroke-width="2.5"/>
+    <rect x="196" y="316" width="8" height="8" fill="white"/>
+    <rect x="308" y="316" width="8" height="8" fill="white"/>
+
+    <!-- y=352 -->
+    <line x1="160" y1="352" x2="212" y2="352" stroke-width="2.5"/>
+    <line x1="300" y1="352" x2="352" y2="352" stroke-width="2.5"/>
+    <circle cx="160" cy="352" r="4" fill="white"/>
+    <circle cx="352" cy="352" r="4" fill="white"/>
+
+    <!-- y=384 -->
+    <line x1="180" y1="384" x2="220" y2="384" stroke-width="2.5"/>
+    <line x1="292" y1="384" x2="332" y2="384" stroke-width="2.5"/>
+    <circle cx="220" cy="384" r="4" fill="white"/>
+    <circle cx="292" cy="384" r="4" fill="white"/>
+
+    <!-- y=416 -->
+    <line x1="208" y1="416" x2="240" y2="416" stroke-width="2.5"/>
+    <line x1="272" y1="416" x2="304" y2="416" stroke-width="2.5"/>
+
+    <!-- Verticales izq -->
+    <line x1="164" y1="160" x2="164" y2="192" stroke-width="2.5"/>
+    <line x1="148" y1="224" x2="148" y2="288" stroke-width="2.5"/>
+    <line x1="176" y1="320" x2="176" y2="384" stroke-width="2.5"/>
+    <!-- Verticales der (espejo) -->
+    <line x1="348" y1="160" x2="348" y2="192" stroke-width="2.5"/>
+    <line x1="364" y1="224" x2="364" y2="288" stroke-width="2.5"/>
+    <line x1="336" y1="320" x2="336" y2="384" stroke-width="2.5"/>
+
+    <!-- Barras verticales cortas -->
+    <line x1="208" y1="160" x2="208" y2="192" stroke-width="2"/>
+    <line x1="304" y1="160" x2="304" y2="192" stroke-width="2"/>
+    <line x1="200" y1="320" x2="200" y2="352" stroke-width="2"/>
+    <line x1="312" y1="320" x2="312" y2="352" stroke-width="2"/>
+  </g>
+
+  <!-- Cerradura "i" -->
+  <circle cx="256" cy="228" r="24" fill="white"/>
+  <rect x="241" y="268" width="30" height="90" rx="15" fill="white"/>
+
+  <!-- IMAGINE -->
+  <text x="256" y="556" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="300" letter-spacing="16" fill="white">IMAGINE</text>
+  <!-- ACCESS -->
+  <text x="256" y="602" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="700" letter-spacing="16" fill="white">ACCESS</text>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!--
+    Imagine Access — Monograma "iA"
+    Concepto: Las letras i + A fusionadas geométricamente
+    Estilo: Tipográfico, simétrico, sobrio
+  -->
+  
+  <!-- Letra "A" como estructura principal (forma de portal/triángulo) -->
+  <path d="
+    M 256 72
+    L 420 440
+    L 376 440
+    L 340 352
+    L 172 352
+    L 136 440
+    L 92 440
+    Z
+    M 256 160
+    L 196 312
+    L 316 312
+    Z
+  " fill="white" fill-rule="evenodd"/>
+  
+  <!-- Barra horizontal de la "A" -->
+  <rect x="184" y="320" width="144" height="8" rx="4" fill="white"/>
+  
+  <!-- Punto de la "i" integrado en el vértice de la A -->
+  <circle cx="256" cy="52" r="16" fill="white"/>
+  
+  <!-- Línea decorativa base -->
+  <rect x="92" y="452" width="328" height="4" rx="2" fill="white" opacity="0.3"/>
+</svg>

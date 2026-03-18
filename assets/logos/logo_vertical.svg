@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 680" fill="none">
+  <!--
+    Imagine Access — Logo Vertical (Ícono arriba + texto abajo)
+    Estilo: Centrado, formal, para uso en splash/presentaciones
+  -->
+  
+  <!-- === ÍCONO (escudo + cerradura) === -->
+  <g transform="translate(106, 20) scale(0.585)">
+    <path d="
+      M 256 56
+      L 408 120
+      L 408 264
+      C 408 360 340 432 256 464
+      C 172 432 104 360 104 264
+      L 104 120
+      Z
+    " fill="none" stroke="white" stroke-width="16" stroke-linejoin="round"/>
+    
+    <path d="
+      M 256 100
+      L 372 148
+      L 372 268
+      C 372 340 320 396 256 420
+      C 192 396 140 340 140 268
+      L 140 148
+      Z
+    " fill="none" stroke="white" stroke-width="8" stroke-linejoin="round" opacity="0.35"/>
+    
+    <circle cx="256" cy="196" r="20" fill="white"/>
+    <rect x="242" y="236" width="28" height="100" rx="14" fill="white"/>
+  </g>
+  
+  <!-- === TEXTO APILADO === -->
+  <!-- IMAGINE -->
+  <text x="256" y="530" 
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" 
+        font-size="52" 
+        font-weight="300" 
+        letter-spacing="14"
+        fill="white">IMAGINE</text>
+  
+  <!-- Línea divisoria -->
+  <rect x="156" y="546" width="200" height="1.2" rx="0.6" fill="white" opacity="0.35"/>
+  
+  <!-- ACCESS -->
+  <text x="256" y="600" 
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" 
+        font-size="52" 
+        font-weight="600" 
+        letter-spacing="14"
+        fill="white">ACCESS</text>
+</svg>

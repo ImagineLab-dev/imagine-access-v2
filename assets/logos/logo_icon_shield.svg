@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!--
+    Imagine Access — Ícono Minimal
+    Concepto: Escudo geométrico con "i" estilizada como acceso
+    Estilo: Líneas limpias, perfectamente simétrico
+  -->
+  
+  <!-- Escudo exterior (forma de badge/credencial) -->
+  <path d="
+    M 256 56
+    L 408 120
+    L 408 264
+    C 408 360 340 432 256 464
+    C 172 432 104 360 104 264
+    L 104 120
+    Z
+  " fill="none" stroke="white" stroke-width="16" stroke-linejoin="round"/>
+  
+  <!-- Escudo interior paralelo -->
+  <path d="
+    M 256 100
+    L 372 148
+    L 372 268
+    C 372 340 320 396 256 420
+    C 192 396 140 340 140 268
+    L 140 148
+    Z
+  " fill="none" stroke="white" stroke-width="8" stroke-linejoin="round" opacity="0.35"/>
+  
+  <!-- Cerradura/acceso central -->
+  <!-- Punto superior (dot de la "i" / indicador de check) -->
+  <circle cx="256" cy="196" r="20" fill="white"/>
+  
+  <!-- Barra vertical (cuerpo de la "i" / ranura cerradura) -->
+  <rect x="242" y="236" width="28" height="100" rx="14" fill="white"/>
+</svg>

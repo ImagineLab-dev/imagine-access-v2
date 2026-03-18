@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!--
+    Imagine Access — Variante 5: Escudo Doble Trazo + QR Grid Completo
+    Doble contorno elegante, QR grid más denso y realista, "i" como checkpoint
+  -->
+
+  <!-- Escudo exterior grueso -->
+  <path d="
+    M 256 40
+    L 428 114
+    L 428 280
+    C 428 384 350 460 256 496
+    C 162 460 84 384 84 280
+    L 84 114
+    Z
+  " fill="none" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- Escudo interior fino -->
+  <path d="
+    M 256 60
+    L 408 126
+    L 408 276
+    C 408 368 338 440 256 472
+    C 174 440 104 368 104 276
+    L 104 126
+    Z
+  " fill="none" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Clip para QR interior -->
+  <clipPath id="shield-clip-5">
+    <path d="
+      M 256 62
+      L 406 127
+      L 406 276
+      C 406 366 337 438 256 470
+      C 175 438 106 366 106 276
+      L 106 127
+      Z
+    "/>
+  </clipPath>
+
+  <g clip-path="url(#shield-clip-5)">
+    <!-- QR Grid — patrón denso y realista con simetría bilateral -->
+    <g>
+      <!-- === FINDER PATTERNS (estructura QR reconocible) === -->
+      <!-- Finder top-left -->
+      <rect x="120" y="132" width="60" height="60" rx="2" fill="none" stroke="white" stroke-width="6"/>
+      <rect x="136" y="148" width="28" height="28" fill="white"/>
+      <!-- Finder top-right -->
+      <rect x="332" y="132" width="60" height="60" rx="2" fill="none" stroke="white" stroke-width="6"/>
+      <rect x="348" y="148" width="28" height="28" fill="white"/>
+      <!-- Finder bottom-left -->
+      <rect x="136" y="316" width="52" height="52" rx="2" fill="none" stroke="white" stroke-width="6"/>
+      <rect x="150" y="330" width="24" height="24" fill="white"/>
+      <!-- Finder bottom-right (espejo) -->
+      <rect x="324" y="316" width="52" height="52" rx="2" fill="none" stroke="white" stroke-width="6"/>
+      <rect x="338" y="330" width="24" height="24" fill="white"/>
+
+      <!-- === TIMING PATTERNS (líneas punteadas QR) === -->
+      <!-- Horizontal top -->
+      <rect x="192" y="152" width="8" height="8" fill="white"/>
+      <rect x="208" y="152" width="8" height="8" fill="white"/>
+      <rect x="224" y="152" width="8" height="8" fill="white"/>
+      <rect x="272" y="152" width="8" height="8" fill="white"/>
+      <rect x="288" y="152" width="8" height="8" fill="white"/>
+      <rect x="304" y="152" width="8" height="8" fill="white"/>
+      <!-- Vertical izq -->
+      <rect x="152" y="200" width="8" height="8" fill="white"/>
+      <rect x="152" y="224" width="8" height="8" fill="white"/>
+      <rect x="152" y="248" width="8" height="8" fill="white"/>
+      <rect x="152" y="272" width="8" height="8" fill="white"/>
+      <rect x="152" y="296" width="8" height="8" fill="white"/>
+      <!-- Vertical der (espejo) -->
+      <rect x="352" y="200" width="8" height="8" fill="white"/>
+      <rect x="352" y="224" width="8" height="8" fill="white"/>
+      <rect x="352" y="248" width="8" height="8" fill="white"/>
+      <rect x="352" y="272" width="8" height="8" fill="white"/>
+      <rect x="352" y="296" width="8" height="8" fill="white"/>
+
+      <!-- === DATA MODULES (patrón de datos simétrico) === -->
+      <!-- Ring 1 - cerca de la cerradura -->
+      <rect x="216" y="200" width="8" height="8" fill="white"/>
+      <rect x="232" y="208" width="8" height="8" fill="white"/>
+      <rect x="272" y="208" width="8" height="8" fill="white"/>
+      <rect x="288" y="200" width="8" height="8" fill="white"/>
+      <rect x="208" y="232" width="8" height="8" fill="white"/>
+      <rect x="296" y="232" width="8" height="8" fill="white"/>
+      <rect x="208" y="264" width="8" height="8" fill="white"/>
+      <rect x="296" y="264" width="8" height="8" fill="white"/>
+      <rect x="208" y="296" width="8" height="8" fill="white"/>
+      <rect x="296" y="296" width="8" height="8" fill="white"/>
+      <rect x="216" y="328" width="8" height="8" fill="white"/>
+      <rect x="288" y="328" width="8" height="8" fill="white"/>
+      <rect x="232" y="344" width="8" height="8" fill="white"/>
+      <rect x="272" y="344" width="8" height="8" fill="white"/>
+
+      <!-- Ring 2 - media distancia -->
+      <rect x="192" y="176" width="8" height="8" fill="white"/>
+      <rect x="216" y="176" width="8" height="8" fill="white"/>
+      <rect x="288" y="176" width="8" height="8" fill="white"/>
+      <rect x="312" y="176" width="8" height="8" fill="white"/>
+      <rect x="184" y="208" width="8" height="8" fill="white"/>
+      <rect x="320" y="208" width="8" height="8" fill="white"/>
+      <rect x="184" y="240" width="8" height="8" fill="white"/>
+      <rect x="320" y="240" width="8" height="8" fill="white"/>
+      <rect x="184" y="272" width="8" height="8" fill="white"/>
+      <rect x="320" y="272" width="8" height="8" fill="white"/>
+      <rect x="184" y="304" width="8" height="8" fill="white"/>
+      <rect x="320" y="304" width="8" height="8" fill="white"/>
+
+      <!-- Dispersos periferia -->
+      <rect x="120" y="200" width="8" height="8" fill="white"/>
+      <rect x="384" y="200" width="8" height="8" fill="white"/>
+      <rect x="128" y="240" width="8" height="8" fill="white"/>
+      <rect x="376" y="240" width="8" height="8" fill="white"/>
+      <rect x="120" y="280" width="8" height="8" fill="white"/>
+      <rect x="384" y="280" width="8" height="8" fill="white"/>
+
+      <!-- Zona inferior -->
+      <rect x="200" y="372" width="8" height="8" fill="white"/>
+      <rect x="224" y="380" width="8" height="8" fill="white"/>
+      <rect x="248" y="388" width="8" height="8" fill="white"/>
+      <rect x="256" y="388" width="8" height="8" fill="white"/>
+      <rect x="280" y="380" width="8" height="8" fill="white"/>
+      <rect x="304" y="372" width="8" height="8" fill="white"/>
+      <rect x="220" y="400" width="8" height="8" fill="white"/>
+      <rect x="284" y="400" width="8" height="8" fill="white"/>
+      <rect x="240" y="416" width="8" height="8" fill="white"/>
+      <rect x="264" y="416" width="8" height="8" fill="white"/>
+      <rect x="252" y="432" width="8" height="8" fill="white"/>
+    </g>
+  </g>
+
+  <!-- Cerradura "i" checkpoint — punto + barra -->
+  <circle cx="256" cy="220" r="20" fill="white"/>
+  <rect x="243" y="256" width="26" height="96" rx="13" fill="white"/>
+
+  <!-- === TIPOGRAFÍA === -->
+  <!-- IMAGINE — fino -->
+  <text x="256" y="556"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="36"
+        font-weight="300"
+        letter-spacing="12"
+        fill="white">IMAGINE</text>
+
+  <!-- Línea entre palabras -->
+  <rect x="148" y="566" width="216" height="1" rx="0.5" fill="white" opacity="0.2"/>
+
+  <!-- ACCESS — bold -->
+  <text x="256" y="606"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="36"
+        font-weight="700"
+        letter-spacing="12"
+        fill="white">ACCESS</text>
+
+  <!-- Micro línea base -->
+  <rect x="196" y="618" width="120" height="0.8" rx="0.4" fill="white" opacity="0.12"/>
+</svg>

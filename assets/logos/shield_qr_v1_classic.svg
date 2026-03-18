@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!--
+    Imagine Access — Variante 1: Escudo Clásico + QR Denso
+    QR como textura sutil de fondo dentro del escudo, cerradura "i" prominente
+  -->
+
+  <!-- Escudo exterior -->
+  <path d="
+    M 256 44
+    L 420 114
+    L 420 272
+    C 420 376 346 452 256 488
+    C 166 452 92 376 92 272
+    L 92 114
+    Z
+  " fill="none" stroke="white" stroke-width="14" stroke-linejoin="round"/>
+
+  <!-- Escudo interior -->
+  <path d="
+    M 256 84
+    L 384 140
+    L 384 276
+    C 384 356 326 418 256 448
+    C 186 418 128 356 128 276
+    L 128 140
+    Z
+  " fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" opacity="0.25"/>
+
+  <!-- QR pattern relleno (grid geométrico estilizado dentro del escudo) -->
+  <clipPath id="shield-clip-1">
+    <path d="
+      M 256 84
+      L 384 140
+      L 384 276
+      C 384 356 326 418 256 448
+      C 186 418 128 356 128 276
+      L 128 140
+      Z
+    "/>
+  </clipPath>
+
+  <g clip-path="url(#shield-clip-1)">
+    <!-- Fila 1 -->
+    <rect x="148" y="140" width="16" height="16" fill="white"/>
+    <rect x="180" y="140" width="16" height="16" fill="white"/>
+    <rect x="196" y="140" width="16" height="16" fill="white"/>
+    <rect x="228" y="140" width="16" height="16" fill="white"/>
+    <rect x="260" y="140" width="16" height="16" fill="white"/>
+    <rect x="276" y="140" width="16" height="16" fill="white"/>
+    <rect x="308" y="140" width="16" height="16" fill="white"/>
+    <rect x="340" y="140" width="16" height="16" fill="white"/>
+    <rect x="356" y="140" width="16" height="16" fill="white"/>
+    <!-- Fila 2 -->
+    <rect x="148" y="160" width="16" height="16" fill="white"/>
+    <rect x="212" y="160" width="16" height="16" fill="white"/>
+    <rect x="244" y="160" width="16" height="16" fill="white"/>
+    <rect x="292" y="160" width="16" height="16" fill="white"/>
+    <rect x="340" y="160" width="16" height="16" fill="white"/>
+    <rect x="356" y="160" width="16" height="16" fill="white"/>
+    <!-- Fila 3 -->
+    <rect x="148" y="180" width="16" height="16" fill="white"/>
+    <rect x="164" y="180" width="16" height="16" fill="white"/>
+    <rect x="180" y="180" width="16" height="16" fill="white"/>
+    <rect x="228" y="180" width="16" height="16" fill="white"/>
+    <rect x="276" y="180" width="16" height="16" fill="white"/>
+    <rect x="308" y="180" width="16" height="16" fill="white"/>
+    <rect x="324" y="180" width="16" height="16" fill="white"/>
+    <rect x="340" y="180" width="16" height="16" fill="white"/>
+    <!-- Fila 4 -->
+    <rect x="164" y="200" width="16" height="16" fill="white"/>
+    <rect x="196" y="200" width="16" height="16" fill="white"/>
+    <rect x="244" y="200" width="16" height="16" fill="white"/>
+    <rect x="260" y="200" width="16" height="16" fill="white"/>
+    <rect x="308" y="200" width="16" height="16" fill="white"/>
+    <rect x="356" y="200" width="16" height="16" fill="white"/>
+    <!-- Fila 5 -->
+    <rect x="148" y="220" width="16" height="16" fill="white"/>
+    <rect x="180" y="220" width="16" height="16" fill="white"/>
+    <rect x="212" y="220" width="16" height="16" fill="white"/>
+    <rect x="260" y="220" width="16" height="16" fill="white"/>
+    <rect x="292" y="220" width="16" height="16" fill="white"/>
+    <rect x="340" y="220" width="16" height="16" fill="white"/>
+    <!-- Fila 6 -->
+    <rect x="148" y="240" width="16" height="16" fill="white"/>
+    <rect x="196" y="240" width="16" height="16" fill="white"/>
+    <rect x="228" y="240" width="16" height="16" fill="white"/>
+    <rect x="276" y="240" width="16" height="16" fill="white"/>
+    <rect x="324" y="240" width="16" height="16" fill="white"/>
+    <rect x="356" y="240" width="16" height="16" fill="white"/>
+    <!-- Filas inferiores -->
+    <rect x="164" y="260" width="16" height="16" fill="white"/>
+    <rect x="196" y="260" width="16" height="16" fill="white"/>
+    <rect x="244" y="260" width="16" height="16" fill="white"/>
+    <rect x="292" y="260" width="16" height="16" fill="white"/>
+    <rect x="324" y="260" width="16" height="16" fill="white"/>
+    <rect x="148" y="280" width="16" height="16" fill="white"/>
+    <rect x="180" y="280" width="16" height="16" fill="white"/>
+    <rect x="228" y="280" width="16" height="16" fill="white"/>
+    <rect x="260" y="280" width="16" height="16" fill="white"/>
+    <rect x="308" y="280" width="16" height="16" fill="white"/>
+    <rect x="340" y="280" width="16" height="16" fill="white"/>
+    <rect x="164" y="300" width="16" height="16" fill="white"/>
+    <rect x="212" y="300" width="16" height="16" fill="white"/>
+    <rect x="260" y="300" width="16" height="16" fill="white"/>
+    <rect x="308" y="300" width="16" height="16" fill="white"/>
+    <rect x="180" y="320" width="16" height="16" fill="white"/>
+    <rect x="228" y="320" width="16" height="16" fill="white"/>
+    <rect x="276" y="320" width="16" height="16" fill="white"/>
+    <rect x="324" y="320" width="16" height="16" fill="white"/>
+    <rect x="196" y="340" width="16" height="16" fill="white"/>
+    <rect x="244" y="340" width="16" height="16" fill="white"/>
+    <rect x="292" y="340" width="16" height="16" fill="white"/>
+    <rect x="212" y="360" width="16" height="16" fill="white"/>
+    <rect x="260" y="360" width="16" height="16" fill="white"/>
+    <rect x="228" y="380" width="16" height="16" fill="white"/>
+    <rect x="260" y="380" width="16" height="16" fill="white"/>
+    <rect x="244" y="400" width="16" height="16" fill="white"/>
+  </g>
+
+  <!-- Cerradura "i" central (superpuesta al QR) -->
+  <circle cx="256" cy="220" r="22" fill="white"/>
+  <rect x="242" y="260" width="28" height="96" rx="14" fill="white"/>
+
+  <!-- === TEXTO === -->
+  <text x="256" y="560"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="40"
+        font-weight="300"
+        letter-spacing="10"
+        fill="white">IMAGINE</text>
+
+  <rect x="136" y="574" width="240" height="1.2" rx="0.6" fill="white" opacity="0.3"/>
+
+  <text x="256" y="612"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="40"
+        font-weight="600"
+        letter-spacing="10"
+        fill="white">ACCESS</text>
+</svg>

@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!-- Variante B: Escudo doble borde + QR angular simétrico, todo blanco -->
+
+  <!-- Escudo exterior -->
+  <path d="M256 40 L424 112 L424 280 C424 384 348 456 256 492 C164 456 88 384 88 280 L88 112 Z"
+        fill="none" stroke="white" stroke-width="10" stroke-linejoin="miter"/>
+  <!-- Escudo interior -->
+  <path d="M256 64 L404 128 L404 276 C404 368 336 436 256 468 C176 436 108 368 108 276 L108 128 Z"
+        fill="none" stroke="white" stroke-width="3" stroke-linejoin="miter"/>
+
+  <clipPath id="sb">
+    <path d="M256 66 L402 129 L402 276 C402 366 335 434 256 466 C177 434 110 366 110 276 L110 129 Z"/>
+  </clipPath>
+
+  <g clip-path="url(#sb)">
+    <!-- Finder top-left -->
+    <rect x="126" y="136" width="52" height="52" rx="2" fill="none" stroke="white" stroke-width="5"/>
+    <rect x="140" y="150" width="24" height="24" fill="white"/>
+    <!-- Finder top-right -->
+    <rect x="334" y="136" width="52" height="52" rx="2" fill="none" stroke="white" stroke-width="5"/>
+    <rect x="348" y="150" width="24" height="24" fill="white"/>
+    <!-- Finder bottom-left -->
+    <rect x="152" y="340" width="44" height="44" rx="2" fill="none" stroke="white" stroke-width="5"/>
+    <rect x="164" y="352" width="20" height="20" fill="white"/>
+    <!-- Finder bottom-right -->
+    <rect x="316" y="340" width="44" height="44" rx="2" fill="none" stroke="white" stroke-width="5"/>
+    <rect x="328" y="352" width="20" height="20" fill="white"/>
+
+    <!-- Timing horizontal -->
+    <rect x="190" y="158" width="8" height="8" fill="white"/>
+    <rect x="212" y="158" width="8" height="8" fill="white"/>
+    <rect x="234" y="158" width="8" height="8" fill="white"/>
+    <rect x="270" y="158" width="8" height="8" fill="white"/>
+    <rect x="292" y="158" width="8" height="8" fill="white"/>
+    <rect x="314" y="158" width="8" height="8" fill="white"/>
+
+    <!-- Timing vertical izq/der -->
+    <rect x="150" y="200" width="8" height="8" fill="white"/>
+    <rect x="150" y="224" width="8" height="8" fill="white"/>
+    <rect x="150" y="248" width="8" height="8" fill="white"/>
+    <rect x="150" y="272" width="8" height="8" fill="white"/>
+    <rect x="150" y="296" width="8" height="8" fill="white"/>
+    <rect x="150" y="320" width="8" height="8" fill="white"/>
+    <rect x="354" y="200" width="8" height="8" fill="white"/>
+    <rect x="354" y="224" width="8" height="8" fill="white"/>
+    <rect x="354" y="248" width="8" height="8" fill="white"/>
+    <rect x="354" y="272" width="8" height="8" fill="white"/>
+    <rect x="354" y="296" width="8" height="8" fill="white"/>
+    <rect x="354" y="320" width="8" height="8" fill="white"/>
+
+    <!-- Data módulos simétricos (espejo en x=256) -->
+    <!-- Banda 1 -->
+    <rect x="126" y="204" width="8" height="8" fill="white"/>
+    <rect x="378" y="204" width="8" height="8" fill="white"/>
+    <rect x="126" y="240" width="8" height="8" fill="white"/>
+    <rect x="378" y="240" width="8" height="8" fill="white"/>
+    <rect x="126" y="276" width="8" height="8" fill="white"/>
+    <rect x="378" y="276" width="8" height="8" fill="white"/>
+    <rect x="126" y="312" width="8" height="8" fill="white"/>
+    <rect x="378" y="312" width="8" height="8" fill="white"/>
+
+    <!-- Banda 2 -->
+    <rect x="176" y="200" width="8" height="8" fill="white"/>
+    <rect x="328" y="200" width="8" height="8" fill="white"/>
+    <rect x="192" y="224" width="8" height="8" fill="white"/>
+    <rect x="312" y="224" width="8" height="8" fill="white"/>
+    <rect x="176" y="248" width="8" height="8" fill="white"/>
+    <rect x="328" y="248" width="8" height="8" fill="white"/>
+    <rect x="192" y="272" width="8" height="8" fill="white"/>
+    <rect x="312" y="272" width="8" height="8" fill="white"/>
+    <rect x="176" y="296" width="8" height="8" fill="white"/>
+    <rect x="328" y="296" width="8" height="8" fill="white"/>
+    <rect x="192" y="320" width="8" height="8" fill="white"/>
+    <rect x="312" y="320" width="8" height="8" fill="white"/>
+
+    <!-- Anillo interior -->
+    <rect x="208" y="196" width="8" height="8" fill="white"/>
+    <rect x="296" y="196" width="8" height="8" fill="white"/>
+    <rect x="208" y="316" width="8" height="8" fill="white"/>
+    <rect x="296" y="316" width="8" height="8" fill="white"/>
+
+    <!-- Inferior -->
+    <rect x="208" y="392" width="8" height="8" fill="white"/>
+    <rect x="296" y="392" width="8" height="8" fill="white"/>
+    <rect x="228" y="408" width="8" height="8" fill="white"/>
+    <rect x="276" y="408" width="8" height="8" fill="white"/>
+    <rect x="248" y="424" width="8" height="8" fill="white"/>
+    <!-- Superior centro -->
+    <rect x="248" y="140" width="16" height="16" fill="white"/>
+  </g>
+
+  <!-- Cerradura "i" -->
+  <circle cx="256" cy="232" r="24" fill="white"/>
+  <rect x="241" y="272" width="30" height="84" rx="15" fill="white"/>
+
+  <!-- IMAGINE -->
+  <text x="256" y="556" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="200" letter-spacing="14" fill="white">IMAGINE</text>
+  <!-- ACCESS -->
+  <text x="256" y="602" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="700" letter-spacing="14" fill="white">ACCESS</text>
+</svg>

@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!-- Variante D: Escudo sólido sutil + QR grid denso simétrico, todo blanco -->
+
+  <!-- Relleno escudo muy sutil -->
+  <path d="M256 44 L420 114 L420 276 C420 380 346 452 256 488 C166 452 92 380 92 276 L92 114 Z"
+        fill="white" opacity="0.06"/>
+  <!-- Borde escudo -->
+  <path d="M256 44 L420 114 L420 276 C420 380 346 452 256 488 C166 452 92 380 92 276 L92 114 Z"
+        fill="none" stroke="white" stroke-width="10" stroke-linejoin="round"/>
+
+  <clipPath id="sd">
+    <path d="M256 56 L412 120 L412 276 C412 376 342 448 256 482 C170 448 100 376 100 276 L100 120 Z"/>
+  </clipPath>
+
+  <g clip-path="url(#sd)">
+    <!-- Finder top-left -->
+    <rect x="118" y="128" width="60" height="60" rx="4" fill="none" stroke="white" stroke-width="6"/>
+    <rect x="130" y="140" width="36" height="36" rx="2" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="140" y="150" width="16" height="16" rx="1" fill="white"/>
+    <!-- Finder top-right -->
+    <rect x="334" y="128" width="60" height="60" rx="4" fill="none" stroke="white" stroke-width="6"/>
+    <rect x="346" y="140" width="36" height="36" rx="2" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="356" y="150" width="16" height="16" rx="1" fill="white"/>
+    <!-- Finder bottom-left -->
+    <rect x="146" y="328" width="52" height="52" rx="4" fill="none" stroke="white" stroke-width="6"/>
+    <rect x="158" y="340" width="28" height="28" rx="2" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="166" y="348" width="12" height="12" rx="1" fill="white"/>
+    <!-- Finder bottom-right -->
+    <rect x="314" y="328" width="52" height="52" rx="4" fill="none" stroke="white" stroke-width="6"/>
+    <rect x="326" y="340" width="28" height="28" rx="2" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="334" y="348" width="12" height="12" rx="1" fill="white"/>
+
+    <!-- Grid de datos simétrico — módulos de 10x10, espejo en x=256 -->
+    <!-- Fila y=130 (entre finders) -->
+    <rect x="192" y="130" width="10" height="10" fill="white"/>
+    <rect x="310" y="130" width="10" height="10" fill="white"/>
+    <rect x="214" y="130" width="10" height="10" fill="white"/>
+    <rect x="288" y="130" width="10" height="10" fill="white"/>
+    <rect x="236" y="130" width="10" height="10" fill="white"/>
+    <rect x="266" y="130" width="10" height="10" fill="white"/>
+
+    <!-- Fila y=150 -->
+    <rect x="192" y="150" width="10" height="10" fill="white"/>
+    <rect x="310" y="150" width="10" height="10" fill="white"/>
+    <rect x="248" y="150" width="16" height="16" fill="white"/>
+
+    <!-- Fila y=172 -->
+    <rect x="192" y="172" width="10" height="10" fill="white"/>
+    <rect x="310" y="172" width="10" height="10" fill="white"/>
+    <rect x="214" y="172" width="10" height="10" fill="white"/>
+    <rect x="288" y="172" width="10" height="10" fill="white"/>
+    <rect x="236" y="172" width="10" height="10" fill="white"/>
+    <rect x="266" y="172" width="10" height="10" fill="white"/>
+
+    <!-- Filas laterales y=200-320 -->
+    <rect x="118" y="200" width="10" height="10" fill="white"/>
+    <rect x="384" y="200" width="10" height="10" fill="white"/>
+    <rect x="140" y="200" width="10" height="10" fill="white"/>
+    <rect x="362" y="200" width="10" height="10" fill="white"/>
+    <rect x="174" y="200" width="10" height="10" fill="white"/>
+    <rect x="328" y="200" width="10" height="10" fill="white"/>
+    <rect x="196" y="200" width="10" height="10" fill="white"/>
+    <rect x="306" y="200" width="10" height="10" fill="white"/>
+
+    <rect x="118" y="224" width="10" height="10" fill="white"/>
+    <rect x="384" y="224" width="10" height="10" fill="white"/>
+    <rect x="160" y="224" width="10" height="10" fill="white"/>
+    <rect x="342" y="224" width="10" height="10" fill="white"/>
+    <rect x="196" y="224" width="10" height="10" fill="white"/>
+    <rect x="306" y="224" width="10" height="10" fill="white"/>
+
+    <rect x="118" y="248" width="10" height="10" fill="white"/>
+    <rect x="384" y="248" width="10" height="10" fill="white"/>
+    <rect x="140" y="248" width="10" height="10" fill="white"/>
+    <rect x="362" y="248" width="10" height="10" fill="white"/>
+    <rect x="174" y="248" width="10" height="10" fill="white"/>
+    <rect x="328" y="248" width="10" height="10" fill="white"/>
+    <rect x="196" y="248" width="10" height="10" fill="white"/>
+    <rect x="306" y="248" width="10" height="10" fill="white"/>
+
+    <rect x="118" y="272" width="10" height="10" fill="white"/>
+    <rect x="384" y="272" width="10" height="10" fill="white"/>
+    <rect x="160" y="272" width="10" height="10" fill="white"/>
+    <rect x="342" y="272" width="10" height="10" fill="white"/>
+    <rect x="196" y="272" width="10" height="10" fill="white"/>
+    <rect x="306" y="272" width="10" height="10" fill="white"/>
+
+    <rect x="118" y="296" width="10" height="10" fill="white"/>
+    <rect x="384" y="296" width="10" height="10" fill="white"/>
+    <rect x="140" y="296" width="10" height="10" fill="white"/>
+    <rect x="362" y="296" width="10" height="10" fill="white"/>
+    <rect x="174" y="296" width="10" height="10" fill="white"/>
+    <rect x="328" y="296" width="10" height="10" fill="white"/>
+
+    <!-- Zona inferior entre finders -->
+    <rect x="196" y="332" width="10" height="10" fill="white"/>
+    <rect x="306" y="332" width="10" height="10" fill="white"/>
+    <rect x="214" y="356" width="10" height="10" fill="white"/>
+    <rect x="288" y="356" width="10" height="10" fill="white"/>
+    <rect x="236" y="356" width="10" height="10" fill="white"/>
+    <rect x="266" y="356" width="10" height="10" fill="white"/>
+
+    <!-- Fondo bajo -->
+    <rect x="196" y="392" width="10" height="10" fill="white"/>
+    <rect x="306" y="392" width="10" height="10" fill="white"/>
+    <rect x="214" y="408" width="10" height="10" fill="white"/>
+    <rect x="288" y="408" width="10" height="10" fill="white"/>
+    <rect x="236" y="424" width="10" height="10" fill="white"/>
+    <rect x="266" y="424" width="10" height="10" fill="white"/>
+    <rect x="248" y="444" width="16" height="10" fill="white"/>
+  </g>
+
+  <!-- Cerradura "i" -->
+  <circle cx="256" cy="226" r="22" fill="white"/>
+  <rect x="243" y="264" width="26" height="92" rx="13" fill="white"/>
+
+  <!-- IMAGINE -->
+  <text x="256" y="552" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="34" font-weight="200" letter-spacing="18" fill="white">IMAGINE</text>
+  <!-- ACCESS -->
+  <text x="256" y="598" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="34" font-weight="700" letter-spacing="18" fill="white">ACCESS</text>
+</svg>

@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/ui/glass_scaffold.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/app_roles.dart';
+import '../data/event_repository.dart';
+import 'create_event_screen.dart';
+import 'admin_event_list.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
+
+class EventSelectorScreen extends ConsumerWidget {
+  const EventSelectorScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eventsAsync = ref.watch(eventsProvider);
+    final role = ref.watch(userRoleProvider);
+    final l10n = AppLocalizations.of(context);
+
+    return DefaultTabController(
+      length: 2,
+      child: GlassScaffold(
+        appBar: AppBar(
+          title: Text(l10n.manageEvents),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: l10n.active),
+              Tab(text: l10n.archived),
+            ],
+            indicatorColor: AppTheme.neonBlue,
+          ),
+          actions: [
+            if (AppRoles.isAdmin(role))
+              IconButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (_) => const CreateEventScreen()))
+                        .then((_) => ref.invalidate(eventsProvider));
+                  },
+                  icon: const Icon(Icons.add_circle_outline))
+          ],
+        ),
+        body: eventsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text(l10n.error)),
+            data: (events) {
+              final activeEvents = events
+                  .where((e) => (e['is_archived'] as bool? ?? false) == false)
+                  .toList();
+              final archivedEvents = events
+                  .where((e) => (e['is_archived'] as bool? ?? false) == true)
+                  .toList();
+
+              return TabBarView(
+                children: [
+                  AdminEventList(events: activeEvents),
+                  AdminEventList(
+                      events: archivedEvents,
+                      isArchived: true), // We can add restore logic later
+                ],
+              );
+            }),
+      ),
+    );
+  }
+}

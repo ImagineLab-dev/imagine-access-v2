@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!--
+    Imagine Access — Logo Principal (Ícono)
+    Concepto: Portal/arco geométrico con cerradura estilizada
+    Estilo: Sobrio, simétrico, blanco sobre transparente
+  -->
+  <defs>
+    <clipPath id="outer-clip">
+      <rect x="0" y="0" width="512" height="512"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Arco exterior — forma de portal/gateway -->
+  <path d="
+    M 156 464
+    L 156 224
+    C 156 168.8 172.4 120 206 86
+    C 228 64 241.2 56 256 52
+    C 270.8 56 284 64 306 86
+    C 339.6 120 356 168.8 356 224
+    L 356 464
+    L 316 464
+    L 316 224
+    C 316 180 304 144 280 118
+    C 268 106 262 100 256 96
+    C 250 100 244 106 232 118
+    C 208 144 196 180 196 224
+    L 196 464
+    Z
+  " fill="white"/>
+  
+  <!-- Barra horizontal superior — el "dintel" del portal -->
+  <rect x="136" y="456" width="240" height="8" rx="4" fill="white"/>
+  
+  <!-- Círculo de cerradura/acceso centrado -->
+  <circle cx="256" cy="280" r="28" fill="white"/>
+  
+  <!-- Ranura de cerradura vertical -->
+  <rect x="250" y="300" width="12" height="48" rx="6" fill="white"/>
+</svg>

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!-- Variante E: Escudo minimalista + QR dot-matrix simétrico, todo blanco -->
+
+  <!-- Escudo fino elegante -->
+  <path d="M256 44 L420 114 L420 276 C420 380 346 452 256 488 C166 452 92 380 92 276 L92 114 Z"
+        fill="none" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+
+  <clipPath id="se">
+    <path d="M256 54 L414 120 L414 276 C414 376 342 448 256 484 C170 448 98 376 98 276 L98 120 Z"/>
+  </clipPath>
+
+  <g clip-path="url(#se)">
+    <!-- QR como puntos (círculos) — perfectamente simétricos en x=256 -->
+    <!-- Finder corners como cuadrados de puntos -->
+    <!-- Top-left finder -->
+    <circle cx="136" cy="144" r="4" fill="white"/>
+    <circle cx="148" cy="144" r="4" fill="white"/>
+    <circle cx="160" cy="144" r="4" fill="white"/>
+    <circle cx="172" cy="144" r="4" fill="white"/>
+    <circle cx="184" cy="144" r="4" fill="white"/>
+    <circle cx="136" cy="156" r="4" fill="white"/>
+    <circle cx="184" cy="156" r="4" fill="white"/>
+    <circle cx="136" cy="168" r="4" fill="white"/>
+    <circle cx="160" cy="168" r="5" fill="white"/>
+    <circle cx="184" cy="168" r="4" fill="white"/>
+    <circle cx="136" cy="180" r="4" fill="white"/>
+    <circle cx="184" cy="180" r="4" fill="white"/>
+    <circle cx="136" cy="192" r="4" fill="white"/>
+    <circle cx="148" cy="192" r="4" fill="white"/>
+    <circle cx="160" cy="192" r="4" fill="white"/>
+    <circle cx="172" cy="192" r="4" fill="white"/>
+    <circle cx="184" cy="192" r="4" fill="white"/>
+
+    <!-- Top-right finder (espejo: cx' = 512 - cx) -->
+    <circle cx="376" cy="144" r="4" fill="white"/>
+    <circle cx="364" cy="144" r="4" fill="white"/>
+    <circle cx="352" cy="144" r="4" fill="white"/>
+    <circle cx="340" cy="144" r="4" fill="white"/>
+    <circle cx="328" cy="144" r="4" fill="white"/>
+    <circle cx="376" cy="156" r="4" fill="white"/>
+    <circle cx="328" cy="156" r="4" fill="white"/>
+    <circle cx="376" cy="168" r="4" fill="white"/>
+    <circle cx="352" cy="168" r="5" fill="white"/>
+    <circle cx="328" cy="168" r="4" fill="white"/>
+    <circle cx="376" cy="180" r="4" fill="white"/>
+    <circle cx="328" cy="180" r="4" fill="white"/>
+    <circle cx="376" cy="192" r="4" fill="white"/>
+    <circle cx="364" cy="192" r="4" fill="white"/>
+    <circle cx="352" cy="192" r="4" fill="white"/>
+    <circle cx="340" cy="192" r="4" fill="white"/>
+    <circle cx="328" cy="192" r="4" fill="white"/>
+
+    <!-- Timing dots horizontales -->
+    <circle cx="208" cy="168" r="3.5" fill="white"/>
+    <circle cx="232" cy="168" r="3.5" fill="white"/>
+    <circle cx="280" cy="168" r="3.5" fill="white"/>
+    <circle cx="304" cy="168" r="3.5" fill="white"/>
+
+    <!-- Timing dots verticales izq -->
+    <circle cx="160" cy="216" r="3.5" fill="white"/>
+    <circle cx="160" cy="240" r="3.5" fill="white"/>
+    <circle cx="160" cy="264" r="3.5" fill="white"/>
+    <circle cx="160" cy="288" r="3.5" fill="white"/>
+    <circle cx="160" cy="312" r="3.5" fill="white"/>
+    <!-- Timing dots verticales der -->
+    <circle cx="352" cy="216" r="3.5" fill="white"/>
+    <circle cx="352" cy="240" r="3.5" fill="white"/>
+    <circle cx="352" cy="264" r="3.5" fill="white"/>
+    <circle cx="352" cy="288" r="3.5" fill="white"/>
+    <circle cx="352" cy="312" r="3.5" fill="white"/>
+
+    <!-- Data dots — anillo exterior simétrico -->
+    <circle cx="128" cy="216" r="3" fill="white"/>
+    <circle cx="384" cy="216" r="3" fill="white"/>
+    <circle cx="136" cy="244" r="3" fill="white"/>
+    <circle cx="376" cy="244" r="3" fill="white"/>
+    <circle cx="128" cy="272" r="3" fill="white"/>
+    <circle cx="384" cy="272" r="3" fill="white"/>
+    <circle cx="136" cy="300" r="3" fill="white"/>
+    <circle cx="376" cy="300" r="3" fill="white"/>
+    <circle cx="144" cy="328" r="3" fill="white"/>
+    <circle cx="368" cy="328" r="3" fill="white"/>
+
+    <!-- Data dots — anillo medio -->
+    <circle cx="184" cy="216" r="3" fill="white"/>
+    <circle cx="328" cy="216" r="3" fill="white"/>
+    <circle cx="196" cy="240" r="3" fill="white"/>
+    <circle cx="316" cy="240" r="3" fill="white"/>
+    <circle cx="184" cy="264" r="3" fill="white"/>
+    <circle cx="328" cy="264" r="3" fill="white"/>
+    <circle cx="196" cy="288" r="3" fill="white"/>
+    <circle cx="316" cy="288" r="3" fill="white"/>
+    <circle cx="184" cy="312" r="3" fill="white"/>
+    <circle cx="328" cy="312" r="3" fill="white"/>
+    <circle cx="196" cy="336" r="3" fill="white"/>
+    <circle cx="316" cy="336" r="3" fill="white"/>
+
+    <!-- Data dots — anillo interior (alrededor de la "i") -->
+    <circle cx="212" cy="208" r="3" fill="white"/>
+    <circle cx="300" cy="208" r="3" fill="white"/>
+    <circle cx="208" cy="316" r="3" fill="white"/>
+    <circle cx="304" cy="316" r="3" fill="white"/>
+    <circle cx="212" cy="340" r="3" fill="white"/>
+    <circle cx="300" cy="340" r="3" fill="white"/>
+
+    <!-- Inferior -->
+    <circle cx="176" cy="356" r="3" fill="white"/>
+    <circle cx="336" cy="356" r="3" fill="white"/>
+    <circle cx="196" cy="376" r="3" fill="white"/>
+    <circle cx="316" cy="376" r="3" fill="white"/>
+    <circle cx="212" cy="396" r="3" fill="white"/>
+    <circle cx="300" cy="396" r="3" fill="white"/>
+    <circle cx="232" cy="416" r="3" fill="white"/>
+    <circle cx="280" cy="416" r="3" fill="white"/>
+    <circle cx="248" cy="436" r="3" fill="white"/>
+    <circle cx="264" cy="436" r="3" fill="white"/>
+  </g>
+
+  <!-- Cerradura "i" -->
+  <circle cx="256" cy="228" r="22" fill="white"/>
+  <rect x="243" y="266" width="26" height="88" rx="13" fill="white"/>
+
+  <!-- IMAGINE -->
+  <text x="256" y="554" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="300" letter-spacing="14" fill="white">IMAGINE</text>
+  <!-- Separador -->
+  <rect x="164" y="566" width="184" height="1" rx="0.5" fill="white" opacity="0.3"/>
+  <!-- ACCESS -->
+  <text x="256" y="602" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="36" font-weight="700" letter-spacing="14" fill="white">ACCESS</text>
+</svg>

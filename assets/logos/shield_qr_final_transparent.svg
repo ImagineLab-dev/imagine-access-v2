@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!--
+    Imagine Access — Versión Transparente / Líneas Blancas
+    Escudo exterior e interior en blanco, fondo totalmente transparente.
+    Mantiene la simetría perfecta del QR de 4 cuadrantes.
+  -->
+
+  <!-- ══════ ESCUDO EXTERIOR ══════ -->
+  <path d="
+    M 256 40
+    L 436 120
+    L 436 296
+    C 436 404 352 472 256 508
+    C 160 472 76 404 76 296
+    L 76 120
+    Z
+  " fill="none" stroke="white" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- ══════ ESCUDO INTERNO ══════ -->
+  <path d="
+    M 256 68
+    L 406 136
+    L 406 292
+    C 406 384 336 440 256 472
+    C 176 440 106 384 106 292
+    L 106 136
+    Z
+  " fill="none" stroke="white" stroke-width="3"/>
+
+  <!-- ══════ GRID QR SIMÉTRICO PERFECTO (4 Cuadrantes) ══════ -->
+  <!-- Centrado y escalado al 72% para encajar perfectamente -->
+  <g transform="matrix(0.72, 0, 0, 0.72, 71.68, 80)">
+
+    <!-- ==== 4 FINDER PATTERNS (Esquinas) ==== -->
+    <!-- Top-Left -->
+    <rect x="129" y="133" width="84" height="84" rx="10" fill="none" stroke="white" stroke-width="12"/>
+    <rect x="151" y="155" width="40" height="40" rx="4" fill="white"/>
+    
+    <!-- Top-Right -->
+    <rect x="297" y="133" width="84" height="84" rx="10" fill="none" stroke="white" stroke-width="12"/>
+    <rect x="319" y="155" width="40" height="40" rx="4" fill="white"/>
+
+    <!-- Bottom-Left -->
+    <rect x="129" y="301" width="84" height="84" rx="10" fill="none" stroke="white" stroke-width="12"/>
+    <rect x="151" y="323" width="40" height="40" rx="4" fill="white"/>
+
+    <!-- Bottom-Right -->
+    <rect x="297" y="301" width="84" height="84" rx="10" fill="none" stroke="white" stroke-width="12"/>
+    <rect x="319" y="323" width="40" height="40" rx="4" fill="white"/>
+
+    <!-- ==== DATA MODULES (Densos y agrupados estilo placa tech) ==== -->
+    <!-- Brazo Superior -->
+    <rect x="235" y="127" width="40" height="12" rx="2" fill="white"/>
+    <rect x="221" y="141" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="141" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="141" width="12" height="12" rx="2" fill="white"/>
+    <rect x="235" y="155" width="12" height="12" rx="2" fill="white"/>
+    <rect x="263" y="155" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="169" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="169" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="169" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="183" width="26" height="12" rx="2" fill="white"/>
+    <rect x="263" y="183" width="26" height="12" rx="2" fill="white"/>
+    <rect x="249" y="197" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="211" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="211" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="211" width="12" height="12" rx="2" fill="white"/>
+
+    <!-- Brazo Inferior -->
+    <rect x="235" y="379" width="40" height="12" rx="2" fill="white"/>
+    <rect x="221" y="365" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="365" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="365" width="12" height="12" rx="2" fill="white"/>
+    <rect x="235" y="351" width="12" height="12" rx="2" fill="white"/>
+    <rect x="263" y="351" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="337" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="337" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="337" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="323" width="26" height="12" rx="2" fill="white"/>
+    <rect x="263" y="323" width="26" height="12" rx="2" fill="white"/>
+    <rect x="249" y="309" width="12" height="12" rx="2" fill="white"/>
+    <rect x="221" y="295" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="295" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="295" width="12" height="12" rx="2" fill="white"/>
+
+    <!-- Brazo Izquierdo -->
+    <rect x="123" y="239" width="12" height="40" rx="2" fill="white"/>
+    <rect x="137" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="137" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="137" y="281" width="12" height="12" rx="2" fill="white"/>
+    <rect x="151" y="239" width="12" height="12" rx="2" fill="white"/>
+    <rect x="151" y="267" width="12" height="12" rx="2" fill="white"/>
+    <rect x="165" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="165" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="165" y="281" width="12" height="12" rx="2" fill="white"/>
+    <rect x="179" y="225" width="12" height="26" rx="2" fill="white"/>
+    <rect x="179" y="267" width="12" height="26" rx="2" fill="white"/>
+    <rect x="193" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="207" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="207" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="207" y="281" width="12" height="12" rx="2" fill="white"/>
+
+    <!-- Brazo Derecho -->
+    <rect x="375" y="239" width="12" height="40" rx="2" fill="white"/>
+    <rect x="361" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="361" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="361" y="281" width="12" height="12" rx="2" fill="white"/>
+    <rect x="347" y="239" width="12" height="12" rx="2" fill="white"/>
+    <rect x="347" y="267" width="12" height="12" rx="2" fill="white"/>
+    <rect x="333" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="333" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="333" y="281" width="12" height="12" rx="2" fill="white"/>
+    <rect x="319" y="225" width="12" height="26" rx="2" fill="white"/>
+    <rect x="319" y="267" width="12" height="26" rx="2" fill="white"/>
+    <rect x="305" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="291" y="225" width="12" height="12" rx="2" fill="white"/>
+    <rect x="291" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="291" y="281" width="12" height="12" rx="2" fill="white"/>
+
+    <!-- Bloque Central -->
+    <rect x="221" y="225" width="26" height="12" rx="2" fill="white"/>
+    <rect x="263" y="225" width="26" height="12" rx="2" fill="white"/>
+    <rect x="235" y="239" width="40" height="12" rx="2" fill="white"/>
+    <rect x="221" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="249" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="277" y="253" width="12" height="12" rx="2" fill="white"/>
+    <rect x="235" y="267" width="40" height="12" rx="2" fill="white"/>
+    <rect x="221" y="281" width="26" height="12" rx="2" fill="white"/>
+    <rect x="263" y="281" width="26" height="12" rx="2" fill="white"/>
+  </g>
+
+  <!-- ══════ TIPOGRAFÍA ══════ -->
+  <text x="256" y="566"
+        text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="34" font-weight="300" letter-spacing="14"
+        fill="white">IMAGINE</text>
+
+  <text x="256" y="612"
+        text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="34" font-weight="700" letter-spacing="14"
+        fill="white">ACCESS</text>
+</svg>

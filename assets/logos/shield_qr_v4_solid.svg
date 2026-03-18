@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 700" fill="none">
+  <!--
+    Imagine Access — Variante 4: Escudo Sólido + QR Fragmentado
+    Escudo relleno sólido con QR como recortes/ventanas negativas
+  -->
+
+  <!-- Escudo sólido con recortes QR -->
+  <clipPath id="shield-base-4">
+    <path d="
+      M 256 44
+      L 420 114
+      L 420 276
+      C 420 380 346 452 256 488
+      C 166 452 92 380 92 276
+      L 92 114
+      Z
+    "/>
+  </clipPath>
+
+  <!-- Fondo del escudo sólido -->
+  <path d="
+    M 256 44
+    L 420 114
+    L 420 276
+    C 420 380 346 452 256 488
+    C 166 452 92 380 92 276
+    L 92 114
+    Z
+  " fill="white" opacity="0.08"/>
+
+  <!-- Borde del escudo -->
+  <path d="
+    M 256 44
+    L 420 114
+    L 420 276
+    C 420 380 346 452 256 488
+    C 166 452 92 380 92 276
+    L 92 114
+    Z
+  " fill="none" stroke="white" stroke-width="12" stroke-linejoin="round"/>
+
+  <!-- QR modules como cuadrados distribuidos simétricamente -->
+  <g clip-path="url(#shield-base-4)">
+    <!-- Finder pattern esquinas estilizados -->
+    <!-- Superior izquierdo -->
+    <g>
+      <rect x="128" y="128" width="56" height="56" rx="4" fill="none" stroke="white" stroke-width="5"/>
+      <rect x="140" y="140" width="32" height="32" rx="2" fill="white"/>
+    </g>
+    <!-- Superior derecho -->
+    <g>
+      <rect x="328" y="128" width="56" height="56" rx="4" fill="none" stroke="white" stroke-width="5"/>
+      <rect x="340" y="140" width="32" height="32" rx="2" fill="white"/>
+    </g>
+    <!-- Inferior izquierdo -->
+    <g>
+      <rect x="148" y="332" width="48" height="48" rx="4" fill="none" stroke="white" stroke-width="5"/>
+      <rect x="160" y="344" width="24" height="24" rx="2" fill="white"/>
+    </g>
+    <!-- Inferior derecho (espejo) -->
+    <g>
+      <rect x="316" y="332" width="48" height="48" rx="4" fill="none" stroke="white" stroke-width="5"/>
+      <rect x="328" y="344" width="24" height="24" rx="2" fill="white"/>
+    </g>
+
+    <!-- Data modules dispersos y simétricos -->
+    <g>
+      <!-- Fila A -->
+      <rect x="200" y="132" width="12" height="12" fill="white"/>
+      <rect x="224" y="132" width="12" height="12" fill="white"/>
+      <rect x="276" y="132" width="12" height="12" fill="white"/>
+      <rect x="300" y="132" width="12" height="12" fill="white"/>
+      <!-- Fila B -->
+      <rect x="200" y="156" width="12" height="12" fill="white"/>
+      <rect x="248" y="152" width="16" height="16" fill="white"/>
+      <rect x="300" y="156" width="12" height="12" fill="white"/>
+      <!-- Fila C -->
+      <rect x="128" y="196" width="12" height="12" fill="white"/>
+      <rect x="152" y="196" width="12" height="12" fill="white"/>
+      <rect x="348" y="196" width="12" height="12" fill="white"/>
+      <rect x="372" y="196" width="12" height="12" fill="white"/>
+      <!-- Fila D -->
+      <rect x="128" y="220" width="12" height="12" fill="white"/>
+      <rect x="168" y="220" width="12" height="12" fill="white"/>
+      <rect x="332" y="220" width="12" height="12" fill="white"/>
+      <rect x="372" y="220" width="12" height="12" fill="white"/>
+      <!-- Fila E -->
+      <rect x="140" y="260" width="12" height="12" fill="white"/>
+      <rect x="168" y="260" width="12" height="12" fill="white"/>
+      <rect x="332" y="260" width="12" height="12" fill="white"/>
+      <rect x="360" y="260" width="12" height="12" fill="white"/>
+      <!-- Fila F -->
+      <rect x="140" y="288" width="12" height="12" fill="white"/>
+      <rect x="180" y="296" width="12" height="12" fill="white"/>
+      <rect x="320" y="296" width="12" height="12" fill="white"/>
+      <rect x="360" y="288" width="12" height="12" fill="white"/>
+      <!-- Fila G -->
+      <rect x="152" y="316" width="12" height="12" fill="white"/>
+      <rect x="200" y="320" width="12" height="12" fill="white"/>
+      <rect x="300" y="320" width="12" height="12" fill="white"/>
+      <rect x="348" y="316" width="12" height="12" fill="white"/>
+      <!-- Zona inferior -->
+      <rect x="200" y="392" width="12" height="12" fill="white"/>
+      <rect x="224" y="400" width="12" height="12" fill="white"/>
+      <rect x="276" y="400" width="12" height="12" fill="white"/>
+      <rect x="300" y="392" width="12" height="12" fill="white"/>
+      <rect x="232" y="420" width="12" height="12" fill="white"/>
+      <rect x="268" y="420" width="12" height="12" fill="white"/>
+      <rect x="248" y="440" width="16" height="12" fill="white"/>
+    </g>
+  </g>
+
+  <!-- Cerradura "i" prominente -->
+  <circle cx="256" cy="228" r="26" fill="white"/>
+  <rect x="240" y="272" width="32" height="88" rx="16" fill="white"/>
+
+  <!-- === TEXTO — tipografía condensada === -->
+  <text x="256" y="548"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="34"
+        font-weight="200"
+        letter-spacing="18"
+        fill="white">IMAGINE</text>
+
+  <text x="256" y="596"
+        text-anchor="middle"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="34"
+        font-weight="700"
+        letter-spacing="18"
+        fill="white">ACCESS</text>
+
+  <!-- Línea base decorativa -->
+  <rect x="176" y="612" width="160" height="1.5" rx="0.75" fill="white" opacity="0.2"/>
+</svg>

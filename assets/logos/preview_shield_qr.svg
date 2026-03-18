@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 640" fill="none">
+  <!-- Preview Sheet — 5 variantes escudo+QR simétricos sobre fondo oscuro -->
+  <rect width="1400" height="640" rx="16" fill="#0e0e1a"/>
+
+  <!-- Título -->
+  <text x="700" y="48" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="20" font-weight="300" letter-spacing="8" fill="white" opacity="0.5">IMAGINE ACCESS — ESCUDO + QR — VARIANTES</text>
+
+  <!-- A -->
+  <g transform="translate(56,72) scale(0.22)">
+    <use href="shield_qr_a.svg"/>
+  </g>
+  <image href="shield_qr_a.svg" x="56" y="72" width="200" height="480"/>
+  <text x="156" y="580" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="14" font-weight="400" letter-spacing="4" fill="white" opacity="0.6">A — CLÁSICO</text>
+
+  <!-- B -->
+  <image href="shield_qr_b.svg" x="300" y="72" width="200" height="480"/>
+  <text x="400" y="580" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="14" font-weight="400" letter-spacing="4" fill="white" opacity="0.6">B — DOBLE BORDE</text>
+
+  <!-- C -->
+  <image href="shield_qr_c.svg" x="544" y="72" width="200" height="480"/>
+  <text x="644" y="580" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="14" font-weight="400" letter-spacing="4" fill="white" opacity="0.6">C — CIRCUITO</text>
+
+  <!-- D -->
+  <image href="shield_qr_d.svg" x="788" y="72" width="200" height="480"/>
+  <text x="888" y="580" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="14" font-weight="400" letter-spacing="4" fill="white" opacity="0.6">D — DENSO</text>
+
+  <!-- E -->
+  <image href="shield_qr_e.svg" x="1032" y="72" width="200" height="480"/>
+  <text x="1132" y="580" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="14" font-weight="400" letter-spacing="4" fill="white" opacity="0.6">E — DOT MATRIX</text>
+
+  <!-- Footer -->
+  <text x="700" y="624" text-anchor="middle"
+        font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="11" font-weight="300" letter-spacing="3" fill="white" opacity="0.3">BLANCO SOBRE TRANSPARENTE · SVG VECTORIZADO · 2026</text>
+</svg>
