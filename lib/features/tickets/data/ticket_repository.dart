@@ -32,6 +32,7 @@ class TicketRepository {
     required String buyerEmail,
     required String buyerDoc,
     required String buyerPhone,
+    int promoQty = 1,
   }) async {
     final requestId = const Uuid().v4();
     final payload = {
@@ -43,6 +44,7 @@ class TicketRepository {
       'buyer_doc': buyerDoc,
       'buyer_phone': buyerPhone,
       'request_id': requestId,
+      if (promoQty > 1) 'promo_qty': promoQty,
     };
 
     try {

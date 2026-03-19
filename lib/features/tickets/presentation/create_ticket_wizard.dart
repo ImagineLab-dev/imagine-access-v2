@@ -98,7 +98,6 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       // For promo, fetch fresh promo_qty from DB to avoid stale cache
       int promoQty = 1;
       if (isPromo) {
-        // Invalidate cache and re-fetch to get latest promo_qty
         ref.invalidate(ticketTypesProvider(selectedEvent['id'] ?? ''));
         final freshTypes = await ref.read(ticketRepositoryProvider)
             .getTicketTypes(selectedEvent['id'] ?? '');
@@ -110,33 +109,27 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
         if (promoQty < 1) promoQty = 1;
       }
 
-      bool anyEmailSent = false;
-      String? lastEmailError;
-      bool anyQueued = false;
-
-      for (int i = 0; i < promoQty; i++) {
-        if (isPromo && promoQty > 1 && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(l10n.promoCreatingTickets(i + 1, promoQty)),
-            duration: const Duration(milliseconds: 800),
-          ));
-        }
-
-        final createdTicket = await ref.read(ticketRepositoryProvider).createTicket(
-            eventSlug: selectedEvent['slug'],
-            type: type,
-            price: price,
-            buyerName: _nameController.text.trim(),
-            buyerEmail: _emailController.text.trim(),
-            buyerDoc: _docController.text.trim(),
-            buyerPhone: _phoneController.text.trim());
-
-        if (createdTicket['email_sent'] == true) anyEmailSent = true;
-        if (createdTicket['email_error'] != null) {
-          lastEmailError = createdTicket['email_error'].toString();
-        }
-        if (createdTicket['queued'] == true) anyQueued = true;
+      if (isPromo && promoQty > 1 && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.promoCreatingTickets(1, promoQty)),
+          duration: const Duration(milliseconds: 800),
+        ));
       }
+
+      // Single call: Edge Function creates N tickets + sends 1 email with all QRs
+      final createdTicket = await ref.read(ticketRepositoryProvider).createTicket(
+          eventSlug: selectedEvent['slug'],
+          type: type,
+          price: price,
+          buyerName: _nameController.text.trim(),
+          buyerEmail: _emailController.text.trim(),
+          buyerDoc: _docController.text.trim(),
+          buyerPhone: _phoneController.text.trim(),
+          promoQty: promoQty);
+
+      final anyEmailSent = createdTicket['email_sent'] == true;
+      final lastEmailError = createdTicket['email_error']?.toString();
+      final anyQueued = createdTicket['queued'] == true;
 
       if (mounted) {
         // Refresh ALL data providers to ensure reactivity

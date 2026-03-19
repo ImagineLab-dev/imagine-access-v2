@@ -49,7 +49,7 @@ serve(async (req) => {
         }
 
         // 3. Get Input
-        const { event_slug, type, price, buyer_name, buyer_email, buyer_phone, buyer_doc, request_id } = await req.json()
+        const { event_slug, type, price, buyer_name, buyer_email, buyer_phone, buyer_doc, request_id, promo_qty } = await req.json()
 
         // 3b. Input validation
         if (!event_slug || typeof event_slug !== 'string') {
@@ -70,6 +70,8 @@ serve(async (req) => {
                 throw new Error('Invalid buyer email format');
             }
         }
+        // Validate promo_qty (1-20, defaults to 1)
+        const ticketCount = Math.max(1, Math.min(20, Math.floor(Number(promo_qty) || 1)));
 
         // 4. Get Event
         const { data: event, error: eventError } = await supabaseAdmin
@@ -135,23 +137,7 @@ serve(async (req) => {
             }
         }
 
-        // 6. Generate Secure QR Token
-        const qr_payload = {
-            event_id: event.id,
-            type: type,
-            email: buyer_email,
-            timestamp: Date.now(),
-            issuer: user.id
-        }
-        const payloadStr = JSON.stringify(qr_payload)
-        const secret = Deno.env.get('QR_SECRET_KEY')
-        if (!secret) throw new Error('QR_SECRET_KEY is not configured')
-        const signature = createHmac('sha256', secret).update(payloadStr).digest('hex')
-        const qr_token = `${btoa(payloadStr)}.${signature}`
-
-        // 6b. (ticket_type_id already resolved in step 4c)
-
-        // 6c. Enforce valid_until cutoff — block ticket creation after expiry (tolerance NOT applied here, only at validation)
+        // 5b. Enforce valid_until cutoff — block ticket creation after expiry
         if (validUntil) {
             const validUntilDate = new Date(validUntil);
             if (new Date() > validUntilDate) {
@@ -159,44 +145,77 @@ serve(async (req) => {
             }
         }
 
-        // 7. Create Ticket Record
-        const { data: ticket, error: ticketError } = await supabaseAdmin
-            .from('tickets')
-            .insert({
+        // 6. Create tickets (batch for promo packs)
+        const tickets: any[] = [];
+        const qrBuffers: Buffer[] = [];
+        const secret = Deno.env.get('QR_SECRET_KEY');
+        if (!secret) throw new Error('QR_SECRET_KEY is not configured');
+
+        for (let i = 0; i < ticketCount; i++) {
+            // Generate Secure QR Token
+            const qr_payload = {
                 event_id: event.id,
-                ticket_type_id: ticketTypeId,
-                type,
-                price: isInvitation ? 0 : price,
-                buyer_name,
-                buyer_email,
-                buyer_phone,
-                buyer_doc,
-                qr_token,
-                status: 'valid',
-                created_by: user.id, // Track issuer
-                request_id: request_id // Idempotency
-            })
-            .select()
-            .single()
+                type: type,
+                email: buyer_email,
+                timestamp: Date.now(),
+                issuer: user.id,
+                batch_index: i
+            }
+            const payloadStr = JSON.stringify(qr_payload)
+            const signature = createHmac('sha256', secret).update(payloadStr).digest('hex')
+            const qr_token = `${btoa(payloadStr)}.${signature}`
 
-        if (ticketError) throw ticketError
+            // Create Ticket Record
+            const { data: ticket, error: ticketError } = await supabaseAdmin
+                .from('tickets')
+                .insert({
+                    event_id: event.id,
+                    ticket_type_id: ticketTypeId,
+                    type,
+                    price: isInvitation ? 0 : price,
+                    buyer_name,
+                    buyer_email,
+                    buyer_phone,
+                    buyer_doc,
+                    qr_token,
+                    status: 'valid',
+                    created_by: user.id,
+                    request_id: ticketCount > 1 ? `${request_id}_${i}` : request_id
+                })
+                .select()
+                .single()
 
-        // 8. AUDIT LOG
-        await supabaseAdmin.from('audit_logs').insert({
-            user_id: user.id,
-            action: 'create_ticket',
-            resource: `ticket:${ticket.id}`,
-            details: { type, event_slug, buyer_email },
-            ip_address: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')
-        });
+            if (ticketError) throw ticketError
+            tickets.push(ticket)
 
-        // 9. Generate QR Image
-        const qrBuffer = await QRCode.toBuffer(qr_token, { margin: 2, scale: 8 });
+            // Audit log
+            await supabaseAdmin.from('audit_logs').insert({
+                user_id: user.id,
+                action: 'create_ticket',
+                resource: `ticket:${ticket.id}`,
+                details: { type, event_slug, buyer_email, batch_index: i, batch_total: ticketCount },
+                ip_address: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')
+            });
 
-        // 10. Send Email
+            // Generate QR Image
+            const qrBuffer = await QRCode.toBuffer(qr_token, { margin: 2, scale: 8 });
+            qrBuffers.push(qrBuffer);
+        }
+
+        // 7. Send Email (single email with all QR codes)
         const eventDate = new Date(event.date);
         const formattedDate = eventDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         const formattedTime = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+        // Build QR sections for email
+        const qrSections = tickets.map((t, idx) => `
+            <div style="text-align: center; padding: 20px; background: #fff; margin: 20px 0; border: 1px dashed #ccc; border-radius: 12px;">
+                ${ticketCount > 1 ? `<p style="color: #000; font-weight: bold; font-size: 14px; margin-bottom: 10px;">ENTRADA ${idx + 1} de ${ticketCount}</p>` : ''}
+                <img src="cid:qrcode_${idx}" alt="QR Access ${idx + 1}" style="width: 250px; height: 250px;" />
+                <p style="color: #000; font-weight: bold; font-size: 14px; margin-top: 15px; letter-spacing: 1px;">MUESTRA ESTE CÓDIGO AL INGRESAR</p>
+                <p style="color: #999; font-size: 11px; margin-top: 5px;">ID: ${t.id}</p>
+            </div>
+        `).join('');
 
         const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; background-color: #fff;">
@@ -205,7 +224,7 @@ serve(async (req) => {
                 </div>
                 <div style="padding: 40px 30px;">
                     <h2 style="color: #333; margin-top: 0;">¡Hola ${escapeHtml(buyer_name)}!</h2>
-                    <p style="color: #555; font-size: 16px; line-height: 1.5;">Aquí tienes tu acceso confirmado para <strong>${escapeHtml(event.name)}</strong>.</p>
+                    <p style="color: #555; font-size: 16px; line-height: 1.5;">Aquí tienes ${ticketCount > 1 ? `tus <strong>${ticketCount} accesos</strong>` : 'tu acceso confirmado'} para <strong>${escapeHtml(event.name)}</strong>.</p>
                     
                     <div style="margin: 30px 0; padding: 20px; background-color: #f9f9f9; border-radius: 8px; border-left: 4px solid #000;">
                         <table style="width: 100%; border-collapse: collapse;">
@@ -214,7 +233,7 @@ serve(async (req) => {
                                 <td style="padding: 5px 0; color: #777; font-size: 13px;">FECHA Y HORA</td>
                             </tr>
                             <tr>
-                                <td style="padding: 0 0 15px 0; color: #000; font-weight: bold; font-size: 16px;">${escapeHtml(type.toUpperCase())}</td>
+                                <td style="padding: 0 0 15px 0; color: #000; font-weight: bold; font-size: 16px;">${escapeHtml(type.toUpperCase())}${ticketCount > 1 ? ` x${ticketCount}` : ''}</td>
                                 <td style="padding: 0 0 15px 0; color: #000; font-weight: bold; font-size: 16px;">${formattedDate}<br><span style="font-weight: normal; font-size: 14px;">A las ${formattedTime} hs</span></td>
                             </tr>
                             <tr>
@@ -235,14 +254,7 @@ serve(async (req) => {
                         </table>
                     </div>
 
-                    <div style="text-align: center; padding: 20px; background: #fff; margin: 30px 0; border: 1px dashed #ccc; border-radius: 12px;">
-                        <img src="cid:qrcode" alt="QR Access" style="width: 250px; height: 250px;" />
-                        <p style="color: #000; font-weight: bold; font-size: 14px; margin-top: 15px; letter-spacing: 1px;">MUESTRA ESTE CÓDIGO AL INGRESAR</p>
-                    </div>
-
-                    <div style="background-color: #000; color: #fff; padding: 15px; border-radius: 8px; text-align: center; font-size: 12px;">
-                        ID TICKET: ${ticket.id}
-                    </div>
+                    ${qrSections}
                 </div>
                 <div style="background-color: #f4f4f4; padding: 20px; text-align: center; color: #999; font-size: 12px;">
                     © ${new Date().getFullYear()} Imagine Access. Todos los derechos reservados.
@@ -254,21 +266,33 @@ serve(async (req) => {
         let email_error: string | null = null;
 
         try {
-            await sendEmail(buyer_email, `Tu entrada para ${event.name}`, emailHtml, [
-                { filename: 'ticket-qr.png', content: qrBuffer, cid: 'qrcode', contentType: 'image/png' }
-            ]);
-            await supabaseAdmin.from('tickets').update({ email_sent_at: new Date() }).eq('id', ticket.id);
+            const attachments = qrBuffers.map((buf, idx) => ({
+                filename: `ticket-qr-${idx + 1}.png`,
+                content: buf,
+                cid: `qrcode_${idx}`,
+                contentType: 'image/png'
+            }));
+            const subject = ticketCount > 1
+                ? `Tus ${ticketCount} entradas para ${event.name}`
+                : `Tu entrada para ${event.name}`;
+            await sendEmail(buyer_email, subject, emailHtml, attachments);
+            // Mark all tickets as email sent
+            const ticketIds = tickets.map((t: any) => t.id);
+            await supabaseAdmin.from('tickets').update({ email_sent_at: new Date() }).in('id', ticketIds);
             email_sent = true;
         } catch (e) {
             console.error("Email error:", e);
             email_error = e instanceof Error ? e.message : String(e);
         }
 
+        // Return first ticket for backward compat, plus batch info
         return new Response(
             JSON.stringify({
-                ...ticket,
+                ...tickets[0],
                 email_sent,
                 email_error,
+                tickets_created: tickets.length,
+                ticket_ids: tickets.map((t: any) => t.id),
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
