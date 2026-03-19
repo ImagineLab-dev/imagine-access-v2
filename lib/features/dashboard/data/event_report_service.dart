@@ -79,13 +79,26 @@ class EventReportService {
     final rrppList = rrppMap.values.toList()
       ..sort((a, b) => b.revenue.compareTo(a.revenue));
 
-    // Tickets by type
+    // Tickets by type (promo: count packs, not individual tickets)
     final typeMap = <String, int>{};
     final typeRevMap = <String, double>{};
+    final seenPromoPackIds = <String>{};
     for (final t in nonVoid) {
       final tp = t['type']?.toString() ?? '?';
-      typeMap[tp] = (typeMap[tp] ?? 0) + 1;
+      final cat = t['category']?.toString() ?? 'standard';
+      final packId = t['promo_pack_id']?.toString();
+
+      // Revenue: always add (extra promo tickets have price=0)
       typeRevMap[tp] = (typeRevMap[tp] ?? 0) + ((t['price'] as num?)?.toDouble() ?? 0);
+
+      if (cat == 'promo' && packId != null) {
+        // Count only unique packs for promo type
+        if (seenPromoPackIds.add(packId)) {
+          typeMap[tp] = (typeMap[tp] ?? 0) + 1;
+        }
+      } else {
+        typeMap[tp] = (typeMap[tp] ?? 0) + 1;
+      }
     }
 
     // Tickets by day

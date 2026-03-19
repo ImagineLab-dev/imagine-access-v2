@@ -151,6 +151,10 @@ serve(async (req) => {
         const secret = Deno.env.get('QR_SECRET_KEY');
         if (!secret) throw new Error('QR_SECRET_KEY is not configured');
 
+        // For promo packs: generate a shared pack ID so reports count packs, not individual tickets
+        const isPromo = ttRow?.category === 'promo';
+        const promoPackId = (isPromo && ticketCount >= 1) ? crypto.randomUUID() : null;
+
         for (let i = 0; i < ticketCount; i++) {
             // Generate Secure QR Token
             const qr_payload = {
@@ -168,6 +172,8 @@ serve(async (req) => {
             // Create Ticket Record
             // For promo packs: only the first ticket carries the pack price, rest are 0
             const ticketPrice = isInvitation ? 0 : (i === 0 ? price : 0);
+            // Each ticket in a batch gets its own unique request_id (request_id is UUID)
+            const ticketRequestId = ticketCount > 1 ? crypto.randomUUID() : request_id;
             const { data: ticket, error: ticketError } = await supabaseAdmin
                 .from('tickets')
                 .insert({
@@ -182,7 +188,8 @@ serve(async (req) => {
                     qr_token,
                     status: 'valid',
                     created_by: user.id,
-                    request_id: ticketCount > 1 ? `${request_id}_${i}` : request_id
+                    request_id: ticketRequestId,
+                    promo_pack_id: promoPackId
                 })
                 .select()
                 .single()
