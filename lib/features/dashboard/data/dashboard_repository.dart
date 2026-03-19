@@ -81,14 +81,17 @@ class DashboardRepository {
     }
 
     try {
+      if (kDebugMode) dev.log('getStats: calling RPC for event=$eventId', name: 'DashboardRepository');
       final response = await _client.rpc(
         'get_event_statistics',
         params: {'p_event_id': eventId},
       );
-      final mapped = Map<String, dynamic>.from(response);
+      if (kDebugMode) dev.log('getStats response: $response', name: 'DashboardRepository');
+      final mapped = Map<String, dynamic>.from(response as Map);
       _cacheStore.set(cacheKey, mapped, ttl: const Duration(minutes: 1));
       return mapped;
-    } catch (e) {
+    } catch (e, st) {
+      if (kDebugMode) dev.log('getStats ERROR: $e', name: 'DashboardRepository', stackTrace: st);
       ErrorHandler.logError('getStats', e, source: 'DashboardRepository');
       if (cached != null) return cached.value;
       return {};
@@ -123,7 +126,9 @@ class DashboardRepository {
     try {
       final response = await _client.functions.invoke('device_dashboard',
           body: {'device_id': deviceId, 'pin': pin, 'event_id': eventId});
-      final data = Map<String, dynamic>.from(response.data);
+      final data = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : <String, dynamic>{};
       return List<Map<String, dynamic>>.from(data['recent'] ?? []);
     } catch (e) {
       ErrorHandler.logError('getRecentActivityForDevice', e,

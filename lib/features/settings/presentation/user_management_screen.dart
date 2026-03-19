@@ -370,7 +370,7 @@ class UserManagementScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Email: $email', style: const TextStyle(fontSize: 14)),
+            Text(l10n.emailWithValue(email), style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 16),
             Text(
               l10n.temporaryPassword,

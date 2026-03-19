@@ -85,6 +85,14 @@ class DoorDashboardView extends ConsumerWidget {
               color: Colors.cyanAccent,
               delay: 600,
             ),
+            MetricCard(
+              title: 'PROMO',
+              value:
+                  "${metrics['promo_entered'] ?? 0} / ${metrics['promo_created'] ?? 0}",
+              icon: Icons.local_offer,
+              color: Colors.orangeAccent,
+              delay: 700,
+            ),
           ],
         ),
         const SizedBox(height: 32),

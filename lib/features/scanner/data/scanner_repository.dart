@@ -8,6 +8,13 @@ import '../../../core/utils/error_handler.dart';
 import '../../../core/offline/offline_queue_service.dart';
 import '../../../core/offline/pending_operation.dart';
 
+/// Error type keys used by scanner for l10n lookup in UI layer
+class ScannerErrorKeys {
+  static const qrValidation = 'errorQrValidation';
+  static const idValidation = 'errorIdValidation';
+  static const offlineQueued = 'offlineValidationQueued';
+}
+
 class ScannerRepository {
   final SupabaseClient _client;
   final Ref _ref;
@@ -30,7 +37,7 @@ class ScannerRepository {
 
       if (response.status != 200) {
         final data = response.data;
-        final errorMsg = (data is Map ? data['error'] : null) ?? 'Error de validación QR';
+        final errorMsg = (data is Map ? data['error'] : null) ?? ScannerErrorKeys.qrValidation;
         throw errorMsg;
       }
 
@@ -48,7 +55,7 @@ class ScannerRepository {
               ),
             );
         throw const OfflineQueuedException(
-          'Sin conexión. Validación encolada para sincronizar.',
+          ScannerErrorKeys.offlineQueued,
         );
       }
       rethrow;
@@ -78,7 +85,7 @@ class ScannerRepository {
 
       if (response.status != 200) {
         final data = response.data;
-        final errorMsg = (data is Map ? data['error'] : null) ?? 'Error de validación por ID';
+        final errorMsg = (data is Map ? data['error'] : null) ?? ScannerErrorKeys.idValidation;
         throw errorMsg;
       }
 
@@ -96,7 +103,7 @@ class ScannerRepository {
               ),
             );
         throw const OfflineQueuedException(
-          'Sin conexión. Validación encolada para sincronizar.',
+          ScannerErrorKeys.offlineQueued,
         );
       }
       rethrow;

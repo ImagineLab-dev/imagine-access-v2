@@ -257,6 +257,7 @@ class EventRepository {
     required String currency,
     String category = 'standard',
     DateTime? validUntil,
+    int toleranceMinutes = 0,
     String? color,
   }) async {
     await _client.from('ticket_types').insert({
@@ -266,6 +267,7 @@ class EventRepository {
       'currency': currency,
       'category': category,
       'valid_until': validUntil?.toIso8601String(),
+      'tolerance_minutes': toleranceMinutes,
       'color': color,
       'is_active': true,
     });

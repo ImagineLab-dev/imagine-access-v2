@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:developer' as dev;
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
@@ -28,11 +30,16 @@ class StatsScreen extends ConsumerWidget {
         onRefresh: () async => ref.invalidate(eventStatsProvider),
         child: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(child: Text(l10n.error)),
+        error: (e, _) {
+          if (kDebugMode) dev.log('Stats error: $e', name: 'StatsScreen');
+          return Center(child: Text('${l10n.error}\n$e', textAlign: TextAlign.center));
+        },
         data: (stats) {
+          if (kDebugMode) dev.log('Stats data received: $stats', name: 'StatsScreen');
           final attendance = stats['attendance_by_hour'] as List? ?? [];
           final rrpp = stats['rrpp_performance'] as List? ?? [];
           final sales = stats['sales_timeline'] as List? ?? [];
+          final noData = l10n.noDataAvailable;
 
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -42,17 +49,17 @@ class StatsScreen extends ConsumerWidget {
               children: [
                 _buildSectionTitle(l10n.enteringPerHour, theme),
                 const SizedBox(height: 16),
-                _buildAttendanceChart(attendance, theme, isDark),
+                _buildAttendanceChart(attendance, theme, isDark, noData),
                 
                 const SizedBox(height: 32),
                 _buildSectionTitle(l10n.rrppPerformance, theme),
                 const SizedBox(height: 16),
-                _buildRrppChart(rrpp, theme, isDark),
+                _buildRrppChart(rrpp, theme, isDark, noData),
                 
                 const SizedBox(height: 32),
                 _buildSectionTitle(l10n.salesTrend, theme),
                 const SizedBox(height: 16),
-                _buildSalesChart(sales, theme, isDark),
+                _buildSalesChart(sales, theme, isDark, noData),
                 
                 const SizedBox(height: 40),
               ],
@@ -74,7 +81,14 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAttendanceChart(List data, ThemeData theme, bool isDark) {
+  Widget _buildAttendanceChart(List data, ThemeData theme, bool isDark, String noDataText) {
+    if (data.isEmpty) {
+      return GlassCard(
+        height: 200,
+        padding: const EdgeInsets.all(20),
+        child: Center(child: Text(noDataText, style: TextStyle(color: Colors.grey[500]))),
+      );
+    }
     return GlassCard(
       height: 300,
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -124,7 +138,7 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRrppChart(List data, ThemeData theme, bool isDark) {
+  Widget _buildRrppChart(List data, ThemeData theme, bool isDark, String noDataText) {
     // Group by name for the chart
     final Map<String, double> perf = {};
     for (var item in data) {
@@ -133,6 +147,14 @@ class StatsScreen extends ConsumerWidget {
     }
 
     final sortedItems = perf.entries.toList()..sort((a,b) => b.value.compareTo(a.value));
+
+    if (sortedItems.isEmpty) {
+      return GlassCard(
+        height: 200,
+        padding: const EdgeInsets.all(20),
+        child: Center(child: Text(noDataText, style: TextStyle(color: Colors.grey[500]))),
+      );
+    }
 
     return GlassCard(
       height: 300,
@@ -158,7 +180,14 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSalesChart(List data, ThemeData theme, bool isDark) {
+  Widget _buildSalesChart(List data, ThemeData theme, bool isDark, String noDataText) {
+    if (data.isEmpty) {
+      return GlassCard(
+        height: 200,
+        padding: const EdgeInsets.all(20),
+        child: Center(child: Text(noDataText, style: TextStyle(color: Colors.grey[500]))),
+      );
+    }
     return GlassCard(
       height: 300,
       padding: const EdgeInsets.fromLTRB(16, 24, 24, 8),
@@ -191,7 +220,7 @@ class StatsScreen extends ConsumerWidget {
           borderData: FlBorderData(show: false),
           lineBarsData: [
             LineChartBarData(
-              spots: data.asMap().entries.map((e) => FlSpot(e.key.toDouble(), ((e.value['count'] as num?) ?? 0).toDouble())).toList(),
+              spots: data.asMap().entries.map((e) => FlSpot(e.key.toDouble(), ((e.value['revenue'] as num?) ?? 0).toDouble())).toList(),
               isCurved: true,
               color: AppTheme.accentPurple,
               barWidth: 3,

@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION public.sync_profile_to_auth()
+CREATE OR REPLACE FUNCTION public.sync_profile_to_auth()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER

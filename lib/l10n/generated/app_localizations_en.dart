@@ -916,11 +916,43 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get toleranceMinutesLabel => 'Entry tolerance';
+
+  @override
+  String toleranceMinutesValue(String minutes) {
+    return '$minutes min tolerance';
+  }
+
+  @override
+  String get noTolerance => 'No tolerance';
+
+  @override
+  String get downloadReport => 'Download Report';
+
+  @override
+  String get reportGenerating => 'Generating report...';
+
+  @override
+  String get reportReady => 'Report generated successfully';
+
+  @override
+  String get reportError => 'Error generating report';
+
+  @override
   String get enableVipGuestList => 'Enable VIP Guest List';
 
   @override
   String get createsVipGuestTicketForQuotas =>
       'Creates \'Special Guest\' ticket (Price: 0) - For VIP Quotas';
+
+  @override
+  String get ticketTypeStaffAccess => 'Staff Access';
+
+  @override
+  String get ticketTypeInvitation => 'Invitation';
+
+  @override
+  String get ticketTypeSpecialGuest => 'Special Guest';
 
   @override
   String get eventNotFound => 'Event not found.';
@@ -1113,4 +1145,247 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resetCodeInvalid => 'Invalid or expired code';
+
+  @override
+  String get errorNoConnection => 'No internet connection. Check your network.';
+
+  @override
+  String get errorTimeout => 'The operation took too long. Please try again.';
+
+  @override
+  String get errorUnauthorized => 'Session expired. Please sign in again.';
+
+  @override
+  String get errorForbidden =>
+      'You do not have permission to perform this action.';
+
+  @override
+  String get errorNotFound => 'Resource not found.';
+
+  @override
+  String get errorBadRequest => 'Invalid data. Check the information entered.';
+
+  @override
+  String get errorServer => 'Server error. Try again later.';
+
+  @override
+  String get errorUnknown => 'An unexpected error occurred.';
+
+  @override
+  String get retryAction => 'RETRY';
+
+  @override
+  String get errorQrValidation => 'QR validation error';
+
+  @override
+  String get errorIdValidation => 'ID validation error';
+
+  @override
+  String get offlineValidationQueued =>
+      'No connection. Validation queued for sync.';
+
+  @override
+  String urlCopied(String url) {
+    return 'URL copied: $url';
+  }
+
+  @override
+  String get errorNoOrganization =>
+      'No organization found for current user. Please sign in again.';
+
+  @override
+  String get errorCreateOrgProfile =>
+      'Could not create organization profile. Please try again.';
+
+  @override
+  String get processing => 'PROCESSING';
+
+  @override
+  String emailWithValue(String email) {
+    return 'Email: $email';
+  }
+
+  @override
+  String get noDataAvailable => 'No data available yet';
+
+  @override
+  String get reportFullTitle => 'COMPLETE EVENT REPORT';
+
+  @override
+  String reportGenerated(String date) {
+    return 'Generated: $date';
+  }
+
+  @override
+  String get reportSummary => 'GENERAL SUMMARY';
+
+  @override
+  String get reportTotalTickets => 'Total Tickets';
+
+  @override
+  String get reportValid => 'Valid';
+
+  @override
+  String get reportUsedScanned => 'Used (scanned)';
+
+  @override
+  String get reportVoided => 'Voided';
+
+  @override
+  String get reportConfirmedEntries => 'Confirmed entries';
+
+  @override
+  String get reportCollected => 'Revenue';
+
+  @override
+  String get reportDistByType => 'DISTRIBUTION BY TYPE';
+
+  @override
+  String get reportChartTicketsByType => 'CHART: TICKETS BY TYPE';
+
+  @override
+  String get reportSalesByRrpp => 'SALES BY PR / SELLER';
+
+  @override
+  String get reportChartRevenueByRrpp => 'CHART: REVENUE BY PR';
+
+  @override
+  String get reportChartTicketsByRrpp => 'CHART: TICKETS BY PR';
+
+  @override
+  String get reportEmissionByDay => 'TICKET EMISSION BY DAY AND TYPE';
+
+  @override
+  String get reportNoEmissionData => 'No emission data';
+
+  @override
+  String get reportScansByHour => 'SCANS BY HOUR';
+
+  @override
+  String get reportNoScanData => 'No scan data';
+
+  @override
+  String get reportScansByOperator => 'SCANS BY OPERATOR';
+
+  @override
+  String get reportNoOperatorData => 'No operator data';
+
+  @override
+  String get reportDetailTitle => 'COMPLETE TICKET DETAIL';
+
+  @override
+  String get reportNoData => 'No data';
+
+  @override
+  String reportPage(int num) {
+    return 'Page $num';
+  }
+
+  @override
+  String reportSubject(String name) {
+    return 'Report $name';
+  }
+
+  @override
+  String get reportSystem => 'System';
+
+  @override
+  String get reportUnknown => 'Unknown';
+
+  @override
+  String get reportHeaderName => 'Name';
+
+  @override
+  String get reportHeaderDoc => 'Doc';
+
+  @override
+  String get reportHeaderType => 'Type';
+
+  @override
+  String get reportHeaderPrice => 'Price';
+
+  @override
+  String get reportHeaderStatus => 'Status';
+
+  @override
+  String get reportHeaderCreated => 'Created';
+
+  @override
+  String get reportHeaderSeller => 'Seller';
+
+  @override
+  String get reportHeaderQuantity => 'Quantity';
+
+  @override
+  String get reportHeaderPercent => '% of Total';
+
+  @override
+  String get reportHeaderRrpp => 'PR';
+
+  @override
+  String get reportHeaderTotal => 'Total';
+
+  @override
+  String get reportHeaderValidCount => 'Valid';
+
+  @override
+  String get reportHeaderRevenue => 'Revenue';
+
+  @override
+  String get reportCatSale => 'Sale';
+
+  @override
+  String get reportCatGuest => 'Courtesy';
+
+  @override
+  String get reportCatStaff => 'Staff';
+
+  @override
+  String get reportCatInvitation => 'Invitation';
+
+  @override
+  String get reportStatusValid => 'Valid';
+
+  @override
+  String get reportStatusUsed => 'Used';
+
+  @override
+  String get reportStatusVoid => 'Voided';
+
+  @override
+  String offlinePendingOps(int count) {
+    return 'Offline mode. $count pending operations.';
+  }
+
+  @override
+  String get offlineWillSync => 'Offline mode. Will sync on reconnect.';
+
+  @override
+  String get enablePromoPack => 'Enable Promo Pack';
+
+  @override
+  String get promoPackSubtitle =>
+      'Creates a promotional ticket type with configurable price and quantity';
+
+  @override
+  String get promoPrice => 'Promo price';
+
+  @override
+  String get promoQty => 'Ticket quantity';
+
+  @override
+  String get ticketTypePromo => 'Promo';
+
+  @override
+  String promoTicketsCreated(int count) {
+    return '$count promo tickets created successfully';
+  }
+
+  @override
+  String promoCreatingTickets(int current, int total) {
+    return 'Creating $current of $total...';
+  }
+
+  @override
+  String get reportCatPromo => 'Promo';
 }

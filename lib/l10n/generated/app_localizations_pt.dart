@@ -920,11 +920,43 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get toleranceMinutesLabel => 'Tolerância de entrada';
+
+  @override
+  String toleranceMinutesValue(String minutes) {
+    return '$minutes min de tolerância';
+  }
+
+  @override
+  String get noTolerance => 'Sem tolerância';
+
+  @override
+  String get downloadReport => 'Baixar Relatório';
+
+  @override
+  String get reportGenerating => 'Gerando relatório...';
+
+  @override
+  String get reportReady => 'Relatório gerado com sucesso';
+
+  @override
+  String get reportError => 'Erro ao gerar o relatório';
+
+  @override
   String get enableVipGuestList => 'Habilitar Lista VIP Guest';
 
   @override
   String get createsVipGuestTicketForQuotas =>
       'Cria ingresso \'Convidado Especial\' (Preço: 0) - Para cotas VIP';
+
+  @override
+  String get ticketTypeStaffAccess => 'Acesso Staff';
+
+  @override
+  String get ticketTypeInvitation => 'Convite';
+
+  @override
+  String get ticketTypeSpecialGuest => 'Convidado Especial';
 
   @override
   String get eventNotFound => 'Evento não encontrado.';
@@ -1121,4 +1153,250 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get resetCodeInvalid => 'Código inválido ou expirado';
+
+  @override
+  String get errorNoConnection =>
+      'Sem conexão com a internet. Verifique sua rede.';
+
+  @override
+  String get errorTimeout => 'A operação demorou muito. Tente novamente.';
+
+  @override
+  String get errorUnauthorized =>
+      'Sessão expirada. Por favor, faça login novamente.';
+
+  @override
+  String get errorForbidden =>
+      'Você não tem permissão para realizar esta ação.';
+
+  @override
+  String get errorNotFound => 'Recurso não encontrado.';
+
+  @override
+  String get errorBadRequest =>
+      'Dados inválidos. Verifique as informações inseridas.';
+
+  @override
+  String get errorServer => 'Erro do servidor. Tente mais tarde.';
+
+  @override
+  String get errorUnknown => 'Ocorreu um erro inesperado.';
+
+  @override
+  String get retryAction => 'TENTAR NOVAMENTE';
+
+  @override
+  String get errorQrValidation => 'Erro de validação QR';
+
+  @override
+  String get errorIdValidation => 'Erro de validação por ID';
+
+  @override
+  String get offlineValidationQueued =>
+      'Sem conexão. Validação em fila para sincronizar.';
+
+  @override
+  String urlCopied(String url) {
+    return 'URL copiada: $url';
+  }
+
+  @override
+  String get errorNoOrganization =>
+      'Nenhuma organização encontrada para o usuário atual. Faça login novamente.';
+
+  @override
+  String get errorCreateOrgProfile =>
+      'Não foi possível criar o perfil da organização. Tente novamente.';
+
+  @override
+  String get processing => 'PROCESSANDO';
+
+  @override
+  String emailWithValue(String email) {
+    return 'Email: $email';
+  }
+
+  @override
+  String get noDataAvailable => 'Ainda não há dados disponíveis';
+
+  @override
+  String get reportFullTitle => 'RELATÓRIO COMPLETO DO EVENTO';
+
+  @override
+  String reportGenerated(String date) {
+    return 'Gerado: $date';
+  }
+
+  @override
+  String get reportSummary => 'RESUMO GERAL';
+
+  @override
+  String get reportTotalTickets => 'Total Ingressos';
+
+  @override
+  String get reportValid => 'Válidos';
+
+  @override
+  String get reportUsedScanned => 'Usados (escaneados)';
+
+  @override
+  String get reportVoided => 'Anulados';
+
+  @override
+  String get reportConfirmedEntries => 'Entradas confirmadas';
+
+  @override
+  String get reportCollected => 'Receita';
+
+  @override
+  String get reportDistByType => 'DISTRIBUIÇÃO POR TIPO';
+
+  @override
+  String get reportChartTicketsByType => 'GRÁFICO: INGRESSOS POR TIPO';
+
+  @override
+  String get reportSalesByRrpp => 'VENDAS POR RRPP / VENDEDOR';
+
+  @override
+  String get reportChartRevenueByRrpp => 'GRÁFICO: RECEITA POR RRPP';
+
+  @override
+  String get reportChartTicketsByRrpp => 'GRÁFICO: INGRESSOS POR RRPP';
+
+  @override
+  String get reportEmissionByDay => 'EMISSÃO DE INGRESSOS POR DIA E TIPO';
+
+  @override
+  String get reportNoEmissionData => 'Sem dados de emissão';
+
+  @override
+  String get reportScansByHour => 'ESCANEAMENTOS POR HORA';
+
+  @override
+  String get reportNoScanData => 'Sem dados de escaneamento';
+
+  @override
+  String get reportScansByOperator => 'ESCANEAMENTOS POR OPERADOR';
+
+  @override
+  String get reportNoOperatorData => 'Sem dados de operadores';
+
+  @override
+  String get reportDetailTitle => 'DETALHE COMPLETO DE INGRESSOS';
+
+  @override
+  String get reportNoData => 'Sem dados';
+
+  @override
+  String reportPage(int num) {
+    return 'Página $num';
+  }
+
+  @override
+  String reportSubject(String name) {
+    return 'Relatório $name';
+  }
+
+  @override
+  String get reportSystem => 'Sistema';
+
+  @override
+  String get reportUnknown => 'Desconhecido';
+
+  @override
+  String get reportHeaderName => 'Nome';
+
+  @override
+  String get reportHeaderDoc => 'Doc';
+
+  @override
+  String get reportHeaderType => 'Tipo';
+
+  @override
+  String get reportHeaderPrice => 'Preço';
+
+  @override
+  String get reportHeaderStatus => 'Estado';
+
+  @override
+  String get reportHeaderCreated => 'Criado';
+
+  @override
+  String get reportHeaderSeller => 'Vendedor';
+
+  @override
+  String get reportHeaderQuantity => 'Quantidade';
+
+  @override
+  String get reportHeaderPercent => '% do Total';
+
+  @override
+  String get reportHeaderRrpp => 'RRPP';
+
+  @override
+  String get reportHeaderTotal => 'Total';
+
+  @override
+  String get reportHeaderValidCount => 'Válidos';
+
+  @override
+  String get reportHeaderRevenue => 'Receita';
+
+  @override
+  String get reportCatSale => 'Venda';
+
+  @override
+  String get reportCatGuest => 'Cortesia';
+
+  @override
+  String get reportCatStaff => 'Staff';
+
+  @override
+  String get reportCatInvitation => 'Convite';
+
+  @override
+  String get reportStatusValid => 'Válido';
+
+  @override
+  String get reportStatusUsed => 'Usado';
+
+  @override
+  String get reportStatusVoid => 'Anulado';
+
+  @override
+  String offlinePendingOps(int count) {
+    return 'Modo offline. $count operações pendentes.';
+  }
+
+  @override
+  String get offlineWillSync => 'Modo offline. Sincronizará ao reconectar.';
+
+  @override
+  String get enablePromoPack => 'Habilitar Pack Promo';
+
+  @override
+  String get promoPackSubtitle =>
+      'Cria um tipo de ingresso promocional com preço e quantidade configuráveis';
+
+  @override
+  String get promoPrice => 'Preço promo';
+
+  @override
+  String get promoQty => 'Quantidade de ingressos';
+
+  @override
+  String get ticketTypePromo => 'Promo';
+
+  @override
+  String promoTicketsCreated(int count) {
+    return '$count ingressos promo criados com sucesso';
+  }
+
+  @override
+  String promoCreatingTickets(int current, int total) {
+    return 'Criando $current de $total...';
+  }
+
+  @override
+  String get reportCatPromo => 'Promo';
 }

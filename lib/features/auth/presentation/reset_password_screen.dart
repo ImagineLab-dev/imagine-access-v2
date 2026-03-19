@@ -81,7 +81,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ErrorHandler.showErrorSnackBar(context, ErrorHandler.getErrorMessage(e));
+        final errType = ErrorHandler.analyzeError(e).type;
+        ErrorHandler.showErrorSnackBar(context, ErrorHandler.localizedMessage(context, errType));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -134,7 +135,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 e.message.contains('invalid') ||
                 e.statusCode == '401'
             ? l10n.resetCodeInvalid
-            : ErrorHandler.getErrorMessage(e);
+            : ErrorHandler.localizedMessage(context, ErrorHandler.analyzeError(e).type);
         ErrorHandler.showErrorSnackBar(context, msg);
         // If OTP was invalid, go back to code step
         if (msg == l10n.resetCodeInvalid) {
@@ -143,7 +144,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ErrorHandler.showErrorSnackBar(context, ErrorHandler.getErrorMessage(e));
+        final errType = ErrorHandler.analyzeError(e).type;
+        ErrorHandler.showErrorSnackBar(context, ErrorHandler.localizedMessage(context, errType));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_helper.dart';
 import '../../../events/presentation/event_state.dart';
 import '../../../settings/data/settings_repository.dart';
+import '../../data/event_report_service.dart';
 import 'dashboard_components.dart';
 
 class AdminDashboardView extends ConsumerWidget {
@@ -90,6 +91,14 @@ class AdminDashboardView extends ConsumerWidget {
               color: Colors.deepPurpleAccent,
               delay: 650,
             ),
+            MetricCard(
+              title: "Promo (IN/TOT)",
+              value:
+                  "${metrics['promo_entered'] ?? 0} / ${metrics['promo_created'] ?? 0}",
+              icon: Icons.local_offer,
+              color: Colors.orangeAccent,
+              delay: 700,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -125,6 +134,8 @@ class AdminDashboardView extends ConsumerWidget {
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        _DownloadReportButton(metrics: metrics),
         const SizedBox(height: 32),
         QuickActions(
           actions: [
@@ -159,5 +170,92 @@ class AdminDashboardView extends ConsumerWidget {
     }
 
     return true;
+  }
+}
+
+class _DownloadReportButton extends ConsumerStatefulWidget {
+  final Map<String, dynamic> metrics;
+  const _DownloadReportButton({required this.metrics});
+
+  @override
+  ConsumerState<_DownloadReportButton> createState() => _DownloadReportButtonState();
+}
+
+class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return GestureDetector(
+      onTap: _loading ? null : () => _export(context, ref),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.6)),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_loading)
+              const SizedBox(
+                width: 18, height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            else
+              const Icon(Icons.download_outlined, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              _loading ? l10n.reportGenerating : l10n.downloadReport.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _export(BuildContext context, WidgetRef ref) async {
+    final selectedEvent = ref.read(selectedEventProvider);
+    if (selectedEvent == null) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.pleaseSelectEvent)),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final l10n = AppLocalizations.of(context);
+      await ref.read(eventReportServiceProvider).exportAndShare(
+        selectedEvent['id'] as String,
+        selectedEvent['name'] as String? ?? 'evento',
+        l10n,
+      );
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reportReady)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.reportError}: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 }

@@ -53,6 +53,10 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   bool _hasGuestTicket = false;
   bool _hasInvitationTicket = false;
   TimeOfDay? _invitationValidUntil; // Time limit for invitations
+  int _invitationToleranceMinutes = 0; // Grace period (internal only)
+  bool _hasPromoTicket = false;
+  double _promoPrice = 0;
+  int _promoQty = 2;
 
   @override
   void initState() {
@@ -78,6 +82,17 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
       _hasStaffTicket = rawTypes.any((t) => t['category'] == 'staff');
       _hasGuestTicket = rawTypes.any((t) => t['category'] == 'guest');
       _hasInvitationTicket = rawTypes.any((t) => t['category'] == 'invitation');
+      _hasPromoTicket = rawTypes.any((t) => t['category'] == 'promo');
+
+      if (_hasPromoTicket) {
+        final promoType = rawTypes.cast<Map<String, dynamic>?>().firstWhere(
+            (t) => t!['category'] == 'promo',
+            orElse: () => null);
+        if (promoType != null) {
+          _promoPrice = (promoType['price'] as num?)?.toDouble() ?? 0;
+          _promoQty = (promoType['promo_qty'] as int?) ?? 2;
+        }
+      }
 
       if (_hasInvitationTicket) {
         final invType = rawTypes.cast<Map<String, dynamic>?>().firstWhere(
@@ -87,6 +102,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
           final dt = DateTime.parse(invType['valid_until']).toLocal();
           _invitationValidUntil = TimeOfDay.fromDateTime(dt);
         }
+        if (invType != null && invType['tolerance_minutes'] != null) {
+          _invitationToleranceMinutes = invType['tolerance_minutes'] as int;
+        }
       }
 
       // Filter out special types from manual list
@@ -94,7 +112,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
           .where((t) =>
               t['category'] != 'staff' &&
               t['category'] != 'guest' &&
-              t['category'] != 'invitation')
+              t['category'] != 'invitation' &&
+              t['category'] != 'promo')
           .toList();
     }
 
@@ -319,6 +338,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
             'category': category,
             'is_active': true,
             'valid_until': validUntilDate?.toIso8601String(),
+            'tolerance_minutes': category == 'invitation' ? _invitationToleranceMinutes : 0,
             'color': color
           });
         } else {
@@ -330,6 +350,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               currency: _currency,
               category: category,
               validUntil: validUntilDate,
+              toleranceMinutes: category == 'invitation' ? _invitationToleranceMinutes : 0,
               color: color);
         }
       }
@@ -345,21 +366,55 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
       }
 
       if (_hasStaffTicket) {
-        await handleSpecialType('staff', 'Staff Access');
+        await handleSpecialType('staff', l10n.ticketTypeStaffAccess);
       } else {
         await deleteSpecialType('staff');
       }
 
       if (_hasInvitationTicket) {
-        await handleSpecialType('invitation', 'Invitation');
+        await handleSpecialType('invitation', l10n.ticketTypeInvitation);
       } else {
         await deleteSpecialType('invitation');
       }
 
       if (_hasGuestTicket) {
-        await handleSpecialType('guest', 'Invitado Especial');
+        await handleSpecialType('guest', l10n.ticketTypeSpecialGuest);
       } else {
         await deleteSpecialType('guest');
+      }
+
+      if (_hasPromoTicket) {
+        final promoOriginal = ((widget.initialData?['ticket_types'] ?? []) as List)
+            .firstWhere((t) => t['category'] == 'promo', orElse: () => null);
+        if (promoOriginal != null) {
+          await ref.read(eventRepositoryProvider).updateTicketType(promoOriginal['id'], {
+            'name': l10n.ticketTypePromo,
+            'price': _promoPrice,
+            'currency': _currency,
+            'category': 'promo',
+            'is_active': true,
+            'color': '#F97316',
+            'promo_qty': _promoQty,
+          });
+        } else {
+          await ref.read(eventRepositoryProvider).createTicketType(
+              eventId: newEventId,
+              name: l10n.ticketTypePromo,
+              price: _promoPrice,
+              currency: _currency,
+              category: 'promo',
+              color: '#F97316');
+          // Update promo_qty separately since createTicketType doesn't have that param
+          final types = await ref.read(ticketRepositoryProvider).getTicketTypes(newEventId);
+          final promoRow = types.firstWhere((t) => t['category'] == 'promo', orElse: () => <String, dynamic>{});
+          if (promoRow.isNotEmpty) {
+            await ref.read(eventRepositoryProvider).updateTicketType(promoRow['id'], {
+              'promo_qty': _promoQty,
+            });
+          }
+        }
+      } else {
+        await deleteSpecialType('promo');
       }
 
       ref.read(eventRepositoryProvider).clearCache();
@@ -644,39 +699,75 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 color: Colors.purpleAccent,
                 value: _hasInvitationTicket,
                 onChanged: (v) => setState(() => _hasInvitationTicket = v),
-                child: InkWell(
-                  onTap: () async {
-                    final t = await showTimePicker(
-                        context: context,
-                        initialTime: _invitationValidUntil ??
-                            const TimeOfDay(hour: 23, minute: 59));
-                    if (t != null) setState(() => _invitationValidUntil = t);
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.access_time,
-                          size: 16, color: Colors.white70),
-                      const SizedBox(width: 8),
-                      Text(
-                          _invitationValidUntil == null
-                            ? l10n.setValidUntilTimeOptional
-                            : l10n.validUntilTime(_invitationValidUntil!.format(context)),
-                          style: TextStyle(
-                              color: _invitationValidUntil == null
-                                  ? Colors.white54
-                                  : Colors.purpleAccent,
-                              fontWeight: _invitationValidUntil == null
-                                  ? FontWeight.normal
-                                  : FontWeight.bold)),
-                      if (_invitationValidUntil != null)
-                        IconButton(
-                          icon: const Icon(Icons.clear,
-                              size: 16, color: Colors.red),
-                          onPressed: () =>
-                              setState(() => _invitationValidUntil = null),
-                        )
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () async {
+                        final t = await showTimePicker(
+                            context: context,
+                            initialTime: _invitationValidUntil ??
+                                const TimeOfDay(hour: 23, minute: 59));
+                        if (t != null) setState(() => _invitationValidUntil = t);
+                      },
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time,
+                              size: 16, color: Colors.white70),
+                          const SizedBox(width: 8),
+                          Text(
+                              _invitationValidUntil == null
+                                ? l10n.setValidUntilTimeOptional
+                                : l10n.validUntilTime(_invitationValidUntil!.format(context)),
+                              style: TextStyle(
+                                  color: _invitationValidUntil == null
+                                      ? Colors.white54
+                                      : Colors.purpleAccent,
+                                  fontWeight: _invitationValidUntil == null
+                                      ? FontWeight.normal
+                                      : FontWeight.bold)),
+                          if (_invitationValidUntil != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear,
+                                  size: 16, color: Colors.red),
+                              onPressed: () =>
+                                  setState(() => _invitationValidUntil = null),
+                            )
+                        ],
+                      ),
+                    ),
+                    if (_invitationValidUntil != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.timer_outlined,
+                              size: 16, color: Colors.white70),
+                          const SizedBox(width: 8),
+                          Text(l10n.toleranceMinutesLabel,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 13)),
+                          const SizedBox(width: 8),
+                          DropdownButton<int>(
+                            value: _invitationToleranceMinutes,
+                            dropdownColor: Colors.grey[900],
+                            style: const TextStyle(
+                                color: Colors.purpleAccent,
+                                fontWeight: FontWeight.bold),
+                            underline: const SizedBox.shrink(),
+                            items: [0, 5, 10, 15, 20, 30, 45, 60]
+                                .map((m) => DropdownMenuItem(
+                                    value: m,
+                                    child: Text(m == 0
+                                        ? l10n.noTolerance
+                                        : l10n.toleranceMinutesValue(
+                                            m.toString()))))
+                                .toList(),
+                            onChanged: (v) => setState(
+                                () => _invitationToleranceMinutes = v ?? 0),
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -687,6 +778,90 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 color: Colors.pinkAccent,
                 value: _hasGuestTicket,
                 onChanged: (v) => setState(() => _hasGuestTicket = v),
+              ),
+              const SizedBox(height: 16),
+              _PricingCard(
+                title: l10n.enablePromoPack,
+                subtitle: l10n.promoPackSubtitle,
+                icon: Icons.local_offer,
+                color: Colors.orangeAccent,
+                value: _hasPromoTicket,
+                onChanged: (v) => setState(() => _hasPromoTicket = v),
+                child: Column(
+                  children: [
+                    // Price field
+                    Row(
+                      children: [
+                        const Icon(Icons.attach_money,
+                            size: 16, color: Colors.white70),
+                        const SizedBox(width: 8),
+                        Text(l10n.promoPrice,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _promoPrice > 0
+                                ? _promoPrice.toStringAsFixed(0)
+                                : '',
+                            keyboardType:
+                                const TextInputType.numberWithOptions(decimal: true),
+                            style: const TextStyle(
+                                color: Colors.orangeAccent,
+                                fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              hintText: '0',
+                              hintStyle:
+                                  const TextStyle(color: Colors.white38),
+                              suffixText: _currency,
+                              suffixStyle:
+                                  const TextStyle(color: Colors.white54),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              enabledBorder: const UnderlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: Colors.white24)),
+                              focusedBorder: const UnderlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: Colors.orangeAccent)),
+                            ),
+                            onChanged: (v) {
+                              _promoPrice = double.tryParse(v) ?? 0;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Quantity dropdown
+                    Row(
+                      children: [
+                        const Icon(Icons.confirmation_number,
+                            size: 16, color: Colors.white70),
+                        const SizedBox(width: 8),
+                        Text(l10n.promoQty,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13)),
+                        const SizedBox(width: 8),
+                        DropdownButton<int>(
+                          value: _promoQty,
+                          dropdownColor: Colors.grey[900],
+                          style: const TextStyle(
+                              color: Colors.orangeAccent,
+                              fontWeight: FontWeight.bold),
+                          underline: const SizedBox.shrink(),
+                          items: List.generate(20, (i) => i + 1)
+                              .map((n) => DropdownMenuItem(
+                                  value: n, child: Text('$n')))
+                              .toList(),
+                          onChanged: (v) =>
+                              setState(() => _promoQty = v ?? 2),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 40),
 

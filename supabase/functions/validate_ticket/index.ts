@@ -138,17 +138,19 @@ serve(async (req) => {
             // Fetch Ticket
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until)')
+                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
                 .eq('qr_token', qr_token)
                 .single()
 
             if (error || !data) throw new Error("Ticket not found");
             ticket = data;
 
-            // Check Expiration
+            // Check Expiration (tolerance_minutes extends the cutoff internally)
             if (ticket.ticket_types?.valid_until) {
                 const validUntil = new Date(ticket.ticket_types.valid_until);
-                if (new Date() > validUntil) {
+                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
+                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
+                if (new Date() > effectiveCutoff) {
                     await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
                     return new Response(JSON.stringify({
                         success: false,
@@ -168,7 +170,7 @@ serve(async (req) => {
 
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until)')
+                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
                 .eq('buyer_doc', buyer_doc)
                 .eq('event_id', event_id)
                 .eq('status', 'valid')
@@ -178,10 +180,12 @@ serve(async (req) => {
             if (!data) throw new Error("Ticket not found or already used");
             ticket = data;
 
-            // Check Expiration
+            // Check Expiration (tolerance_minutes extends the cutoff internally)
             if (ticket.ticket_types?.valid_until) {
                 const validUntil = new Date(ticket.ticket_types.valid_until);
-                if (new Date() > validUntil) {
+                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
+                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
+                if (new Date() > effectiveCutoff) {
                     await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
                     return new Response(JSON.stringify({
                         success: false,
@@ -201,17 +205,19 @@ serve(async (req) => {
 
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until)')
+                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
                 .eq('id', ticket_id)
                 .single();
 
             if (error || !data) throw new Error("Ticket not found");
             ticket = data;
 
-            // Check Expiration
+            // Check Expiration (tolerance_minutes extends the cutoff internally)
             if (ticket.ticket_types?.valid_until) {
                 const validUntil = new Date(ticket.ticket_types.valid_until);
-                if (new Date() > validUntil) {
+                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
+                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
+                if (new Date() > effectiveCutoff) {
                     await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
                     return new Response(JSON.stringify({
                         success: false,
@@ -243,7 +249,13 @@ serve(async (req) => {
         // 5. ATOMIC CHECKIN
         // Check if already used
         if (ticket.status !== 'valid') {
-            throw new Error(`Ticket already used at ${ticket.scanned_at || 'unknown time'}`);
+            return new Response(JSON.stringify({
+                success: false,
+                allowed: false,
+                result: 'already_used',
+                error: `Ticket already used at ${ticket.scanned_at || 'unknown time'}`,
+                ticket: ticket
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
         }
 
         // Handle Device ID (FK Constraint)
@@ -323,7 +335,7 @@ serve(async (req) => {
         });
 
         return new Response(
-            JSON.stringify({ success: true, ticket }),
+            JSON.stringify({ success: true, allowed: true, result: 'allowed', ticket }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
 

@@ -12,6 +12,7 @@ import '../../dashboard/data/dashboard_repository.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../core/ui/loading_overlay.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/utils/currency_helper.dart';
 import 'ticket_list_screen.dart'; // Import to access ticketsProvider
 import '../../auth/presentation/auth_controller.dart';
 import '../../settings/data/settings_repository.dart';
@@ -19,6 +20,7 @@ import '../../settings/data/settings_repository.dart';
 // State for the wizard
 final ticketTypeProvider = StateProvider<String?>((ref) => null);
 final ticketPriceProvider = StateProvider<double>((ref) => 0); // Default price
+final ticketTypeDataProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 
 class CreateTicketWizard extends ConsumerStatefulWidget {
   const CreateTicketWizard({super.key});
@@ -90,20 +92,51 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       final type = ref.read(ticketTypeProvider);
       if (type == null) throw l10n.pleaseSelectTicketType;
       final price = ref.read(ticketPriceProvider);
+      final typeData = ref.read(ticketTypeDataProvider);
+      final isPromo = typeData?['category'] == 'promo';
 
-      // Call the Repository which calls the Edge Function
+      // For promo, fetch fresh promo_qty from DB to avoid stale cache
+      int promoQty = 1;
+      if (isPromo) {
+        // Invalidate cache and re-fetch to get latest promo_qty
+        ref.invalidate(ticketTypesProvider(selectedEvent['id'] ?? ''));
+        final freshTypes = await ref.read(ticketRepositoryProvider)
+            .getTicketTypes(selectedEvent['id'] ?? '');
+        final freshPromo = freshTypes.cast<Map<String, dynamic>?>().firstWhere(
+            (t) => t!['category'] == 'promo', orElse: () => null);
+        if (freshPromo != null) {
+          promoQty = (freshPromo['promo_qty'] as num?)?.toInt() ?? 1;
+        }
+        if (promoQty < 1) promoQty = 1;
+      }
+
+      bool anyEmailSent = false;
+      String? lastEmailError;
+      bool anyQueued = false;
+
+      for (int i = 0; i < promoQty; i++) {
+        if (isPromo && promoQty > 1 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l10n.promoCreatingTickets(i + 1, promoQty)),
+            duration: const Duration(milliseconds: 800),
+          ));
+        }
+
         final createdTicket = await ref.read(ticketRepositoryProvider).createTicket(
-          eventSlug: selectedEvent['slug'],
-          type: type,
-          price: price,
-          buyerName: _nameController.text.trim(),
-          buyerEmail: _emailController.text.trim(),
-          buyerDoc: _docController.text.trim(),
-          buyerPhone: _phoneController.text.trim());
+            eventSlug: selectedEvent['slug'],
+            type: type,
+            price: price,
+            buyerName: _nameController.text.trim(),
+            buyerEmail: _emailController.text.trim(),
+            buyerDoc: _docController.text.trim(),
+            buyerPhone: _phoneController.text.trim());
 
-        final emailSent = createdTicket['email_sent'] == true;
-        final emailError = createdTicket['email_error']?.toString();
-        final queued = createdTicket['queued'] == true;
+        if (createdTicket['email_sent'] == true) anyEmailSent = true;
+        if (createdTicket['email_error'] != null) {
+          lastEmailError = createdTicket['email_error'].toString();
+        }
+        if (createdTicket['queued'] == true) anyQueued = true;
+      }
 
       if (mounted) {
         // Refresh ALL data providers to ensure reactivity
@@ -117,7 +150,7 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
 
         setState(() => _isLoading = false);
 
-        if (queued) {
+        if (anyQueued) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
               l10n.offlineTicketQueued,
@@ -127,14 +160,21 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
           return;
         }
 
-        if (!emailSent) {
+        if (!anyEmailSent) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-              emailError == null || emailError.isEmpty
+              lastEmailError == null || lastEmailError.isEmpty
                   ? l10n.ticketCreatedEmailFailed
-                  : l10n.ticketCreatedEmailError(emailError),
+                  : l10n.ticketCreatedEmailError(lastEmailError),
             ),
             backgroundColor: AppTheme.warningColor,
+          ));
+        }
+
+        if (isPromo && promoQty > 1) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l10n.promoTicketsCreated(promoQty)),
+            backgroundColor: AppTheme.successColor,
           ));
         }
 
@@ -189,6 +229,7 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
                       Navigator.pop(context);
                       ref.read(ticketTypeProvider.notifier).state = null;
                       ref.read(ticketPriceProvider.notifier).state = 0;
+                      ref.read(ticketTypeDataProvider.notifier).state = null;
                       setState(() {
                         // Reset
                         _currentStep = 0;
@@ -407,16 +448,16 @@ class _StepOneType extends ConsumerWidget {
             // Let's split but use same GridDelegate
             var specialTypes = allTypes
                 .where((t) =>
-                    ['staff', 'guest', 'invitation'].contains(t['category']))
+                    ['staff', 'guest', 'invitation', 'promo'].contains(t['category']))
                 .toList();
             final standardTypes = allTypes
                 .where((t) =>
-                    !['staff', 'guest', 'invitation'].contains(t['category']))
+                    !['staff', 'guest', 'invitation', 'promo'].contains(t['category']))
                 .toList();
 
-            // Sort order for special: Staff, Guest, Invitation
+            // Sort order for special: Staff, Guest, Invitation, Promo
             specialTypes.sort((a, b) {
-              final order = {'staff': 0, 'guest': 1, 'invitation': 2};
+              final order = {'staff': 0, 'guest': 1, 'invitation': 2, 'promo': 3};
               return (order[a['category']] ?? 99)
                   .compareTo(order[b['category']] ?? 99);
             });
@@ -446,7 +487,7 @@ class _StepOneType extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final t = specialTypes[index];
                         return _buildChip(t, selectedType, ref, isDark,
-                            myStaffRecord, isAdmin);
+                            myStaffRecord, isAdmin, l10n);
                       }),
                   const SizedBox(height: 24),
                 ],
@@ -470,7 +511,7 @@ class _StepOneType extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final t = standardTypes[index];
                         return _buildChip(t, selectedType, ref, isDark,
-                            myStaffRecord, isAdmin);
+                            myStaffRecord, isAdmin, l10n);
                       }),
                 ]
               ],
@@ -482,7 +523,8 @@ class _StepOneType extends ConsumerWidget {
   }
 
   Widget _buildChip(Map<String, dynamic> t, String? selectedType, WidgetRef ref,
-      bool isDark, Map<String, dynamic>? myStaffRecord, bool isAdmin) {
+      bool isDark, Map<String, dynamic>? myStaffRecord, bool isAdmin,
+      AppLocalizations l10n) {
     final category = t['category'];
 
     bool enabled = true;
@@ -514,6 +556,8 @@ class _StepOneType extends ConsumerWidget {
       icon = Icons.star;
     } else if (category == 'invitation') {
       icon = Icons.mail;
+    } else if (category == 'promo') {
+      icon = Icons.local_offer;
     }
 
     // Color Parsing
@@ -531,25 +575,43 @@ class _StepOneType extends ConsumerWidget {
         ticketColor = const Color(0xFFA855F7); // Purple
       } else if (category == 'guest') {
         ticketColor = const Color(0xFFEC4899); // Pink
+      } else if (category == 'promo') {
+        ticketColor = const Color(0xFFF97316); // Orange
       }
     }
 
+    // Localize special ticket type names based on category
+    String displayLabel = t['name'];
+    if (category == 'staff') {
+      displayLabel = l10n.ticketTypeStaffAccess;
+    } else if (category == 'guest') {
+      displayLabel = l10n.ticketTypeSpecialGuest;
+    } else if (category == 'invitation') {
+      displayLabel = l10n.ticketTypeInvitation;
+    } else if (category == 'promo') {
+      displayLabel = l10n.ticketTypePromo;
+    }
+
     return _TypeChip(
-      label: t['name'],
+      label: displayLabel,
+      dbName: t['name'] as String,
       price: (t['price'] as num).toDouble(),
       selected: selectedType == t['name'],
       ref: ref,
       icon: icon,
-      isSpecial: ['staff', 'guest', 'invitation'].contains(category),
+      isSpecial: ['staff', 'guest', 'invitation', 'promo'].contains(category),
       enabled: enabled,
       subtitle: subtitle,
-      color: ticketColor, // Pass the color
+      color: ticketColor,
+      currency: ref.read(selectedEventProvider)?['currency']?.toString() ?? 'PYG',
+      typeData: t,
     );
   }
 }
 
 class _TypeChip extends StatelessWidget {
   final String label;
+  final String dbName;
   final double price;
   final bool selected;
   final WidgetRef ref;
@@ -557,10 +619,13 @@ class _TypeChip extends StatelessWidget {
   final bool isSpecial;
   final bool enabled;
   final String? subtitle;
+  final String currency;
   final Color color;
+  final Map<String, dynamic> typeData;
 
   const _TypeChip({
     required this.label,
+    required this.dbName,
     required this.price,
     required this.selected,
     required this.ref,
@@ -569,6 +634,8 @@ class _TypeChip extends StatelessWidget {
     this.enabled = true,
     this.subtitle,
     required this.color,
+    required this.currency,
+    required this.typeData,
   });
 
   @override
@@ -581,8 +648,9 @@ class _TypeChip extends StatelessWidget {
     return GestureDetector(
       onTap: enabled
           ? () {
-              ref.read(ticketTypeProvider.notifier).state = label;
+              ref.read(ticketTypeProvider.notifier).state = dbName;
               ref.read(ticketPriceProvider.notifier).state = price;
+              ref.read(ticketTypeDataProvider.notifier).state = typeData;
             }
           : null,
       child: AnimatedContainer(
@@ -626,7 +694,7 @@ class _TypeChip extends StatelessWidget {
                     fontSize: 14,
                     overflow: TextOverflow.ellipsis)),
             const SizedBox(height: 4),
-            Text(price == 0 ? l10n.free : '\$${price.toStringAsFixed(0)}',
+            Text(price == 0 ? l10n.free : CurrencyHelper.format(price, currency),
                 style: TextStyle(
                     color: isDark ? Colors.white60 : Colors.black54,
                     fontSize: 12)),
@@ -741,7 +809,7 @@ class _StepThreeConfirm extends StatelessWidget {
         const SizedBox(height: 24),
         _rowInfo(l10n.event, selectedEvent?['name'] ?? 'N/A', isDark),
         _rowInfo(l10n.ticketType, type ?? 'N/A', isDark),
-        _rowInfo(l10n.price, '\$${price.toStringAsFixed(0)}', isDark),
+        _rowInfo(l10n.price, CurrencyHelper.format(price, selectedEvent?['currency']?.toString() ?? 'PYG'), isDark),
         const Divider(height: 32),
         _rowInfo(l10n.guest, name, isDark),
         _rowInfo(l10n.email, email, isDark),

@@ -67,6 +67,16 @@ serve(async (req: Request) => {
 
         if (updateError) throw updateError
 
+        // Audit log
+        await supabaseAdmin.from('audit_logs').insert({
+            action: 'void_ticket',
+            ticket_id: ticket_id,
+            event_id: ticketData.event_id,
+            performed_by: user.id,
+            organization_id: profile.organization_id,
+            details: { reason: `Voided by ${profile.role}` },
+        }).then(() => {}, () => {}) // non-blocking: don't fail if audit insert fails
+
         return new Response(
             JSON.stringify({ message: "Ticket voided successfully" }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

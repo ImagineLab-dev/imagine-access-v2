@@ -1840,6 +1840,48 @@ abstract class AppLocalizations {
   /// **'Valid until: {time}'**
   String validUntilTime(String time);
 
+  /// No description provided for @toleranceMinutesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry tolerance'**
+  String get toleranceMinutesLabel;
+
+  /// No description provided for @toleranceMinutesValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min tolerance'**
+  String toleranceMinutesValue(String minutes);
+
+  /// No description provided for @noTolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'No tolerance'**
+  String get noTolerance;
+
+  /// No description provided for @downloadReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Report'**
+  String get downloadReport;
+
+  /// No description provided for @reportGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating report...'**
+  String get reportGenerating;
+
+  /// No description provided for @reportReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Report generated successfully'**
+  String get reportReady;
+
+  /// No description provided for @reportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error generating report'**
+  String get reportError;
+
   /// No description provided for @enableVipGuestList.
   ///
   /// In en, this message translates to:
@@ -1851,6 +1893,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Creates \'Special Guest\' ticket (Price: 0) - For VIP Quotas'**
   String get createsVipGuestTicketForQuotas;
+
+  /// No description provided for @ticketTypeStaffAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff Access'**
+  String get ticketTypeStaffAccess;
+
+  /// No description provided for @ticketTypeInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation'**
+  String get ticketTypeInvitation;
+
+  /// No description provided for @ticketTypeSpecialGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Guest'**
+  String get ticketTypeSpecialGuest;
 
   /// No description provided for @eventNotFound.
   ///
@@ -2199,6 +2259,450 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid or expired code'**
   String get resetCodeInvalid;
+
+  /// No description provided for @errorNoConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Check your network.'**
+  String get errorNoConnection;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The operation took too long. Please try again.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please sign in again.'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to perform this action.'**
+  String get errorForbidden;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Resource not found.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorBadRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid data. Check the information entered.'**
+  String get errorBadRequest;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Try again later.'**
+  String get errorServer;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred.'**
+  String get errorUnknown;
+
+  /// No description provided for @retryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'RETRY'**
+  String get retryAction;
+
+  /// No description provided for @errorQrValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'QR validation error'**
+  String get errorQrValidation;
+
+  /// No description provided for @errorIdValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'ID validation error'**
+  String get errorIdValidation;
+
+  /// No description provided for @offlineValidationQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Validation queued for sync.'**
+  String get offlineValidationQueued;
+
+  /// No description provided for @urlCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'URL copied: {url}'**
+  String urlCopied(String url);
+
+  /// No description provided for @errorNoOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'No organization found for current user. Please sign in again.'**
+  String get errorNoOrganization;
+
+  /// No description provided for @errorCreateOrgProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create organization profile. Please try again.'**
+  String get errorCreateOrgProfile;
+
+  /// No description provided for @processing.
+  ///
+  /// In en, this message translates to:
+  /// **'PROCESSING'**
+  String get processing;
+
+  /// No description provided for @emailWithValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Email: {email}'**
+  String emailWithValue(String email);
+
+  /// No description provided for @noDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No data available yet'**
+  String get noDataAvailable;
+
+  /// No description provided for @reportFullTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE EVENT REPORT'**
+  String get reportFullTitle;
+
+  /// No description provided for @reportGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated: {date}'**
+  String reportGenerated(String date);
+
+  /// No description provided for @reportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'GENERAL SUMMARY'**
+  String get reportSummary;
+
+  /// No description provided for @reportTotalTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Tickets'**
+  String get reportTotalTickets;
+
+  /// No description provided for @reportValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid'**
+  String get reportValid;
+
+  /// No description provided for @reportUsedScanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Used (scanned)'**
+  String get reportUsedScanned;
+
+  /// No description provided for @reportVoided.
+  ///
+  /// In en, this message translates to:
+  /// **'Voided'**
+  String get reportVoided;
+
+  /// No description provided for @reportConfirmedEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed entries'**
+  String get reportConfirmedEntries;
+
+  /// No description provided for @reportCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get reportCollected;
+
+  /// No description provided for @reportDistByType.
+  ///
+  /// In en, this message translates to:
+  /// **'DISTRIBUTION BY TYPE'**
+  String get reportDistByType;
+
+  /// No description provided for @reportChartTicketsByType.
+  ///
+  /// In en, this message translates to:
+  /// **'CHART: TICKETS BY TYPE'**
+  String get reportChartTicketsByType;
+
+  /// No description provided for @reportSalesByRrpp.
+  ///
+  /// In en, this message translates to:
+  /// **'SALES BY PR / SELLER'**
+  String get reportSalesByRrpp;
+
+  /// No description provided for @reportChartRevenueByRrpp.
+  ///
+  /// In en, this message translates to:
+  /// **'CHART: REVENUE BY PR'**
+  String get reportChartRevenueByRrpp;
+
+  /// No description provided for @reportChartTicketsByRrpp.
+  ///
+  /// In en, this message translates to:
+  /// **'CHART: TICKETS BY PR'**
+  String get reportChartTicketsByRrpp;
+
+  /// No description provided for @reportEmissionByDay.
+  ///
+  /// In en, this message translates to:
+  /// **'TICKET EMISSION BY DAY AND TYPE'**
+  String get reportEmissionByDay;
+
+  /// No description provided for @reportNoEmissionData.
+  ///
+  /// In en, this message translates to:
+  /// **'No emission data'**
+  String get reportNoEmissionData;
+
+  /// No description provided for @reportScansByHour.
+  ///
+  /// In en, this message translates to:
+  /// **'SCANS BY HOUR'**
+  String get reportScansByHour;
+
+  /// No description provided for @reportNoScanData.
+  ///
+  /// In en, this message translates to:
+  /// **'No scan data'**
+  String get reportNoScanData;
+
+  /// No description provided for @reportScansByOperator.
+  ///
+  /// In en, this message translates to:
+  /// **'SCANS BY OPERATOR'**
+  String get reportScansByOperator;
+
+  /// No description provided for @reportNoOperatorData.
+  ///
+  /// In en, this message translates to:
+  /// **'No operator data'**
+  String get reportNoOperatorData;
+
+  /// No description provided for @reportDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE TICKET DETAIL'**
+  String get reportDetailTitle;
+
+  /// No description provided for @reportNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get reportNoData;
+
+  /// No description provided for @reportPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {num}'**
+  String reportPage(int num);
+
+  /// No description provided for @reportSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Report {name}'**
+  String reportSubject(String name);
+
+  /// No description provided for @reportSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get reportSystem;
+
+  /// No description provided for @reportUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get reportUnknown;
+
+  /// No description provided for @reportHeaderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get reportHeaderName;
+
+  /// No description provided for @reportHeaderDoc.
+  ///
+  /// In en, this message translates to:
+  /// **'Doc'**
+  String get reportHeaderDoc;
+
+  /// No description provided for @reportHeaderType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get reportHeaderType;
+
+  /// No description provided for @reportHeaderPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get reportHeaderPrice;
+
+  /// No description provided for @reportHeaderStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get reportHeaderStatus;
+
+  /// No description provided for @reportHeaderCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get reportHeaderCreated;
+
+  /// No description provided for @reportHeaderSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get reportHeaderSeller;
+
+  /// No description provided for @reportHeaderQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get reportHeaderQuantity;
+
+  /// No description provided for @reportHeaderPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'% of Total'**
+  String get reportHeaderPercent;
+
+  /// No description provided for @reportHeaderRrpp.
+  ///
+  /// In en, this message translates to:
+  /// **'PR'**
+  String get reportHeaderRrpp;
+
+  /// No description provided for @reportHeaderTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get reportHeaderTotal;
+
+  /// No description provided for @reportHeaderValidCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid'**
+  String get reportHeaderValidCount;
+
+  /// No description provided for @reportHeaderRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get reportHeaderRevenue;
+
+  /// No description provided for @reportCatSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Sale'**
+  String get reportCatSale;
+
+  /// No description provided for @reportCatGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Courtesy'**
+  String get reportCatGuest;
+
+  /// No description provided for @reportCatStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get reportCatStaff;
+
+  /// No description provided for @reportCatInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation'**
+  String get reportCatInvitation;
+
+  /// No description provided for @reportStatusValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid'**
+  String get reportStatusValid;
+
+  /// No description provided for @reportStatusUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get reportStatusUsed;
+
+  /// No description provided for @reportStatusVoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Voided'**
+  String get reportStatusVoid;
+
+  /// No description provided for @offlinePendingOps.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode. {count} pending operations.'**
+  String offlinePendingOps(int count);
+
+  /// No description provided for @offlineWillSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode. Will sync on reconnect.'**
+  String get offlineWillSync;
+
+  /// No description provided for @enablePromoPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Promo Pack'**
+  String get enablePromoPack;
+
+  /// No description provided for @promoPackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Creates a promotional ticket type with configurable price and quantity'**
+  String get promoPackSubtitle;
+
+  /// No description provided for @promoPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Promo price'**
+  String get promoPrice;
+
+  /// No description provided for @promoQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket quantity'**
+  String get promoQty;
+
+  /// No description provided for @ticketTypePromo.
+  ///
+  /// In en, this message translates to:
+  /// **'Promo'**
+  String get ticketTypePromo;
+
+  /// No description provided for @promoTicketsCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} promo tickets created successfully'**
+  String promoTicketsCreated(int count);
+
+  /// No description provided for @promoCreatingTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating {current} of {total}...'**
+  String promoCreatingTickets(int current, int total);
+
+  /// No description provided for @reportCatPromo.
+  ///
+  /// In en, this message translates to:
+  /// **'Promo'**
+  String get reportCatPromo;
 }
 
 class _AppLocalizationsDelegate

@@ -176,7 +176,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       if (mounted) {
         setState(() => _isProcessing = false);
         final message =
-            e is OfflineQueuedException ? e.message : l10n.scanError;
+            e is OfflineQueuedException ? l10n.offlineValidationQueued : l10n.scanError;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(message)));
       }

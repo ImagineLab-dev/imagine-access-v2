@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../offline/connectivity_provider.dart';
 import '../offline/offline_queue_service.dart';
 
@@ -51,6 +52,7 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
         }
 
         final count = queueCount.valueOrNull ?? 0;
+        final l10n = AppLocalizations.of(context);
 
         return SafeArea(
           bottom: false,
@@ -66,8 +68,8 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
                   Expanded(
                     child: Text(
                       count > 0
-                          ? 'Modo offline. $count operaciones pendientes.'
-                          : 'Modo offline. Sincronizará al reconectar.',
+                          ? l10n.offlinePendingOps(count)
+                          : l10n.offlineWillSync,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

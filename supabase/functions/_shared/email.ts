@@ -1,6 +1,43 @@
 
 import { createTransport } from "npm:nodemailer@6.9.7";
 
+/** Strip HTML tags and decode common entities to produce a plain-text version */
+function htmlToPlainText(html: string): string {
+    return html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/tr>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<\/h[1-6]>/gi, '\n\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/td>/gi, '  ')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+/** Wrap HTML body content in a proper HTML5 document for better deliverability */
+function wrapHtmlDocument(body: string): string {
+    return `<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Imagine Access</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;">
+${body}
+</body>
+</html>`;
+}
+
 export const sendEmail = async (
     to: string,
     subject: string,
@@ -48,11 +85,14 @@ export const sendEmail = async (
     console.log(`Sending email via ${SMTP_HOST}...`);
 
     try {
+        const fromDomain = SMTP_USER.split('@')[1] || 'imaginelab.shop';
         const info = await transporter.sendMail({
             from: `"Imagine Access" <${SMTP_USER}>`,
             to,
             subject,
-            html,
+            html: wrapHtmlDocument(html),
+            text: htmlToPlainText(html),
+            messageId: `<${crypto.randomUUID()}@${fromDomain}>`,
             attachments,
         });
         console.log("Email sent: %s", info.messageId);

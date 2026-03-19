@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
 /// Tipos de errores de red
 enum NetworkErrorType {
@@ -146,6 +147,29 @@ class ErrorHandler {
     }
   }
 
+  /// Returns localized message for a NetworkErrorType
+  static String localizedMessage(BuildContext context, NetworkErrorType type) {
+    final l10n = AppLocalizations.of(context);
+    switch (type) {
+      case NetworkErrorType.noConnection:
+        return l10n.errorNoConnection;
+      case NetworkErrorType.timeout:
+        return l10n.errorTimeout;
+      case NetworkErrorType.unauthorized:
+        return l10n.errorUnauthorized;
+      case NetworkErrorType.forbidden:
+        return l10n.errorForbidden;
+      case NetworkErrorType.notFound:
+        return l10n.errorNotFound;
+      case NetworkErrorType.badRequest:
+        return l10n.errorBadRequest;
+      case NetworkErrorType.serverError:
+        return l10n.errorServer;
+      case NetworkErrorType.unknown:
+        return l10n.errorUnknown;
+    }
+  }
+
   /// Shows a user-friendly error snackbar
   static void showErrorSnackBar(
     BuildContext context,
@@ -179,7 +203,7 @@ class ErrorHandler {
         duration: duration,
         action: onRetry != null
             ? SnackBarAction(
-                label: 'REINTENTAR',
+                label: AppLocalizations.of(context).retryAction,
                 textColor: theme.colorScheme.onError,
                 onPressed: onRetry,
               )
@@ -216,7 +240,7 @@ class ErrorHandler {
     
     showErrorSnackBar(
       context,
-      networkError.message,
+      localizedMessage(context, networkError.type),
       onRetry: networkError.isRetryable ? onRetry : null,
       icon: icon,
     );

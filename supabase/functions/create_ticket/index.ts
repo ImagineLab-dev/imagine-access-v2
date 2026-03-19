@@ -50,7 +50,6 @@ serve(async (req) => {
 
         // 3. Get Input
         const { event_slug, type, price, buyer_name, buyer_email, buyer_phone, buyer_doc, request_id } = await req.json()
-        const isInvitation = type === 'invitation';
 
         // 3b. Input validation
         if (!event_slug || typeof event_slug !== 'string') {
@@ -69,11 +68,6 @@ serve(async (req) => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
             if (!emailRegex.test(buyer_email)) {
                 throw new Error('Invalid buyer email format');
-            }
-        }
-        if (!isInvitation) {
-            if (price == null || typeof price !== 'number' || price < 0 || price > 999999999) {
-                throw new Error('Price must be a non-negative number (max 999999999)');
             }
         }
 
@@ -104,6 +98,29 @@ serve(async (req) => {
             throw new Error('Event does not belong to your organization')
         }
 
+        // 4c. Resolve ticket_type from DB (moved up so isInvitation is available for quota & price logic)
+        let ticketTypeId: string | null = null
+        let validUntil: string | null = null
+        let isInvitation = false
+        const { data: ttRow } = await supabaseAdmin
+            .from('ticket_types')
+            .select('id, valid_until, category, tolerance_minutes')
+            .eq('event_id', event.id)
+            .eq('name', type)
+            .maybeSingle()
+        if (ttRow) {
+            ticketTypeId = ttRow.id
+            validUntil = ttRow.valid_until ?? null
+            isInvitation = ttRow.category === 'invitation'
+        }
+
+        // 4d. Price validation (requires isInvitation to be resolved)
+        if (!isInvitation) {
+            if (price == null || typeof price !== 'number' || price < 0 || price > 999999999) {
+                throw new Error('Price must be a non-negative number (max 999999999)');
+            }
+        }
+
         // 5. ENFORCE RBAC QUOTAS (if RRPP and Invitation)
         if (isInvitation && !isAdmin) {
             console.log(`Checking quota for user on event ${event.id}`);
@@ -132,21 +149,9 @@ serve(async (req) => {
         const signature = createHmac('sha256', secret).update(payloadStr).digest('hex')
         const qr_token = `${btoa(payloadStr)}.${signature}`
 
-        // 6b. Resolve ticket_type_id from type name + event
-        let ticketTypeId: string | null = null
-        let validUntil: string | null = null
-        const { data: ttRow } = await supabaseAdmin
-            .from('ticket_types')
-            .select('id, valid_until')
-            .eq('event_id', event.id)
-            .eq('name', type)
-            .maybeSingle()
-        if (ttRow) {
-            ticketTypeId = ttRow.id
-            validUntil = ttRow.valid_until ?? null
-        }
+        // 6b. (ticket_type_id already resolved in step 4c)
 
-        // 6c. Enforce valid_until cutoff — block ticket creation after expiry
+        // 6c. Enforce valid_until cutoff — block ticket creation after expiry (tolerance NOT applied here, only at validation)
         if (validUntil) {
             const validUntilDate = new Date(validUntil);
             if (new Date() > validUntilDate) {

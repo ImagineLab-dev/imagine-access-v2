@@ -136,6 +136,8 @@ serve(async (req) => {
             guest_entered: enteredByCategory('guest'),
             invitations_total: countByCategory('invitation'),
             invitations_scanned: enteredByCategory('invitation'),
+            promo_created: countByCategory('promo'),
+            promo_entered: enteredByCategory('promo'),
         }
 
         const recent = recentRes.data ?? []

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'dart:ui';
 import '../theme/app_theme.dart';
 
@@ -49,7 +50,7 @@ class LoadingOverlay extends ConsumerWidget {
                           ),
                       const SizedBox(height: 24),
                       Text(
-                        'PROCESANDO',
+                        AppLocalizations.of(context).processing,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.bold,

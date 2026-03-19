@@ -23,7 +23,32 @@ class CurrencyHelper {
     final info = currencies[currencyCode.toUpperCase()];
     final symbol = info?.symbol ?? currencyCode;
     final decimals = info?.decimals ?? 2;
-    return '$symbol ${amount.toStringAsFixed(decimals)}';
+    final formatted = _formatWithThousands(amount.toDouble(), decimals);
+    return '$symbol $formatted';
+  }
+
+  /// Formats a number with dot as thousands separator and comma as decimal
+  static String _formatWithThousands(double value, int decimals) {
+    final isNeg = value < 0;
+    final abs = value.abs();
+    final intPart = abs.truncate();
+    final intStr = intPart.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < intStr.length; i++) {
+      if (i > 0 && (intStr.length - i) % 3 == 0) buf.write('.');
+      buf.write(intStr[i]);
+    }
+    if (decimals > 0) {
+      final frac = ((abs - intPart) * _pow10(decimals)).round();
+      buf.write(',${frac.toString().padLeft(decimals, '0')}');
+    }
+    return isNeg ? '-${buf.toString()}' : buf.toString();
+  }
+
+  static int _pow10(int n) {
+    var r = 1;
+    for (var i = 0; i < n; i++) { r *= 10; }
+    return r;
   }
 
   static IconData getIcon(String currencyCode) {

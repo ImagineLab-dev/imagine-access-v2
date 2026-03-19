@@ -128,7 +128,7 @@ serve(async (req) => {
         <p><strong>Fecha:</strong> ${escapeHtml(dateLabel)}</p>
         <p><strong>Hora:</strong> ${escapeHtml(timeLabel)}</p>
         <p><strong>Lugar:</strong> ${escapeHtml(venueLabel)}</p>
-        <p><strong>Dirección:</strong> ${escapeHtml(addressLabel)}${cityLabel ? `, ${escapeHtml(cityLabel)}` : ""}</p></p>
+        <p><strong>Dirección:</strong> ${escapeHtml(addressLabel)}${cityLabel ? `, ${escapeHtml(cityLabel)}` : ""}</p>
         <div style="margin-top:16px;padding:16px;border:1px dashed #d1d5db;border-radius:10px;text-align:center;">
           ${qrBuffer
             ? '<img src="cid:ticket-qr.png" alt="QR Ticket" style="width:220px;height:220px;" />'
