@@ -166,13 +166,15 @@ serve(async (req) => {
             const qr_token = `${btoa(payloadStr)}.${signature}`
 
             // Create Ticket Record
+            // For promo packs: only the first ticket carries the pack price, rest are 0
+            const ticketPrice = isInvitation ? 0 : (i === 0 ? price : 0);
             const { data: ticket, error: ticketError } = await supabaseAdmin
                 .from('tickets')
                 .insert({
                     event_id: event.id,
                     ticket_type_id: ticketTypeId,
                     type,
-                    price: isInvitation ? 0 : price,
+                    price: ticketPrice,
                     buyer_name,
                     buyer_email,
                     buyer_phone,
