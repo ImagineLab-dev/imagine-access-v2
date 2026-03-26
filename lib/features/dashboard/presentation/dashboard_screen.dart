@@ -287,7 +287,7 @@ class _ErrorBanner extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(l10n.error,
+      child: Text(message.isNotEmpty ? message : l10n.error,
           style: const TextStyle(color: Colors.red)),
     );
   }

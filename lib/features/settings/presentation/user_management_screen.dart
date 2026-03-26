@@ -45,7 +45,7 @@ class UserManagementScreen extends ConsumerWidget {
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final user = users[index];
-              final role = user['role'] as String;
+              final role = (user['role'] as String?) ?? 'rrpp';
               final currentUserId = ref.read(userProvider)?.id;
               final isSelf = user['user_id'] == currentUserId;
 

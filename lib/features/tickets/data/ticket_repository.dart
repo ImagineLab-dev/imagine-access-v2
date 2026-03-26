@@ -48,13 +48,16 @@ class TicketRepository {
     };
 
     try {
-      // Ensure session is fresh before calling Edge Function
-      final session = _client.auth.currentSession;
-      if (session != null && session.isExpired) {
-        await _client.auth.refreshSession();
-      }
+      // Save current token BEFORE refresh (refresh failure clears session, falling back to anon key)
+      final savedToken = _client.auth.currentSession?.accessToken;
+      try { await _client.auth.refreshSession(); } catch (_) {}
+      final sessionToken = _client.auth.currentSession?.accessToken ?? savedToken;
+      // Final fallback: read last persisted token from secure storage
+      final token = sessionToken ?? await _secureStorage.read(key: 'last_access_token');
+      if (token != null) payload['_auth_token'] = token;
 
-      final response = await _client.functions.invoke('create_ticket', body: payload);
+      final response = await _client.functions.invoke('create_ticket',
+          body: payload);
 
       if (response.status != 200) {
         if (kDebugMode) {
@@ -214,8 +217,14 @@ class TicketRepository {
   /// Resend ticket email to buyer
   Future<void> resendTicket(String ticketId) async {
     try {
+      final savedToken = _client.auth.currentSession?.accessToken;
+      try { await _client.auth.refreshSession(); } catch (_) {}
+      final sessionToken = _client.auth.currentSession?.accessToken ?? savedToken;
+      final token = sessionToken ?? await _secureStorage.read(key: 'last_access_token');
+      final body = <String, dynamic>{'ticket_id': ticketId};
+      if (token != null) body['_auth_token'] = token;
       final response = await _client.functions
-          .invoke('resend_ticket_email', body: {'ticket_id': ticketId});
+          .invoke('resend_ticket_email', body: body);
       if (response.status != 200) {
         if (kDebugMode) {
           dev.log(
@@ -236,8 +245,14 @@ class TicketRepository {
   /// Void/Cancel a ticket
   Future<void> voidTicket(String ticketId) async {
     try {
+      final savedToken = _client.auth.currentSession?.accessToken;
+      try { await _client.auth.refreshSession(); } catch (_) {}
+      final sessionToken = _client.auth.currentSession?.accessToken ?? savedToken;
+      final token = sessionToken ?? await _secureStorage.read(key: 'last_access_token');
+      final body = <String, dynamic>{'ticket_id': ticketId};
+      if (token != null) body['_auth_token'] = token;
       final response = await _client.functions
-          .invoke('void_ticket', body: {'ticket_id': ticketId});
+          .invoke('void_ticket', body: body);
       if (response.status != 200) {
         if (kDebugMode) {
           dev.log(

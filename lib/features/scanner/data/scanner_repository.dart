@@ -7,6 +7,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/offline/offline_queue_service.dart';
 import '../../../core/offline/pending_operation.dart';
+import '../../../core/config/env.dart';
 
 /// Error type keys used by scanner for l10n lookup in UI layer
 class ScannerErrorKeys {
@@ -33,7 +34,11 @@ class ScannerRepository {
     };
 
     try {
-      final response = await _client.functions.invoke('validate_ticket', body: payload);
+      final response = await _client.functions.invoke(
+        'validate_ticket',
+        body: payload,
+        headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
+      );
 
       if (response.status != 200) {
         final data = response.data;
@@ -81,7 +86,11 @@ class ScannerRepository {
     };
 
     try {
-      final response = await _client.functions.invoke('validate_ticket', body: payload);
+      final response = await _client.functions.invoke(
+        'validate_ticket',
+        body: payload,
+        headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
+      );
 
       if (response.status != 200) {
         final data = response.data;

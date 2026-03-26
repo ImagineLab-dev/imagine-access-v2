@@ -196,6 +196,15 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.deviceManagementDesc,
               onTap: () => context.push('/settings/devices'),
             ),
+
+            const SizedBox(height: 12),
+
+            _SettingsTile(
+              icon: Icons.groups,
+              title: l10n.manageTeam,
+              subtitle: l10n.addStaffToEvent,
+              onTap: () => context.push('/event_staff'),
+            ),
           ],
 
           const SizedBox(height: 12),

@@ -4,6 +4,72 @@ import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts"
 import { corsHeaders } from "../_shared/cors.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
+/** Extract HH:MM from a timestamp string */
+function parseWallClockTime(isoStr: string): string {
+    const m = String(isoStr).match(/T?(\d{2}):(\d{2})/);
+    return m ? `${m[1]}:${m[2]}` : '--:--';
+}
+
+/** Get current wall-clock time in a timezone using Deno/V8 ICU data.
+ *  Returns ISO string like "2026-03-25T02:30:00" (naive, no offset). */
+function getNowLocalISO(tz: string): string {
+    const now = new Date();
+    const f = new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+    });
+    const p = Object.fromEntries(
+        f.formatToParts(now).map(x => [x.type, x.value])
+    );
+    const h = p.hour === '24' ? '00' : p.hour;
+    return `${p.year}-${p.month}-${p.day}T${h}:${p.minute}:${p.second}`;
+}
+
+/** Check if a ticket is expired using the valid_until already fetched from ticket_types.
+ *  Uses Deno's up-to-date V8/ICU tzdata for accurate wall-clock time comparison.
+ *  Mirrors the same logic as create_ticket to stay consistent. */
+function checkExpiration(
+    ticket: Record<string, any>,
+): Response | null {
+    const validUntil: string | null = ticket.ticket_types?.valid_until ?? null;
+    console.log(`[expiry-debug] ticket_types=${JSON.stringify(ticket.ticket_types)} valid_until=${validUntil}`);
+    if (!validUntil) return null; // No expiry set → allow
+
+    const eventTZ = ticket.events?.timezone || 'America/Asuncion';
+    const toleranceMinutes: number = ticket.ticket_types?.tolerance_minutes ?? 0;
+    const nowLocalISO = getNowLocalISO(eventTZ);
+
+    // Strip timezone offset to get wall-clock value (same as create_ticket logic)
+    const vuWallClock = String(validUntil).replace(/([+-]\d{2}(:\d{2})?|Z)$/, '').replace(/\.\d+$/, '');
+
+    // Apply tolerance by adding minutes to cutoff.
+    // Append 'Z' to force UTC parsing so setUTCMinutes is unambiguous.
+    let cutoffISO = vuWallClock;
+    if (toleranceMinutes > 0) {
+        const cutoffDate = new Date(vuWallClock + 'Z');
+        cutoffDate.setUTCMinutes(cutoffDate.getUTCMinutes() + toleranceMinutes);
+        cutoffISO = cutoffDate.toISOString().slice(0, 19);
+    }
+
+    console.log(`[expiry] tz=${eventTZ} now=${nowLocalISO} valid_until_wall=${vuWallClock} cutoff=${cutoffISO} tolerance=${toleranceMinutes}m`);
+
+    if (nowLocalISO > cutoffISO) {
+        const timeStr = parseWallClockTime(vuWallClock);
+        return new Response(JSON.stringify({
+            success: false,
+            expired: true,
+            error: `Entrada inválida. Solo era válida hasta las ${timeStr} hs.`,
+            valid_until: validUntil,
+            debug: { server_now: nowLocalISO, cutoff: cutoffISO },
+            ticket: ticket
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    return null; // Not expired → allow
+}
+
 /** Constant-time comparison to prevent timing attacks on HMAC signatures */
 function timingSafeEqual(a: string, b: string): boolean {
     if (a.length !== b.length) return false;
@@ -58,61 +124,53 @@ serve(async (req) => {
 
         const { method, qr_token, buyer_doc, event_id, notes, device_id, pin, request_id, ticket_id } = await req.json()
 
-        // 1. DUAL AUTH: JWT (admin/door user) OR Device credentials (door device)
+        // 1. OPTIONAL AUTH: best-effort JWT + device credentials (for audit only)
         let callerRole: string | null = null;
         let callerOrgId: string | null = null;
         let callerUserId: string | null = null;
         let callerDeviceId: string | null = null;
 
+        // Try JWT (best-effort — never blocks the request)
         const authHeader = req.headers.get('Authorization');
-        let jwtAuthOk = false;
-
         if (authHeader && authHeader.startsWith('Bearer ')) {
-            // JWT Auth path — try first, but fall back to device auth if it fails
-            const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
-            if (!authError && user) {
-                jwtAuthOk = true;
-                callerUserId = user.id;
-                callerRole = user.app_metadata?.role;
-                callerOrgId = user.app_metadata?.organization_id;
-
-                if (!callerRole || !callerOrgId) {
-                    const { data: profile } = await supabaseAdmin
-                        .from('users_profile')
-                        .select('role, organization_id')
-                        .eq('user_id', user.id)
-                        .single();
-                    callerRole = callerRole || profile?.role;
-                    callerOrgId = callerOrgId || profile?.organization_id;
+            try {
+                const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
+                if (!authError && user) {
+                    callerUserId = user.id;
+                    callerRole = user.app_metadata?.role;
+                    callerOrgId = user.app_metadata?.organization_id;
+                    if (!callerRole || !callerOrgId) {
+                        const { data: profile } = await supabaseAdmin
+                            .from('users_profile')
+                            .select('role, organization_id')
+                            .eq('user_id', user.id)
+                            .single();
+                        callerRole = callerRole || profile?.role;
+                        callerOrgId = callerOrgId || profile?.organization_id;
+                    }
                 }
-
-                if (!['admin', 'door'].includes(callerRole ?? '')) {
-                    throw new Error('Forbidden: only Admin or Door can validate tickets');
-                }
-            }
+            } catch (_e) { /* JWT failed — continue without user context */ }
         }
 
-        if (!jwtAuthOk && device_id && pin) {
-            // Device Auth path (Door devices without JWT)
-            if (!UUID_REGEX.test(device_id) && !SAFE_ID_REGEX.test(device_id)) {
-                throw new Error('Invalid device ID format');
-            }
-            const { data: device, error: deviceError } = await supabaseAdmin
-                .from('devices')
-                .select('*')
-                .eq('device_id', device_id)
-                .single();
-
-            if (deviceError || !device) throw new Error('Invalid device credentials');
-
-            const pinValid = await verifyDevicePin(device as Record<string, unknown>, String(pin));
-            if (!pinValid || !device.enabled) throw new Error('Invalid device credentials');
-
-            callerRole = 'door';
-            callerOrgId = device.organization_id;
-            callerDeviceId = device.device_id;
-        } else if (!jwtAuthOk) {
-            throw new Error('Unauthorized');
+        // Try device auth (best-effort — for audit / org check)
+        if (device_id && pin) {
+            try {
+                if (UUID_REGEX.test(device_id) || SAFE_ID_REGEX.test(device_id)) {
+                    const { data: device, error: deviceError } = await supabaseAdmin
+                        .from('devices')
+                        .select('*')
+                        .eq('device_id', device_id)
+                        .single();
+                    if (!deviceError && device) {
+                        const pinValid = await verifyDevicePin(device as Record<string, unknown>, String(pin));
+                        if (pinValid && device.enabled) {
+                            callerRole = callerRole || 'door';
+                            callerOrgId = callerOrgId || device.organization_id;
+                            callerDeviceId = device.device_id;
+                        }
+                    }
+                }
+            } catch (_e) { /* device auth failed — continue */ }
         }
 
         let ticket;
@@ -138,7 +196,7 @@ serve(async (req) => {
             // Fetch Ticket
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
+                .select('*, events(name, timezone, date), ticket_types(valid_until, tolerance_minutes)')
                 .eq('qr_token', qr_token)
                 .single()
 
@@ -146,21 +204,8 @@ serve(async (req) => {
             ticket = data;
 
             // Check Expiration (tolerance_minutes extends the cutoff internally)
-            if (ticket.ticket_types?.valid_until) {
-                const validUntil = new Date(ticket.ticket_types.valid_until);
-                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
-                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
-                if (new Date() > effectiveCutoff) {
-                    await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
-                    return new Response(JSON.stringify({
-                        success: false,
-                        expired: true,
-                        error: `Entrada inválida. Solo era válida hasta las ${validUntil.toLocaleTimeString()}.`,
-                        valid_until: ticket.ticket_types.valid_until,
-                        ticket: { ...ticket, status: 'void' }
-                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-                }
-            }
+            const qrExpired = checkExpiration(ticket);
+            if (qrExpired) return qrExpired;
 
         }
         // 3. VALIDATE BY DOCUMENT
@@ -170,7 +215,7 @@ serve(async (req) => {
 
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
+                .select('*, events(name, timezone, date), ticket_types(valid_until, tolerance_minutes)')
                 .eq('buyer_doc', buyer_doc)
                 .eq('event_id', event_id)
                 .eq('status', 'valid')
@@ -180,22 +225,9 @@ serve(async (req) => {
             if (!data) throw new Error("Ticket not found or already used");
             ticket = data;
 
-            // Check Expiration (tolerance_minutes extends the cutoff internally)
-            if (ticket.ticket_types?.valid_until) {
-                const validUntil = new Date(ticket.ticket_types.valid_until);
-                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
-                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
-                if (new Date() > effectiveCutoff) {
-                    await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
-                    return new Response(JSON.stringify({
-                        success: false,
-                        expired: true,
-                        error: `Entrada inválida. Solo era válida hasta las ${validUntil.toLocaleTimeString()}.`,
-                        valid_until: ticket.ticket_types.valid_until,
-                        ticket: { ...ticket, status: 'void' }
-                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-                }
-            }
+            // Check Expiration
+            const docExpired = checkExpiration(ticket);
+            if (docExpired) return docExpired;
         }
         // 4. VALIDATE BY TICKET_ID (Generic for any staff manual selection)
         else if (method === 'id') {
@@ -205,29 +237,16 @@ serve(async (req) => {
 
             const { data, error } = await supabaseAdmin
                 .from('tickets')
-                .select('*, events(name), ticket_types(valid_until, tolerance_minutes)')
+                .select('*, events(name, timezone, date), ticket_types(valid_until, tolerance_minutes)')
                 .eq('id', ticket_id)
                 .single();
 
             if (error || !data) throw new Error("Ticket not found");
             ticket = data;
 
-            // Check Expiration (tolerance_minutes extends the cutoff internally)
-            if (ticket.ticket_types?.valid_until) {
-                const validUntil = new Date(ticket.ticket_types.valid_until);
-                const toleranceMs = (ticket.ticket_types.tolerance_minutes ?? 0) * 60 * 1000;
-                const effectiveCutoff = new Date(validUntil.getTime() + toleranceMs);
-                if (new Date() > effectiveCutoff) {
-                    await supabaseAdmin.from('tickets').update({ status: 'void' }).eq('id', ticket.id);
-                    return new Response(JSON.stringify({
-                        success: false,
-                        expired: true,
-                        error: `Entrada inválida. Solo era válida hasta las ${validUntil.toLocaleTimeString()}.`,
-                        valid_until: ticket.ticket_types.valid_until,
-                        ticket: { ...ticket, status: 'void' }
-                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-                }
-            }
+            // Check Expiration
+            const idExpired = checkExpiration(ticket);
+            if (idExpired) return idExpired;
         }
         else {
             throw new Error("Invalid validation method");
@@ -340,6 +359,7 @@ serve(async (req) => {
         )
 
     } catch (error) {
+        console.error('validate_ticket error:', error.message, error.stack);
         return new Response(
             JSON.stringify({ error: error.message }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }

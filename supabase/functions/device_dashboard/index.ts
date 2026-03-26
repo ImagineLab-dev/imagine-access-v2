@@ -82,7 +82,7 @@ serve(async (req) => {
         // Category counts: fetch tickets with type name, then ticket_types separately
         const { data: allTickets, error: ticketsErr } = await supabaseAdmin
             .from('tickets')
-            .select('id, type')
+            .select('id, type, promo_pack_id')
             .eq('event_id', eid)
 
         const { data: ticketTypes, error: typesErr } = await supabaseAdmin
@@ -113,8 +113,17 @@ serve(async (req) => {
         // Set of checked-in ticket IDs
         const checkedInIds = new Set(checkins.map((c: any) => c.ticket_id))
 
-        const countByCategory = (cat: string) =>
-            tickets.filter((t: any) => typeCategory[t.type] === cat).length
+        // For promo packs: count distinct packs (by promo_pack_id), not individual tickets
+        const countByCategory = (cat: string) => {
+            const matching = tickets.filter((t: any) => typeCategory[t.type] === cat)
+            if (cat === 'promo') {
+                const packIds = new Set(matching.map((t: any) => t.promo_pack_id).filter(Boolean))
+                // tickets without promo_pack_id count individually (shouldn't happen but safe)
+                const withoutPack = matching.filter((t: any) => !t.promo_pack_id).length
+                return packIds.size + withoutPack
+            }
+            return matching.length
+        }
         const enteredByCategory = (cat: string) =>
             tickets.filter((t: any) => typeCategory[t.type] === cat && checkedInIds.has(t.id)).length
 

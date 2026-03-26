@@ -15,12 +15,16 @@ class ThemeNotifier extends _$ThemeNotifier {
   }
 
   Future<void> _loadSaved() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_kThemeKey);
-    if (saved == 'light') {
-      state = ThemeMode.light;
-    } else if (saved == 'system') {
-      state = ThemeMode.system;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_kThemeKey);
+      if (saved == 'light') {
+        state = ThemeMode.light;
+      } else if (saved == 'system') {
+        state = ThemeMode.system;
+      }
+    } catch (_) {
+      // SharedPreferences not ready — keep default theme
     }
   }
 

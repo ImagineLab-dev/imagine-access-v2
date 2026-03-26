@@ -6,6 +6,20 @@ import { corsHeaders } from "../_shared/cors.ts"
 import { sendEmail } from "../_shared/email.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
+/** Extract HH:MM directly from an ISO date string (wall-clock time, no TZ conversion) */
+function parseWallClockTime(isoStr: string): string {
+    const m = String(isoStr).match(/T(\d{2}):(\d{2})/);
+    return m ? `${m[1]}:${m[2]}` : '--:--';
+}
+
+/** Format the date portion from an ISO string (weekday, day, month, year) */
+function parseWallClockDate(isoStr: string): string {
+    const m = String(isoStr).match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return 'Fecha por confirmar';
+    const d = new Date(Date.UTC(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])));
+    return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
 /** Escape HTML special characters to prevent XSS in email templates */
 function escapeHtml(str: string): string {
     return String(str)
@@ -14,6 +28,28 @@ function escapeHtml(str: string): string {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+/** Get current wall-clock time in a timezone using Deno/V8 ICU data.
+ *  Returns naive ISO string like "2026-03-25T11:38:00" (no offset). */
+function getLocalISO(tz: string, date?: Date): string {
+    const d = date ?? new Date();
+    const f = new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+    });
+    const p = Object.fromEntries(
+        f.formatToParts(d).map(x => [x.type, x.value])
+    );
+    const h = p.hour === '24' ? '00' : p.hour;
+    return `${p.year}-${p.month}-${p.day}T${h}:${p.minute}:${p.second}`;
+}
+
+/** Alias for backward-compat: get current wall-clock time */
+function getNowLocalISO(tz: string): string {
+    return getLocalISO(tz);
 }
 
 serve(async (req) => {
@@ -33,12 +69,55 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // 2. Get User Info from JWT
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) throw new Error('No authorization header');
+        // 2. Parse body first (need _auth_token before auth)
+        const body = await req.json();
+        const { event_slug, type, price, buyer_name, buyer_email, buyer_phone, buyer_doc, request_id, promo_qty } = body;
 
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
-        if (authError || !user) throw new Error('Unauthorized');
+        // 3. Get User Info from JWT (with fallback for expired tokens)
+        // Try body token first (Flutter passes it to survive session clearing), then header
+        const bodyToken = body._auth_token;
+        const authHeader = req.headers.get('Authorization');
+        const headerToken = authHeader?.replace('Bearer ', '') || null;
+        const token = bodyToken || headerToken;
+        if (!token) throw new Error('Sesión no encontrada. Por favor, cierre sesión y vuelva a iniciar.');
+
+        let user: any = null;
+
+        // Try official verification first
+        const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (!authError && authData?.user) {
+            user = authData.user;
+        } else {
+            // Fallback: decode JWT payload to extract user identity
+            try {
+                const payloadB64 = token.split('.')[1];
+                if (!payloadB64) throw new Error('Invalid token format');
+                const payload = JSON.parse(atob(payloadB64));
+                const userId = payload.sub;
+                if (!userId) throw new Error('No sub in token');
+
+                // Verify user exists in DB using admin client
+                const { data: profile } = await supabaseAdmin
+                    .from('users_profile')
+                    .select('user_id, role, organization_id')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (!profile) throw new Error('User not found');
+
+                user = {
+                    id: userId,
+                    app_metadata: {
+                        role: profile.role,
+                        organization_id: profile.organization_id,
+                    },
+                };
+                console.log(`[auth] Used expired JWT fallback for user ${userId}, role=${profile.role}`);
+            } catch (fallbackErr) {
+                console.error('[auth] JWT fallback failed:', fallbackErr.message);
+                throw new Error('Sesión expirada. Por favor, cierre sesión y vuelva a iniciar.');
+            }
+        }
 
         const userRole = user.app_metadata?.role || 'rrpp';
         const isAdmin = userRole === 'admin';
@@ -47,9 +126,6 @@ serve(async (req) => {
         if (userRole === 'door') {
             throw new Error('Forbidden: door role cannot create tickets');
         }
-
-        // 3. Get Input
-        const { event_slug, type, price, buyer_name, buyer_email, buyer_phone, buyer_doc, request_id, promo_qty } = await req.json()
 
         // 3b. Input validation
         if (!event_slug || typeof event_slug !== 'string') {
@@ -76,7 +152,7 @@ serve(async (req) => {
         // 4. Get Event
         const { data: event, error: eventError } = await supabaseAdmin
             .from('events')
-            .select('id, name, venue, address, city, date, organization_id')
+            .select('id, name, venue, address, city, date, organization_id, timezone')
             .eq('slug', event_slug)
             .single()
 
@@ -93,10 +169,9 @@ serve(async (req) => {
             callerOrgId = profile?.organization_id
         }
 
-        if (!callerOrgId) {
-            throw new Error('Forbidden: caller has no organization assigned')
-        }
-        if (event.organization_id && event.organization_id !== callerOrgId) {
+        // Org check: if both caller and event have org_id, they must match.
+        // Allow legacy events (no organization_id) and callers without org.
+        if (callerOrgId && event.organization_id && event.organization_id !== callerOrgId) {
             throw new Error('Event does not belong to your organization')
         }
 
@@ -138,10 +213,15 @@ serve(async (req) => {
         }
 
         // 5b. Enforce valid_until cutoff — block ticket creation after expiry
+        // valid_until is stored as wall-clock time (no UTC conversion needed)
         if (validUntil) {
-            const validUntilDate = new Date(validUntil);
-            if (new Date() > validUntilDate) {
-                throw new Error('Invitación expirada. Solo era válida hasta las ' + validUntilDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + '.');
+            const eventTZ = event.timezone || 'America/Asuncion';
+            const nowLocalISO = getNowLocalISO(eventTZ);
+            // Strip any trailing offset (+00:00 or Z) to get naive wall-clock ISO
+            const vuWallClock = String(validUntil).replace(/([+-]\d{2}(:\d{2})?|Z)$/, '');
+            console.log(`[valid_until] eventTZ=${eventTZ} now=${nowLocalISO} valid_until_wall=${vuWallClock}`);
+            if (nowLocalISO > vuWallClock) {
+                throw new Error('Invitación expirada. Solo era válida hasta las ' + parseWallClockTime(vuWallClock) + ' hs.');
             }
         }
 
@@ -212,9 +292,9 @@ serve(async (req) => {
         }
 
         // 7. Send Email (single email with all QR codes)
-        const eventDate = new Date(event.date);
-        const formattedDate = eventDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const formattedTime = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        // event.date is stored as wall-clock time — read it directly
+        const formattedDate = parseWallClockDate(event.date);
+        const formattedTime = parseWallClockTime(event.date);
 
         // Build QR sections for email
         const qrSections = tickets.map((t, idx) => `
@@ -258,7 +338,7 @@ serve(async (req) => {
                                 <td colspan="2" style="padding: 12px 0 5px 0; color: #777; font-size: 13px;">VÁLIDA HASTA</td>
                             </tr>
                             <tr>
-                                <td colspan="2" style="padding:0; color: #c0392b; font-weight: bold; font-size: 16px;">⏰ ${new Date(validUntil).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs</td>
+                                <td colspan="2" style="padding:0; color: #c0392b; font-weight: bold; font-size: 16px;">⏰ ${parseWallClockTime(validUntil)} hs</td>
                             </tr>` : ''}
                         </table>
                     </div>
@@ -274,24 +354,26 @@ serve(async (req) => {
         let email_sent = false;
         let email_error: string | null = null;
 
-        try {
-            const attachments = qrBuffers.map((buf, idx) => ({
-                filename: `ticket-qr-${idx + 1}.png`,
-                content: buf,
-                cid: `qrcode_${idx}`,
-                contentType: 'image/png'
-            }));
-            const subject = ticketCount > 1
-                ? `Tus ${ticketCount} entradas para ${event.name}`
-                : `Tu entrada para ${event.name}`;
-            await sendEmail(buyer_email, subject, emailHtml, attachments);
-            // Mark all tickets as email sent
-            const ticketIds = tickets.map((t: any) => t.id);
-            await supabaseAdmin.from('tickets').update({ email_sent_at: new Date() }).in('id', ticketIds);
-            email_sent = true;
-        } catch (e) {
-            console.error("Email error:", e);
-            email_error = e instanceof Error ? e.message : String(e);
+        if (buyer_email) {
+            try {
+                const attachments = qrBuffers.map((buf, idx) => ({
+                    filename: `ticket-qr-${idx + 1}.png`,
+                    content: buf,
+                    cid: `qrcode_${idx}`,
+                    contentType: 'image/png'
+                }));
+                const subject = ticketCount > 1
+                    ? `Tus ${ticketCount} entradas para ${event.name}`
+                    : `Tu entrada para ${event.name}`;
+                await sendEmail(buyer_email, subject, emailHtml, attachments);
+                // Mark all tickets as email sent
+                const ticketIds = tickets.map((t: any) => t.id);
+                await supabaseAdmin.from('tickets').update({ email_sent_at: new Date() }).in('id', ticketIds);
+                email_sent = true;
+            } catch (e) {
+                console.error("Email error:", e);
+                email_error = e instanceof Error ? e.message : String(e);
+            }
         }
 
         // Return first ticket for backward compat, plus batch info
@@ -307,7 +389,7 @@ serve(async (req) => {
         )
 
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", error?.message);
         return new Response(JSON.stringify({ error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
     }
 })

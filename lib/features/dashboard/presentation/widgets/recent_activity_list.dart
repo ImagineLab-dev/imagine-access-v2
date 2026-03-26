@@ -53,10 +53,11 @@ class RecentActivityList extends ConsumerWidget {
                 final ticket = act['tickets'];
                 final buyer =
                     ticket != null ? ticket['buyer_name'] ?? l10n.unknown : l10n.unknown;
-                final result = act['result'] as String;
+                final result = (act['result'] as String?) ?? '';
                 final resultLower = result.toLowerCase();
                 final isSuccess = resultLower == 'allowed' || resultLower == 'valid' || resultLower == 'granted';
-                final time = DateTime.parse(act['scanned_at']).toLocal();
+                final scannedAt = act['scanned_at'] as String?;
+                final time = scannedAt != null ? DateTime.parse(scannedAt).toLocal() : DateTime.now();
                 final timeStr = "${time.hour}:${time.minute.toString().padLeft(2, '0')}";
 
                 return ListTile(

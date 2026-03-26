@@ -2656,6 +2656,12 @@ abstract class AppLocalizations {
   /// **'Offline mode. Will sync on reconnect.'**
   String get offlineWillSync;
 
+  /// No description provided for @offlineOpsDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} offline operation(s) could not be synced and were discarded.'**
+  String offlineOpsDropped(int count);
+
   /// No description provided for @enablePromoPack.
   ///
   /// In en, this message translates to:

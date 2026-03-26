@@ -105,8 +105,9 @@ class AdminDashboardView extends ConsumerWidget {
         GestureDetector(
           onTap: () {
             final selectedEvent = ref.read(selectedEventProvider);
-            if (selectedEvent != null) {
-              context.push('/stats/${selectedEvent['id']}');
+            final eventId = selectedEvent?['id'] as String?;
+            if (eventId != null && eventId.isNotEmpty) {
+              context.push('/stats/$eventId');
             }
           },
           child: Container(

@@ -29,7 +29,8 @@ class DashboardRepository {
         params: {'p_event_id': eventId},
       );
       if (kDebugMode) dev.log('get_staff_dashboard response type: ${response.runtimeType}, value: $response', name: 'DashboardRepo');
-      final mapped = Map<String, dynamic>.from(response);
+      if (response == null) return {};
+      final mapped = Map<String, dynamic>.from(response as Map);
       _cacheStore.set(cacheKey, mapped, ttl: const Duration(minutes: 1));
       return mapped;
     } catch (e, st) {
@@ -87,6 +88,7 @@ class DashboardRepository {
         params: {'p_event_id': eventId},
       );
       if (kDebugMode) dev.log('getStats response: $response', name: 'DashboardRepository');
+      if (response == null) return {};
       final mapped = Map<String, dynamic>.from(response as Map);
       _cacheStore.set(cacheKey, mapped, ttl: const Duration(minutes: 1));
       return mapped;

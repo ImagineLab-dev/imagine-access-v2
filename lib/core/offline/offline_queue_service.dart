@@ -22,12 +22,14 @@ class QueueProcessResult {
   final int succeeded;
   final int failed;
   final int remaining;
+  final int dropped;
 
   const QueueProcessResult({
     required this.processed,
     required this.succeeded,
     required this.failed,
     required this.remaining,
+    this.dropped = 0,
   });
 }
 
@@ -88,6 +90,7 @@ class OfflineQueueService {
     final nextQueue = <PendingOperation>[];
     int succeeded = 0;
     int failed = 0;
+    int dropped = 0;
 
     for (final op in current) {
       try {
@@ -104,6 +107,8 @@ class OfflineQueueService {
         final retried = op.copyWith(retryCount: op.retryCount + 1);
         if (retried.retryCount < _maxRetries) {
           nextQueue.add(retried);
+        } else {
+          dropped++;
         }
       } catch (e, stack) {
         failed++;
@@ -112,6 +117,8 @@ class OfflineQueueService {
 
         if (networkError.isRetryable && retried.retryCount < _maxRetries) {
           nextQueue.add(retried);
+        } else {
+          dropped++;
         }
         // Non-retryable errors are dropped (not re-queued)
 
@@ -132,6 +139,7 @@ class OfflineQueueService {
       succeeded: succeeded,
       failed: failed,
       remaining: nextQueue.length,
+      dropped: dropped,
     );
   }
 

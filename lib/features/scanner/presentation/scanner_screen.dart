@@ -60,6 +60,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_isProcessing) return;
+    _isProcessing = true; // Set synchronously before async gap
 
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {

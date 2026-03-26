@@ -161,6 +161,7 @@ class EventRepository {
     required DateTime date,
     required String slug,
     required String currency,
+    String timezone = 'America/Asuncion',
     String? organizationId,
   }) async {
     final currentUser = _safeCurrentUser();
@@ -195,6 +196,7 @@ class EventRepository {
       'date': date.toIso8601String(),
       'slug': slug,
       'currency': currency,
+      'timezone': timezone,
       'is_active': true,
       'is_archived': false,
       'organization_id': resolvedOrganizationId,
@@ -259,6 +261,7 @@ class EventRepository {
     DateTime? validUntil,
     int toleranceMinutes = 0,
     String? color,
+    int? promoQty, // for promo category: number of tickets in the pack
   }) async {
     await _client.from('ticket_types').insert({
       'event_id': eventId,
@@ -270,6 +273,7 @@ class EventRepository {
       'tolerance_minutes': toleranceMinutes,
       'color': color,
       'is_active': true,
+      if (promoQty != null && promoQty > 1) 'promo_qty': promoQty,
     });
     _cacheStore.invalidate('ticket_types:$eventId');
   }

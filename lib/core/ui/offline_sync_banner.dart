@@ -26,9 +26,17 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
 
   Future<void> _trySyncNow() async {
     try {
-      await ref
+      final result = await ref
           .read(offlineQueueProvider)
           .processQueue(client: Supabase.instance.client);
+      if (result.dropped > 0 && mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.offlineOpsDropped(result.dropped)),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 5),
+        ));
+      }
     } catch (_) {}
     ref.invalidate(offlineQueueCountProvider);
   }

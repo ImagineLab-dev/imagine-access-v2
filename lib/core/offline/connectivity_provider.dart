@@ -7,10 +7,18 @@ import 'offline_queue_service.dart';
 
 final connectivityStatusProvider =
     StreamProvider<ConnectivityResult>((ref) {
-  return Connectivity()
-      .onConnectivityChanged
-      .map((results) => results.isNotEmpty ? results.first : ConnectivityResult.none)
-      .distinct();
+  try {
+    return Connectivity()
+        .onConnectivityChanged
+        .map((results) => results.isNotEmpty ? results.first : ConnectivityResult.none)
+        .distinct()
+        .handleError((error) {
+      // Silently handle connectivity stream errors on iOS
+    });
+  } catch (e) {
+    // If stream creation fails, return a single-value stream with 'none'
+    return Stream.value(ConnectivityResult.none);
+  }
 });
 
 /// Watches connectivity and auto-processes offline queue when connection is restored

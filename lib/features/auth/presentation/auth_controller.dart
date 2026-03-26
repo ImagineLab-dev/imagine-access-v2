@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,8 +50,13 @@ final userOrganizationProvider =
 
 class OrganizationNotifier extends StateNotifier<UserOrganization?> {
   OrganizationNotifier() : super(null) {
-    _loadOrganization();
+    _loadOrganization().then((_) => _ready.complete()).catchError((e) {
+      if (!_ready.isCompleted) _ready.complete();
+    });
   }
+
+  final Completer<void> _ready = Completer<void>();
+  Future<void> get ready => _ready.future;
 
   static const String _orgIdKey = 'user_org_id';
   static const String _orgNameKey = 'user_org_name';
@@ -85,8 +91,13 @@ class OrganizationNotifier extends StateNotifier<UserOrganization?> {
 
 class DeviceNotifier extends StateNotifier<DeviceSession?> {
   DeviceNotifier() : super(null) {
-    _loadSession();
+    _loadSession().then((_) => _ready.complete()).catchError((e) {
+      if (!_ready.isCompleted) _ready.complete();
+    });
   }
+
+  final Completer<void> _ready = Completer<void>();
+  Future<void> get ready => _ready.future;
 
   static const String _deviceIdKey = 'auth_device_id';
   static const String _deviceAliasKey = 'auth_device_alias';
@@ -274,12 +285,16 @@ class AuthController extends StateNotifier<bool> {
     }
 
     final data = Map<String, dynamic>.from(result.data as Map);
-    final org = Map<String, dynamic>.from(data['organization'] as Map);
+    final rawOrg = data['organization'];
+    if (rawOrg == null || rawOrg is! Map) {
+      throw const AuthException('Organization data missing from server response');
+    }
+    final org = Map<String, dynamic>.from(rawOrg);
 
     await ref.read(userOrganizationProvider.notifier).setOrganization(
-          org['id'] as String,
-          org['name'] as String,
-          org['slug'] as String,
+          (org['id'] as String?) ?? (throw const AuthException('Organization ID missing')),
+          (org['name'] as String?) ?? 'Organization',
+          (org['slug'] as String?) ?? 'org',
         );
 
     final refreshed = await client.auth.refreshSession();

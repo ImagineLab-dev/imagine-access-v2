@@ -27,7 +27,7 @@ class StatsScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(eventStatsProvider),
+        onRefresh: () async => ref.invalidate(eventStatsProvider(eventId)),
         child: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) {
@@ -193,7 +193,13 @@ class StatsScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 24, 24, 8),
       child: LineChart(
         LineChartData(
-          gridData: const FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 1),
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: _getSalesMax(data) / 4,
+          ),
+          minY: 0,
+          maxY: _getSalesMax(data),
           titlesData: FlTitlesData(
             show: true,
             bottomTitles: AxisTitles(
@@ -244,6 +250,17 @@ class StatsScreen extends ConsumerWidget {
       if (((item[key] as num?) ?? 0).toDouble() > max) max = ((item[key] as num?) ?? 0).toDouble();
     }
     return max == 0 ? 10 : max;
+  }
+
+  double _getSalesMax(List data) {
+    if (data.isEmpty) return 10;
+    double max = 0;
+    for (var item in data) {
+      final v = ((item['revenue'] as num?) ?? 0).toDouble();
+      if (v > max) max = v;
+    }
+    final result = max == 0 ? 10.0 : max * 1.2;
+    return result;
   }
 
   Color _getColor(int index) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
 import 'dart:developer' as dev;
@@ -113,11 +114,28 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
   String _selectedFilter = 'all';
   final _searchController = TextEditingController();
   final _scrollController = ScrollController();
+  bool _deepLinkHandled = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_deepLinkHandled) {
+      _deepLinkHandled = true;
+      final extra = GoRouterState.of(context).extra;
+      if (extra is Map) {
+        final q = extra['searchQuery'] as String?;
+        if (q != null && q.isNotEmpty) {
+          _searchQuery = q;
+          _searchController.text = q;
+        }
+      }
+    }
   }
 
   void _onScroll() {
@@ -182,13 +200,18 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                       (t['buyer_phone'] ?? '')
                           .toString()
                           .toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ||
+                      (t['id'] ?? '')
+                          .toString()
+                          .toLowerCase()
                           .contains(_searchQuery.toLowerCase());
 
                   final hasCheckins =
                       (t['checkins'] as List?)?.isNotEmpty ?? false;
-                  final currentStatus = hasCheckins
-                      ? 'used'
-                      : (t['status'] ?? 'valid').toString().toLowerCase();
+                  final rawStatus = (t['status'] ?? 'valid').toString().toLowerCase();
+                  final currentStatus = rawStatus == 'void'
+                      ? 'void'
+                      : (hasCheckins ? 'used' : rawStatus);
 
                   final matchFilter = _selectedFilter == 'all' ||
                       currentStatus == _selectedFilter;

@@ -40,7 +40,8 @@ class EventReportService {
     final raw = await _client.rpc('export_event_full', params: {
       'p_event_id': eventId,
     });
-    final data = Map<String, dynamic>.from(raw);
+    if (raw == null) throw Exception('export_event_full returned null');
+    final data = Map<String, dynamic>.from(raw as Map);
     final eventInfo = Map<String, dynamic>.from(data['event'] ?? {});
     final tickets =
         List<Map<String, dynamic>>.from(data['tickets'] ?? []);

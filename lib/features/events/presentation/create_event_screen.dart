@@ -20,6 +20,16 @@ import 'event_state.dart'; // To access selectedEventProvider
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../core/utils/error_handler.dart';
 
+// ─── Date helpers ───
+// Parse a stored date string back to a local DateTime (wall-clock time).
+// Dates are stored as wall-clock time (no UTC conversion), so we just parse
+// and treat the result as local regardless of the offset the DB appends.
+DateTime _parseWallClock(String isoStr) {
+    final dt = DateTime.parse(isoStr);
+    // Return as local DateTime with the same year/month/day/hour/minute
+    return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute);
+}
+
 class CreateEventScreen extends ConsumerStatefulWidget {
   final String? eventId; // If null, create mode. If set, edit mode.
   final Map<String, dynamic>? initialData;
@@ -43,6 +53,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 20, minute: 0);
   String _currency = 'PYG';
+  String _timezone = 'America/Asuncion';
 
   List<Map<String, dynamic>> _ticketTypes = [];
   final List<String> _deletedTicketTypeIds = []; // Track deletions
@@ -69,10 +80,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     _addressCtrl = TextEditingController(text: data['address']);
     _cityCtrl = TextEditingController(text: data['city']);
     _currency = data['currency'] ?? 'PYG';
+    _timezone = data['timezone'] ?? 'America/Asuncion';
 
     if (data['date'] != null) {
-      _selectedDate = DateTime.parse(data['date']);
-      _selectedTime = TimeOfDay.fromDateTime(_selectedDate.toLocal());
+      final parsed = _parseWallClock(data['date']);
+      _selectedDate = parsed;
+      _selectedTime = TimeOfDay.fromDateTime(parsed);
     }
 
     // If editing, we would fetch types here. For now start empty or from passed data.
@@ -99,8 +112,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
             (t) => t!['category'] == 'invitation',
             orElse: () => null);
         if (invType != null && invType['valid_until'] != null) {
-          final dt = DateTime.parse(invType['valid_until']).toLocal();
-          _invitationValidUntil = TimeOfDay.fromDateTime(dt);
+          final dtRaw = _parseWallClock(invType['valid_until']);
+          _invitationValidUntil = TimeOfDay.fromDateTime(dtRaw);
         }
         if (invType != null && invType['tolerance_minutes'] != null) {
           _invitationToleranceMinutes = invType['tolerance_minutes'] as int;
@@ -173,8 +186,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Combine Date & Time
-      final fullDate = DateTime(_selectedDate.year, _selectedDate.month,
+      // Combine Date & Time — use DateTime.utc so the Z suffix forces PostgreSQL
+      // to store exactly this wall-clock hour regardless of DB timezone setting.
+      final fullDate = DateTime.utc(_selectedDate.year, _selectedDate.month,
           _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
 
       String newEventId;
@@ -208,6 +222,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 slug: baseSlug,
                 date: fullDate,
                 currency: _currency,
+                timezone: _timezone,
                 organizationId: orgId,
               );
         } on PostgrestException catch (e) {
@@ -264,6 +279,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
           'slug': _slugCtrl.text,
           'date': fullDate.toIso8601String(),
           'currency': _currency,
+          'timezone': _timezone,
         });
         newEventId = widget.eventId!;
       }
@@ -302,7 +318,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
 
         DateTime? validUntilDate;
         if (category == 'invitation' && _invitationValidUntil != null) {
-          validUntilDate = DateTime(
+          // Use DateTime.utc so toIso8601String() emits Z suffix → PostgreSQL
+          // stores exactly this wall-clock hour regardless of DB timezone.
+          validUntilDate = DateTime.utc(
               _selectedDate.year,
               _selectedDate.month,
               _selectedDate.day,
@@ -397,21 +415,15 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
             'promo_qty': _promoQty,
           });
         } else {
+          // Atomic creation: promoQty is set in the initial INSERT (no second round-trip)
           await ref.read(eventRepositoryProvider).createTicketType(
               eventId: newEventId,
               name: l10n.ticketTypePromo,
               price: _promoPrice,
               currency: _currency,
               category: 'promo',
-              color: '#F97316');
-          // Update promo_qty separately since createTicketType doesn't have that param
-          final types = await ref.read(ticketRepositoryProvider).getTicketTypes(newEventId);
-          final promoRow = types.firstWhere((t) => t['category'] == 'promo', orElse: () => <String, dynamic>{});
-          if (promoRow.isNotEmpty) {
-            await ref.read(eventRepositoryProvider).updateTicketType(promoRow['id'], {
-              'promo_qty': _promoQty,
-            });
-          }
+              color: '#F97316',
+              promoQty: _promoQty);
         }
       } else {
         await deleteSpecialType('promo');
@@ -672,6 +684,75 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                     ),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Timezone
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'ZONA HORARIA',
+                  style: TextStyle(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+              DropdownButtonFormField<String>(
+                key: ValueKey(_timezone),
+                initialValue: _timezone,
+                dropdownColor: theme.brightness == Brightness.dark
+                    ? Colors.black87
+                    : Colors.white,
+                style: TextStyle(
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 16),
+                  fillColor: theme.brightness == Brightness.dark
+                      ? AppTheme.surfaceColor.withValues(alpha: 0.5)
+                      : AppTheme.lightInput,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                        color: (theme.brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withValues(alpha: 0.1)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                        color: (theme.brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withValues(alpha: 0.1)),
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'America/Asuncion', child: Text('Paraguay (GMT-3)')),
+                  DropdownMenuItem(value: 'America/Argentina/Buenos_Aires', child: Text('Argentina (GMT-3)')),
+                  DropdownMenuItem(value: 'America/Sao_Paulo', child: Text('Brasil (GMT-3)')),
+                  DropdownMenuItem(value: 'America/Santiago', child: Text('Chile (GMT-3/-4)')),
+                  DropdownMenuItem(value: 'America/Bogota', child: Text('Colombia (GMT-5)')),
+                  DropdownMenuItem(value: 'America/Mexico_City', child: Text('México (GMT-6)')),
+                  DropdownMenuItem(value: 'America/New_York', child: Text('Este EEUU (GMT-4/-5)')),
+                  DropdownMenuItem(value: 'America/Los_Angeles', child: Text('Oeste EEUU (GMT-7/-8)')),
+                  DropdownMenuItem(value: 'Europe/Madrid', child: Text('España (GMT+1/+2)')),
+                  DropdownMenuItem(value: 'Europe/London', child: Text('Reino Unido (GMT+0/+1)')),
+                ],
+                onChanged: (v) => setState(() => _timezone = v!),
               ),
 
               const SizedBox(height: 32),

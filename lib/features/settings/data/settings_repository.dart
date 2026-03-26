@@ -148,10 +148,11 @@ class SettingsRepository {
           .update({'role': role})
           .eq('user_id', userId);
 
-      // Scope to current organization to prevent cross-tenant changes
-      if (orgId != null && orgId.isNotEmpty) {
-        query = query.eq('organization_id', orgId);
+      // Scope to current organization — org filter is mandatory, never omit it
+      if (orgId == null || orgId.isEmpty) {
+        throw Exception('No se pudo determinar la organización actual');
       }
+      query = query.eq('organization_id', orgId);
 
       await query;
       _cacheStore.invalidate('settings:users');

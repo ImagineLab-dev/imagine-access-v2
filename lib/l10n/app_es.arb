@@ -572,6 +572,8 @@
   "offlinePendingOps": "Modo offline. {count} operaciones pendientes.",
   "@offlinePendingOps": {"placeholders": {"count": {"type": "int"}}},
   "offlineWillSync": "Modo offline. Sincronizará al reconectar.",
+  "offlineOpsDropped": "{count} operación(es) no pudieron sincronizarse y fueron descartadas.",
+  "@offlineOpsDropped": {"placeholders": {"count": {"type": "int"}}},
   "enablePromoPack": "Habilitar Pack Promo",
   "promoPackSubtitle": "Crea un tipo de ticket promocional con precio y cantidad configurables",
   "promoPrice": "Precio promo",

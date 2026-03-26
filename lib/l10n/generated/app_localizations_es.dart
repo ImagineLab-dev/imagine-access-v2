@@ -1371,6 +1371,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get offlineWillSync => 'Modo offline. Sincronizará al reconectar.';
 
   @override
+  String offlineOpsDropped(int count) {
+    return '$count operación(es) no pudieron sincronizarse y fueron descartadas.';
+  }
+
+  @override
   String get enablePromoPack => 'Habilitar Pack Promo';
 
   @override

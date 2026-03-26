@@ -6,7 +6,6 @@ import '../../../core/ui/glass_card.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_roles.dart';
 import '../data/event_repository.dart';
-import '../presentation/create_event_screen.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'event_state.dart';
 
@@ -39,7 +38,7 @@ class AdminEventList extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final event = events[index];
-        final date = DateTime.parse(event['date']);
+        final date = DateTime.parse((event['date'] as String?) ?? DateTime.now().toIso8601String());
         final isActive = event['is_active'] as bool? ?? false;
 
         final cardContent = GlassCard(
@@ -96,10 +95,8 @@ class AdminEventList extends ConsumerWidget {
                   content: Text('${l10n.selected}: ${event['name']}')));
               context.pop();
             } else if (action == 'edit' && context.mounted) {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(
-                      builder: (_) => CreateEventScreen(
-                          eventId: event['id'], initialData: event)))
+              context
+                  .push('/create_event', extra: Map<String, dynamic>.from(event))
                   .then((_) => ref.invalidate(eventsProvider));
             } else if (action == 'restore' && context.mounted) {
                try {

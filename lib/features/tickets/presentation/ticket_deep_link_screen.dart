@@ -31,7 +31,7 @@ class _TicketDeepLinkScreenState extends ConsumerState<TicketDeepLinkScreen> {
           .maybeSingle();
 
       if (!mounted) return;
-      context.go('/tickets');
+      context.go('/tickets', extra: {'searchQuery': widget.ticketId});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.ticketLoadedFromDeepLink)),
       );

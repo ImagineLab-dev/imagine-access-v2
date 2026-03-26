@@ -21,6 +21,7 @@ import '../../settings/data/settings_repository.dart';
 final ticketTypeProvider = StateProvider<String?>((ref) => null);
 final ticketPriceProvider = StateProvider<double>((ref) => 0); // Default price
 final ticketTypeDataProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+final ticketQuantityProvider = StateProvider<int>((ref) => 1); // For promo packs
 
 class CreateTicketWizard extends ConsumerStatefulWidget {
   const CreateTicketWizard({super.key});
@@ -95,19 +96,11 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       final typeData = ref.read(ticketTypeDataProvider);
       final isPromo = typeData?['category'] == 'promo';
 
-      // For promo, fetch fresh promo_qty from DB to avoid stale cache
-      int promoQty = 1;
-      if (isPromo) {
-        ref.invalidate(ticketTypesProvider(selectedEvent['id'] ?? ''));
-        final freshTypes = await ref.read(ticketRepositoryProvider)
-            .getTicketTypes(selectedEvent['id'] ?? '');
-        final freshPromo = freshTypes.cast<Map<String, dynamic>?>().firstWhere(
-            (t) => t!['category'] == 'promo', orElse: () => null);
-        if (freshPromo != null) {
-          promoQty = (freshPromo['promo_qty'] as num?)?.toInt() ?? 1;
-        }
-        if (promoQty < 1) promoQty = 1;
-      }
+      // For promo packs: qty comes from ticket_types.promo_qty (set by admin, fixed).
+      // price IS the pack price (e.g. 165,000 for 3 tickets) — never multiply by qty.
+      final promoQty = isPromo
+          ? ((typeData?['promo_qty'] as num?)?.toInt() ?? 1).clamp(1, 20)
+          : 1;
 
       if (isPromo && promoQty > 1 && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -117,10 +110,11 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       }
 
       // Single call: Edge Function creates N tickets + sends 1 email with all QRs
+      // price = pack price (unchanged); promoQty drives how many tickets are created
       final createdTicket = await ref.read(ticketRepositoryProvider).createTicket(
           eventSlug: selectedEvent['slug'],
           type: type,
-          price: price,
+          price: price, // pack price — NOT multiplied by promoQty
           buyerName: _nameController.text.trim(),
           buyerEmail: _emailController.text.trim(),
           buyerDoc: _docController.text.trim(),
@@ -177,7 +171,7 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(l10n.eventSaveError),
+            content: Text(e.toString()),
             backgroundColor: AppTheme.errorColor));
       }
     } finally {
@@ -223,6 +217,7 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
                       ref.read(ticketTypeProvider.notifier).state = null;
                       ref.read(ticketPriceProvider.notifier).state = 0;
                       ref.read(ticketTypeDataProvider.notifier).state = null;
+                      ref.read(ticketQuantityProvider.notifier).state = 1;
                       setState(() {
                         // Reset
                         _currentStep = 0;
@@ -644,6 +639,7 @@ class _TypeChip extends StatelessWidget {
               ref.read(ticketTypeProvider.notifier).state = dbName;
               ref.read(ticketPriceProvider.notifier).state = price;
               ref.read(ticketTypeDataProvider.notifier).state = typeData;
+              ref.read(ticketQuantityProvider.notifier).state = 1;
             }
           : null,
       child: AnimatedContainer(
@@ -706,7 +702,7 @@ class _TypeChip extends StatelessWidget {
   }
 }
 
-class _StepTwoDetails extends StatelessWidget {
+class _StepTwoDetails extends ConsumerWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
   final TextEditingController phoneController;
@@ -721,8 +717,12 @@ class _StepTwoDetails extends StatelessWidget {
       required this.formKey});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final typeData = ref.watch(ticketTypeDataProvider);
+    final selectedEvent = ref.watch(selectedEventProvider);
+    final isPromo = typeData?['category'] == 'promo';
     return Form(
       key: formKey,
       child: Column(
@@ -764,6 +764,36 @@ class _StepTwoDetails extends StatelessWidget {
                 if (v.length < 3) return l10n.required;
                 return null;
               }),
+          // Info banner for promo packs: shows how many tickets will be sent (read-only)
+          if (isPromo) ...[const SizedBox(height: 16),
+            Builder(builder: (context) {
+              final n = (typeData?['promo_qty'] as num?)?.toInt() ?? 1;
+              final packPrice = (typeData?['price'] as num?)?.toDouble() ?? 0;
+              final currency = selectedEvent?['currency']?.toString() ?? 'PYG';
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF97316).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.local_offer, color: Color(0xFFF97316), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$n ${l10n.tickets}  ·  ${CurrencyHelper.format(packPrice, currency)}',
+                        style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),],
         ],
       ),
     );
@@ -786,8 +816,12 @@ class _StepThreeConfirm extends StatelessWidget {
     final type = ref.watch(ticketTypeProvider);
     final price = ref.watch(ticketPriceProvider);
     final selectedEvent = ref.watch(selectedEventProvider);
+    final typeData = ref.watch(ticketTypeDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+    final isPromo = typeData?['category'] == 'promo';
+    final promoQty = isPromo ? ((typeData?['promo_qty'] as num?)?.toInt() ?? 1) : 1;
+    final currency = selectedEvent?['currency']?.toString() ?? 'PYG';
 
     return Column(
       children: [
@@ -802,7 +836,11 @@ class _StepThreeConfirm extends StatelessWidget {
         const SizedBox(height: 24),
         _rowInfo(l10n.event, selectedEvent?['name'] ?? 'N/A', isDark),
         _rowInfo(l10n.ticketType, type ?? 'N/A', isDark),
-        _rowInfo(l10n.price, CurrencyHelper.format(price, selectedEvent?['currency']?.toString() ?? 'PYG'), isDark),
+        // For promo packs: show tickets included and the pack price (NOT qty × price)
+        if (isPromo && promoQty > 1)
+          _rowInfo(l10n.quantity, '$promoQty ${l10n.tickets}', isDark),
+        _rowInfo(l10n.price, CurrencyHelper.format(price, currency), isDark,
+            bold: isPromo),
         const Divider(height: 32),
         _rowInfo(l10n.guest, name, isDark),
         _rowInfo(l10n.email, email, isDark),
