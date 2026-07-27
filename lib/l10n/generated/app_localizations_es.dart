@@ -1515,4 +1515,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hidePassword => 'Ocultar contraseña';
+
+  @override
+  String get eventArtwork => 'Arte del evento';
+
+  @override
+  String get eventArtworkHint =>
+      'Se muestra junto al QR en el correo del ticket';
+
+  @override
+  String get uploadImage => 'Subir imagen';
+
+  @override
+  String get removeImage => 'Quitar imagen';
+
+  @override
+  String get imageTooLarge => 'La imagen supera los 2 MB';
+
+  @override
+  String get imageUploadError => 'No se pudo subir la imagen';
 }

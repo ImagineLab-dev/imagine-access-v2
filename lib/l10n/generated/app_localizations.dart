@@ -2931,6 +2931,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide password'**
   String get hidePassword;
+
+  /// No description provided for @eventArtwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Event artwork'**
+  String get eventArtwork;
+
+  /// No description provided for @eventArtworkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown next to the QR code in the ticket email'**
+  String get eventArtworkHint;
+
+  /// No description provided for @uploadImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload image'**
+  String get uploadImage;
+
+  /// No description provided for @removeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get removeImage;
+
+  /// No description provided for @imageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Image exceeds 2 MB'**
+  String get imageTooLarge;
+
+  /// No description provided for @imageUploadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not upload image'**
+  String get imageUploadError;
 }
 
 class _AppLocalizationsDelegate

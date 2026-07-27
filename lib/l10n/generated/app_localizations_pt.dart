@@ -1516,4 +1516,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get hidePassword => 'Ocultar senha';
+
+  @override
+  String get eventArtwork => 'Arte do evento';
+
+  @override
+  String get eventArtworkHint => 'Exibido ao lado do QR no e-mail do ingresso';
+
+  @override
+  String get uploadImage => 'Enviar imagem';
+
+  @override
+  String get removeImage => 'Remover imagem';
+
+  @override
+  String get imageTooLarge => 'A imagem excede 2 MB';
+
+  @override
+  String get imageUploadError => 'Nao foi possivel enviar a imagem';
 }

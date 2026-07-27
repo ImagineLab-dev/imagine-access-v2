@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts"
 import QRCode from "npm:qrcode@1.5.3"
 import { corsHeaders } from "../_shared/cors.ts"
+import { bloqueEntrada, estilosEntrada } from "../_shared/ticket_layout.ts"
 import { sendEmail } from "../_shared/email.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
@@ -152,7 +153,7 @@ serve(async (req) => {
         // 4. Get Event
         const { data: event, error: eventError } = await supabaseAdmin
             .from('events')
-            .select('id, name, venue, address, city, date, organization_id, timezone')
+            .select('id, name, venue, address, city, date, organization_id, timezone, image_url')
             .eq('slug', event_slug)
             .single()
 
@@ -296,17 +297,35 @@ serve(async (req) => {
         const formattedDate = parseWallClockDate(event.date);
         const formattedTime = parseWallClockTime(event.date);
 
-        // Build QR sections for email
-        const qrSections = tickets.map((t, idx) => `
-            <div style="text-align: center; padding: 20px; background: #fff; margin: 20px 0; border: 1px dashed #ccc; border-radius: 12px;">
-                ${ticketCount > 1 ? `<p style="color: #000; font-weight: bold; font-size: 14px; margin-bottom: 10px;">ENTRADA ${idx + 1} de ${ticketCount}</p>` : ''}
-                <img src="cid:qrcode_${idx}" alt="QR Access ${idx + 1}" style="width: 250px; height: 250px;" />
-                <p style="color: #000; font-weight: bold; font-size: 14px; margin-top: 15px; letter-spacing: 1px;">MUESTRA ESTE CÓDIGO AL INGRESAR</p>
-                <p style="color: #999; font-size: 11px; margin-top: 5px;">ID: ${t.id}</p>
-            </div>
-        `).join('');
+        // Entrada horizontal: QR a la izquierda, datos al medio, arte a la
+        // derecha. La maqueta vive en _shared/ticket_layout.ts porque se arma
+        // con tablas y atributos viejos por compatibilidad con Outlook, y eso
+        // ensucia mucho si se mezcla con la logica de negocio.
+        let organizador: string | undefined
+        if (event.organization_id) {
+            const { data: org } = await supabaseAdmin
+                .from('organizations').select('name').eq('id', event.organization_id).single()
+            organizador = org?.name ?? undefined
+        }
+
+        const qrSections = tickets.map((t, idx) => bloqueEntrada({
+            qrCid: `qrcode_${idx}`,
+            numero: idx + 1,
+            total: ticketCount,
+            ticketId: t.id,
+            eventoNombre: event.name,
+            fecha: formattedDate,
+            hora: formattedTime,
+            lugar: event.venue,
+            direccion: event.address,
+            ciudad: event.city,
+            tipo: type,
+            organizador,
+            imagenUrl: event.image_url,
+        })).join('')
 
         const emailHtml = `
+            ${estilosEntrada}
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; background-color: #fff;">
                 <div style="background: #000; padding: 25px; text-align: center;">
                     <h1 style="color: #fff; margin: 0; font-size: 24px; letter-spacing: 2px;">IMAGINE ACCESS</h1>

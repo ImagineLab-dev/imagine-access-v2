@@ -683,5 +683,11 @@
   "orgAdminOnly": "Apenas um administrador pode editar estes dados",
   "orgBillingHint": "Estes dados sao usados para faturamento",
   "showPassword": "Mostrar senha",
-  "hidePassword": "Ocultar senha"
+  "hidePassword": "Ocultar senha",
+  "eventArtwork": "Arte do evento",
+  "eventArtworkHint": "Exibido ao lado do QR no e-mail do ingresso",
+  "uploadImage": "Enviar imagem",
+  "removeImage": "Remover imagem",
+  "imageTooLarge": "A imagem excede 2 MB",
+  "imageUploadError": "Nao foi possivel enviar a imagem"
 }

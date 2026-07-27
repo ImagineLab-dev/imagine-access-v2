@@ -683,5 +683,11 @@
   "orgAdminOnly": "Solo un administrador puede editar estos datos",
   "orgBillingHint": "Estos datos se usan para la facturacion",
   "showPassword": "Mostrar contraseña",
-  "hidePassword": "Ocultar contraseña"
+  "hidePassword": "Ocultar contraseña",
+  "eventArtwork": "Arte del evento",
+  "eventArtworkHint": "Se muestra junto al QR en el correo del ticket",
+  "uploadImage": "Subir imagen",
+  "removeImage": "Quitar imagen",
+  "imageTooLarge": "La imagen supera los 2 MB",
+  "imageUploadError": "No se pudo subir la imagen"
 }

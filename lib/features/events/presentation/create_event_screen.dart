@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'package:imagine_access/core/platform/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,10 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   late TextEditingController _addressCtrl;
   late TextEditingController _cityCtrl;
 
+  /// Arte del evento que viaja en el correo del ticket.
+  String? _imageUrl;
+  bool _subiendoArte = false;
+
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 20, minute: 0);
   String _currency = 'PYG';
@@ -79,6 +84,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     _venueCtrl = TextEditingController(text: data['venue']);
     _addressCtrl = TextEditingController(text: data['address']);
     _cityCtrl = TextEditingController(text: data['city']);
+    _imageUrl = data['image_url'] as String?;
     _currency = data['currency'] ?? 'PYG';
     _timezone = data['timezone'] ?? 'America/Asuncion';
 
@@ -280,6 +286,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
           'date': fullDate.toIso8601String(),
           'currency': _currency,
           'timezone': _timezone,
+          'image_url': _imageUrl,
         });
         newEventId = widget.eventId!;
       }
@@ -442,6 +449,45 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+
+  Future<void> _subirArte(AppLocalizations l10n) async {
+    final archivo = await pickFile(accept: 'image/png,image/jpeg,image/webp');
+    if (archivo == null) return;
+
+    // 2 MB: el arte viaja por correo y varios proveedores recortan mensajes
+    // pesados, ademas de que nadie quiere bajar 8 MB en datos moviles.
+    if (archivo.bytes.lengthInBytes > 2 * 1024 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(SnackBar(content: Text(l10n.imageTooLarge)));
+      }
+      return;
+    }
+
+    setState(() => _subiendoArte = true);
+    try {
+      final ext = archivo.extension.isEmpty ? 'png' : archivo.extension;
+      final ruta = 'events/${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final storage = Supabase.instance.client.storage.from('event-artwork');
+      await storage.uploadBinary(
+        ruta,
+        archivo.bytes,
+        fileOptions: FileOptions(contentType: archivo.mimeType, upsert: true),
+      );
+      if (!mounted) return;
+      setState(() => _imageUrl = storage.getPublicUrl(ruta));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(SnackBar(content: Text(l10n.imageUploadError)));
+      }
+    } finally {
+      if (mounted) setState(() => _subiendoArte = false);
     }
   }
 
@@ -679,6 +725,96 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                 value: 'USD', child: Text('USD (\$ )')),
                           ],
                           onChanged: (v) => setState(() => _currency = v!),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Arte del evento: viaja en el correo del ticket, a la derecha
+              // del QR.
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  l10n.eventArtwork.toUpperCase(),
+                  style: TextStyle(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_imageUrl != null && _imageUrl!.isNotEmpty)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        _imageUrl!,
+                        width: 88,
+                        height: 88,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                            width: 88,
+                            height: 88,
+                            child: Icon(Icons.broken_image_outlined)),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: (theme.brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withValues(alpha: 0.12)),
+                      ),
+                      child: Icon(Icons.image_outlined,
+                          color: theme.hintColor, size: 28),
+                    ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.eventArtworkHint,
+                            style: TextStyle(
+                                color: theme.hintColor, fontSize: 12.5)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            TextButton.icon(
+                              onPressed: _subiendoArte
+                                  ? null
+                                  : () => _subirArte(l10n),
+                              icon: _subiendoArte
+                                  ? const SizedBox(
+                                      width: 15,
+                                      height: 15,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2))
+                                  : const Icon(Icons.upload_outlined, size: 18),
+                              label: Text(l10n.uploadImage),
+                            ),
+                            if (_imageUrl != null && _imageUrl!.isNotEmpty)
+                              TextButton(
+                                onPressed: _subiendoArte
+                                    ? null
+                                    : () => setState(() => _imageUrl = null),
+                                child: Text(l10n.removeImage),
+                              ),
+                          ],
                         ),
                       ],
                     ),
