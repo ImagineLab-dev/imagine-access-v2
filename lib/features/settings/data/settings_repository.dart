@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/ttl_cache.dart';
+import '../../../core/i18n/locale_provider.dart';
 
 class SettingsRepository {
   final SupabaseClient _client;
@@ -282,7 +283,11 @@ class SettingsRepository {
         return _client.functions.invoke('create_user', body: {
           'email': email,
           'display_name': displayName,
-          'role': role
+          'role': role,
+          // Idioma para el correo de invitación. Se manda el del admin que
+          // invita: no hay forma de saber el del invitado antes de que entre,
+          // y quien lo suma casi siempre comparte idioma con él.
+          'language': _ref.read(localeProvider).languageCode,
         });
       }
 

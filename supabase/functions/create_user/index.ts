@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { corsHeaders } from "../_shared/cors.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
+import { sendEmail } from "../_shared/email.ts"
+import { asuntoInvitacion, cuerpoInvitacion, type Idioma } from "../_shared/invitation_email.ts"
 
 function generateTempPassword(length = 12): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#'
@@ -62,7 +64,7 @@ serve(async (req: Request) => {
         if (!callerOrgId) throw new Error('Caller has no organization assigned')
 
         // 3. Get Input
-        const { email, display_name, role } = await req.json()
+        const { email, display_name, role, language } = await req.json()
 
         if (!email) throw new Error("Email is required")
 
@@ -166,11 +168,54 @@ serve(async (req: Request) => {
             throw profileError
         }
 
+        // 7. Invitacion por correo
+        //
+        // Solo para usuarios recien creados: a alguien que ya existia no se le
+        // puede mandar una contrasena temporal que no es la suya.
+        //
+        // El envio NO bloquea la respuesta ni la revierte si falla. El usuario
+        // ya quedo creado y funcional; si el correo no sale, el admin todavia
+        // tiene la contrasena temporal en pantalla para pasarla a mano. Hacer
+        // fallar todo el alta por un problema de SMTP seria peor.
+        let invitationEmailSent = false
+        if (wasJustCreated) {
+            try {
+                const appUrl = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://imaginecloud.digital'
+                const idioma = (['es', 'en', 'pt'].includes(language) ? language : 'es') as Idioma
+
+                let orgName = 'Imagine Access'
+                if (callerOrgId) {
+                    const { data: org } = await supabaseAdmin
+                        .from('organizations').select('name').eq('id', callerOrgId).single()
+                    if (org?.name) orgName = org.name
+                }
+
+                const { data: perfilCaller } = await supabaseAdmin
+                    .from('users_profile').select('display_name').eq('user_id', caller.id).maybeSingle()
+
+                const datos = {
+                    email,
+                    tempPassword,
+                    organizacion: orgName,
+                    rol: role || 'rrpp',
+                    invitadoPor: perfilCaller?.display_name ?? undefined,
+                    appUrl,
+                    idioma,
+                }
+
+                await sendEmail(email, asuntoInvitacion(datos), cuerpoInvitacion(datos))
+                invitationEmailSent = true
+            } catch (mailError) {
+                console.error('Invitation email failed', mailError)
+            }
+        }
+
         return new Response(
             JSON.stringify({
                 user_id: userId,
                 organization_id: callerOrgId,
                 status: 'success',
+                invitation_email_sent: invitationEmailSent,
                 ...(wasJustCreated ? { temp_password: tempPassword } : {}),
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

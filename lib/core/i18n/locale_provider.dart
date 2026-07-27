@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleNotifier extends StateNotifier<Locale> {
-  LocaleNotifier() : super(const Locale('en')) {
+  // Español por defecto: es el idioma del negocio y el de la mayoría de los
+  // usuarios. Antes arrancaba en inglés, así que todo el que no entraba a
+  // cambiarlo veía la app en un idioma que no era el suyo.
+  LocaleNotifier() : super(const Locale('es')) {
     _loadSavedLocale();
   }
 
