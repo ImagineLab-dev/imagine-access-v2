@@ -15,6 +15,21 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- -----------------------------------------------------------------------------
 -- 0b) Base tables (self-contained bootstrap)
 -- -----------------------------------------------------------------------------
+
+-- organizations va PRIMERO: public.devices y otras tablas de este mismo bloque
+-- la referencian por clave foranea. Estaba declarada mas abajo, en la seccion 1,
+-- lo que abortaba la transaccion entera con
+-- 'relation "public.organizations" does not exist' y revertia todo el script.
+-- Organizations
+CREATE TABLE IF NOT EXISTS public.organizations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS public.users_profile (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
@@ -111,15 +126,6 @@ ON CONFLICT (id) DO NOTHING;
 -- 1) Schema hardening (idempotent)
 -- -----------------------------------------------------------------------------
 
--- Organizations
-CREATE TABLE IF NOT EXISTS public.organizations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
 
 -- Multitenant links
 ALTER TABLE public.users_profile
