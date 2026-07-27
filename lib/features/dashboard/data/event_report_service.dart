@@ -1,16 +1,11 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:imagine_access/core/platform/file_download.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'event_report_service_stub.dart'
-    if (dart.library.html) 'event_report_service_web.dart' as platform;
 
 final eventReportServiceProvider = Provider((ref) => EventReportService(ref));
 
@@ -380,26 +375,13 @@ class EventReportService {
     return pdf.save();
   }
 
-  Future<void> exportAndShare(String eventId, String eventName, AppLocalizations l10n) async {
+  Future<void> exportAndShare(
+      String eventId, String eventName, AppLocalizations l10n) async {
     final bytes = await generatePdf(eventId, eventName, l10n);
     final fileName =
         'reporte_${_sanitize(eventName)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
 
-    if (kIsWeb) {
-      platform.downloadPdfWeb(bytes, fileName);
-    } else {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile.fromData(bytes, name: fileName, mimeType: 'application/pdf')],
-          subject: l10n.reportSubject(eventName),
-        ),
-      );
-    }
-  }
-
-  Future<void> printPreview(String eventId, String eventName, AppLocalizations l10n) async {
-    final bytes = await generatePdf(eventId, eventName, l10n);
-    await Printing.layoutPdf(onLayout: (_) => bytes);
+    downloadBytes(bytes, fileName, mimeType: 'application/pdf');
   }
 
   // ━━━━━━━━━ PDF Building blocks ━━━━━━━━━
