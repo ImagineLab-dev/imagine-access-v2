@@ -38,9 +38,93 @@
     (mobile_scanner/lib/src/web/zxing/zxing_barcode_reader.dart:60).
   -->
   <script id="mobile-scanner-barcode-reader" src="js/zxing-0.21.3.min.js"></script>
+
+  <!--
+    Pantalla de carga.
+
+    El fondo por defecto de una página es blanco, y el bundle de Flutter pesa
+    varios MB: sin esto, el arranque es un destello blanco de varios segundos
+    seguido de un salto brusco a la app. Pintar html y body del color de marca
+    desde el primer byte elimina el destello incluso antes de que este CSS
+    termine de parsearse.
+  -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #0B0F16;
+      overscroll-behavior: none;
+    }
+
+    #app-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background-color: #0B0F16;
+      transition: opacity 280ms ease-out;
+    }
+
+    #app-splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #app-splash img {
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
+      animation: splash-pulse 1.8s ease-in-out infinite;
+    }
+
+    #app-splash .bar {
+      width: 140px;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, .12);
+      overflow: hidden;
+    }
+
+    #app-splash .bar::after {
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      border-radius: 3px;
+      background: #4A9EFF;
+      animation: splash-slide 1.2s ease-in-out infinite;
+    }
+
+    @keyframes splash-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: .55; }
+    }
+
+    @keyframes splash-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    /* Respeta a quien pidió menos movimiento en el sistema. */
+    @media (prefers-reduced-motion: reduce) {
+      #app-splash img,
+      #app-splash .bar::after { animation: none; }
+      #app-splash .bar::after { width: 100%; }
+    }
+  </style>
 </head>
 <body>
+  <div id="app-splash" role="status" aria-label="Cargando Imagine Access">
+    <img src="icons/Icon-192.png" alt="">
+    <div class="bar"></div>
+  </div>
+
   <script src="flutter_bootstrap.js" async></script>
+  <script src="js/splash.js"></script>
   <script src="js/pwa.js" defer></script>
 </body>
 </html>
