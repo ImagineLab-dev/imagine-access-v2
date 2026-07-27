@@ -28,11 +28,13 @@ funcione offline, y se instrumenta para medir latencia en dispositivos reales.
 - **Configuración por `--dart-define`,** nunca por archivo `.env` empaquetado como asset.
 - **Color de marca:** `#0B0F16`. Nunca el `#0175C2` del scaffold de Flutter.
 - **Locales soportados:** `en`, `es`, `pt`. Todo texto visible pasa por `AppLocalizations`.
-- **`flutter test` debe pasar completo al terminar cada tarea.** La suite arranca con 14
-  tests; las Tareas 4 y 6 reescriben `error_handler_test.dart` y `env_test.dart` a
-  propósito —cambia lo que esos módulos deben hacer— y la Tarea 3 suma 5 tests nuevos.
-  Ningún otro archivo de test se toca: los 10 tests restantes tienen que seguir pasando
-  sin modificación, y si alguno se rompe es una regresión, no un test desactualizado.
+- **`flutter test` no debe sumar fallos nuevos.** Medido en la Tarea 1 sobre árbol limpio:
+  **84 de 94 tests pasan; 10 ya fallan** (5 en `currency_helper_test.dart`, 4 en
+  `ticket_repository_test.dart`, 1 en `event_repository_test.dart`). Son preexistentes y
+  ajenos a esta migración; arreglarlos no es parte de este plan. La regla es que ninguna
+  tarea aumente ese número. Las Tareas 4 y 6 reescriben `error_handler_test.dart` y
+  `env_test.dart` a propósito —cambia lo que esos módulos deben hacer— y la Tarea 3 suma
+  tests nuevos. Cualquier otro test que se rompa es una regresión.
 - **Commits:** prefijo convencional en inglés (`feat:`, `fix:`, `chore:`, `docs:`,
   `refactor:`, `test:`), descripción en español. Un commit por tarea.
 - **Contrato público que no se rompe:** `connectivityStatusProvider`
