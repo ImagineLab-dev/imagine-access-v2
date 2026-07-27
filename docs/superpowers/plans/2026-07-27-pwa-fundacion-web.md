@@ -28,7 +28,11 @@ funcione offline, y se instrumenta para medir latencia en dispositivos reales.
 - **Configuración por `--dart-define`,** nunca por archivo `.env` empaquetado como asset.
 - **Color de marca:** `#0B0F16`. Nunca el `#0175C2` del scaffold de Flutter.
 - **Locales soportados:** `en`, `es`, `pt`. Todo texto visible pasa por `AppLocalizations`.
-- **Los 14 tests existentes deben seguir pasando** al terminar cada tarea.
+- **`flutter test` debe pasar completo al terminar cada tarea.** La suite arranca con 14
+  tests; las Tareas 4 y 6 reescriben `error_handler_test.dart` y `env_test.dart` a
+  propósito —cambia lo que esos módulos deben hacer— y la Tarea 3 suma 5 tests nuevos.
+  Ningún otro archivo de test se toca: los 10 tests restantes tienen que seguir pasando
+  sin modificación, y si alguno se rompe es una regresión, no un test desactualizado.
 - **Commits:** prefijo convencional en inglés (`feat:`, `fix:`, `chore:`, `docs:`,
   `refactor:`, `test:`), descripción en español. Un commit por tarea.
 - **Contrato público que no se rompe:** `connectivityStatusProvider`

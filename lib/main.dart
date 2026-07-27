@@ -78,25 +78,53 @@ Future<void> main({
       }
     }
 
-    await Supabase.initialize(
-      url: Env.supabaseUrl,
-      anonKey: Env.supabaseAnonKey,
-    );
+    try {
+      await Supabase.initialize(
+        url: Env.supabaseUrl,
+        anonKey: Env.supabaseAnonKey,
+      );
 
-    // Persist access token on every auth state change so Edge Function calls
-    // can use it even after the SDK auto-refresh clears the session.
-    const storage = FlutterSecureStorage();
-    final client = Supabase.instance.client;
-    final currentToken = client.auth.currentSession?.accessToken;
-    if (currentToken != null) {
-      await storage.write(key: 'last_access_token', value: currentToken);
-    }
-    client.auth.onAuthStateChange.listen((data) {
-      final token = data.session?.accessToken;
-      if (token != null) {
-        storage.write(key: 'last_access_token', value: token);
+      // Persist access token on every auth state change so Edge Function calls
+      // can use it even after the SDK auto-refresh clears the session.
+      const storage = FlutterSecureStorage();
+      final client = Supabase.instance.client;
+      final currentToken = client.auth.currentSession?.accessToken;
+      if (currentToken != null) {
+        await storage.write(key: 'last_access_token', value: currentToken);
       }
-    });
+      client.auth.onAuthStateChange.listen((data) {
+        final token = data.session?.accessToken;
+        if (token != null) {
+          storage.write(key: 'last_access_token', value: token);
+        }
+      });
+    } catch (e, stack) {
+      ErrorHandler.logError(
+        'Supabase init error',
+        e,
+        stackTrace: stack,
+        source: 'main',
+      );
+      // Show error to user instead of staying on splash forever
+      runApp(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  'Error initializing app:\n$e',
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
 
     runApp(
       ProviderScope(

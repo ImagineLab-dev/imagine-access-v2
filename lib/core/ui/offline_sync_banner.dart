@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,7 +13,7 @@ class OfflineSyncBanner extends ConsumerStatefulWidget {
 }
 
 class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
-  ConnectivityResult? _lastStatus;
+  AppConnectivity? _lastStatus;
 
   @override
   void initState() {
@@ -48,14 +47,14 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
 
     return connectivity.when(
       data: (status) {
-        final wasOffline = _lastStatus == ConnectivityResult.none;
+        final wasOffline = _lastStatus == AppConnectivity.offline;
         _lastStatus = status;
 
-        if (status != ConnectivityResult.none && wasOffline) {
+        if (status == AppConnectivity.online && wasOffline) {
           Future<void>.microtask(_trySyncNow);
         }
 
-        if (status != ConnectivityResult.none) {
+        if (status == AppConnectivity.online) {
           return const SizedBox.shrink();
         }
 
