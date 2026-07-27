@@ -166,11 +166,27 @@ def remove_flutter_service_worker() -> None:
         print("  eliminado flutter_service_worker.js (lápida de Flutter)")
 
 
-def copy_htaccess() -> None:
+def copy_htaccess(supabase_url: str) -> None:
+    """
+    Copia el .htaccess sustituyendo el host de Supabase en la CSP.
+
+    Sin esta sustitución el connect-src queda apuntando a PROJECT.supabase.co y
+    el navegador bloquea TODAS las llamadas al backend: la app carga pero no
+    hace nada, con errores de CSP en consola que no son obvios de leer.
+    """
     source = ROOT / "deploy" / ".htaccess"
-    if source.exists():
-        shutil.copy2(source, BUILD_DIR / ".htaccess")
-        print("  copiado .htaccess")
+    if not source.exists():
+        print("  aviso: no se encontró deploy/.htaccess")
+        return
+
+    host = supabase_url.split("://", 1)[-1].strip("/")
+    content = source.read_text(encoding="utf-8").replace("PROJECT.supabase.co", host)
+
+    if "PROJECT.supabase.co" in content:
+        sys.exit("No se pudo sustituir el host de Supabase en la CSP")
+
+    (BUILD_DIR / ".htaccess").write_text(content, encoding="utf-8", newline="\n")
+    print(f"  copiado .htaccess (CSP apuntando a {host})")
 
 
 def main() -> None:
@@ -199,7 +215,7 @@ def main() -> None:
     files = collect_precache_files()
     version = compute_version(files)
     inject_manifest(files, version)
-    copy_htaccess()
+    copy_htaccess(url)
 
     total = sum((BUILD_DIR / ("index.html" if f == "/" else f)).stat().st_size
                 for f in files

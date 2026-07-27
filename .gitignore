@@ -78,3 +78,6 @@ UsersHp.git-credentials-imagine
 build_old/
 
 # Nunca versionar credenciales
+
+# Paquetes de deploy generados
+dist/
