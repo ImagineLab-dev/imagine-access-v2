@@ -1,0 +1,98 @@
+# ==========================================================================
+# Imagine Access PWA — configuración de Apache/LiteSpeed
+# Va en la raíz del sitio, junto a index.html.
+# ==========================================================================
+
+# --------------------------------------------------------------------------
+# Fallback SPA
+# --------------------------------------------------------------------------
+# El router de la app maneja /scanner, /tickets, /ticket/:id, etc. Esas rutas
+# no existen como archivos: sin esta regla, refrescar la página en cualquiera
+# de ellas devuelve 404.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Archivos y directorios reales se sirven tal cual.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Todo lo demás lo resuelve la app.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# --------------------------------------------------------------------------
+# Caché
+# --------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  # index.html, el service worker y el manifest NUNCA se cachean.
+  #
+  # Si el service worker se cacheara, el navegador seguiría usando la versión
+  # vieja y el flujo de actualización dejaría de funcionar: los dispositivos de
+  # puerta quedarían clavados en una versión anterior sin forma de enterarse.
+  <FilesMatch "^(index\.html|sw\.js|manifest\.json|version\.json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # El resto lo revalida el service worker por hash de contenido, así que
+  # puede cachearse agresivamente.
+  <FilesMatch "\.(js|css|wasm|png|jpg|jpeg|svg|woff2?|ttf|otf|bin|json)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^(index\.html|sw\.js|manifest\.json|version\.json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# --------------------------------------------------------------------------
+# Seguridad
+# --------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # CSP.
+  #
+  # 'wasm-unsafe-eval' lo exige CanvasKit, el renderer de Flutter web: sin eso
+  # no puede instanciar su módulo WebAssembly y la app no dibuja nada.
+  #
+  # connect-src tiene que listar el proyecto Supabase real. REEMPLAZAR
+  # PROJECT por el subdominio del proyecto antes de subir esto.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://PROJECT.supabase.co wss://PROJECT.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+</IfModule>
+
+# --------------------------------------------------------------------------
+# Compresión
+# --------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/wasm image/svg+xml
+</IfModule>
+
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/javascript
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript application/json
+  AddOutputFilterByType BROTLI_COMPRESS application/wasm image/svg+xml
+</IfModule>
+
+# --------------------------------------------------------------------------
+# Tipos MIME
+# --------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/wasm .wasm
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# --------------------------------------------------------------------------
+# No exponer archivos sensibles
+# --------------------------------------------------------------------------
+<FilesMatch "^\.(env|git|htaccess)">
+  Require all denied
+</FilesMatch>

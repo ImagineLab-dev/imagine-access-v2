@@ -18,6 +18,11 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
   <link rel="manifest" href="manifest.json">
 
+  <!-- Precarga del bundle principal: es de lejos el archivo más pesado y
+       arrancar su descarga antes de que el bootstrap lo pida recorta la
+       primera carga, que es lo que más se siente en 4G. -->
+  <link rel="preload" href="main.dart.js" as="script">
+
   <title>Imagine Access</title>
 
   <!--
@@ -36,5 +41,6 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script src="js/pwa.js" defer></script>
 </body>
 </html>
