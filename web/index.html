@@ -19,6 +19,20 @@
   <link rel="manifest" href="manifest.json">
 
   <title>Imagine Access</title>
+
+  <!--
+    ZXing self-hosteado.
+
+    mobile_scanner lo descargaría de https://unpkg.com/@zxing/library@0.21.3 en
+    runtime, lo que rompe el escaneo sin internet — el caso de uso principal en
+    la puerta. El plugin salta su propia descarga si encuentra un script con
+    este id (mobile_scanner/lib/src/web/barcode_reader.dart:84).
+
+    El id "mobile-scanner-barcode-reader" es contrato con el plugin: NO cambiarlo.
+    La versión tiene que seguir siendo 0.21.3, la que el plugin espera
+    (mobile_scanner/lib/src/web/zxing/zxing_barcode_reader.dart:60).
+  -->
+  <script id="mobile-scanner-barcode-reader" src="js/zxing-0.21.3.min.js"></script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
