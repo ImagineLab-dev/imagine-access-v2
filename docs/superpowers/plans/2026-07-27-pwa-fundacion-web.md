@@ -1652,8 +1652,9 @@ cd build\web
 npx --yes http-server -p 8000
 ```
 
-Se usa `--profile` y no `--release` para que `kDebugMode` siga activo y el overlay de
-latencia se vea.
+Se usa `--profile` y no `--release` para que el overlay de latencia se compile. Ojo: en
+profile `kDebugMode` es **false** —solo es true en debug— así que la guarda del overlay es
+`!kReleaseMode`, no `kDebugMode`.
 
 Abrir `https://<IP de la PC>:8443` en cada teléfono y aceptar la advertencia de certificado.
 

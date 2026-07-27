@@ -1,3 +1,6 @@
+import 'dart:developer' as dev;
+
+import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
@@ -29,15 +32,23 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   bool _isProcessing = false;
   Map<String, dynamic>? _scanResult; // To show overlay
 
+  /// Instante en que el escáner quedó listo para leer el código siguiente.
+  /// Es el punto cero de la medición: lo que se mide es lo que espera la
+  /// persona parada en la puerta, no el tiempo interno del decodificador.
+  DateTime? _detectionWindowStart;
+
+  /// Latencias medidas en esta sesión, en milisegundos.
+  final List<int> _detectionLatencies = <int>[];
+
   @override
   void initState() {
     super.initState();
     _cameraController = MobileScannerController(
       detectionSpeed: DetectionSpeed.noDuplicates,
       facing: CameraFacing.back,
-      torchEnabled: false,
     );
     WidgetsBinding.instance.addObserver(this);
+    _detectionWindowStart = DateTime.now();
   }
 
   @override
@@ -61,6 +72,17 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_isProcessing) return;
     _isProcessing = true; // Set synchronously before async gap
+
+    final start = _detectionWindowStart;
+    if (start != null) {
+      final elapsed = DateTime.now().difference(start).inMilliseconds;
+      _detectionLatencies.add(elapsed);
+      _detectionWindowStart = null;
+      if (kDebugMode) {
+        dev.log('Detección en ${elapsed}ms (n=${_detectionLatencies.length})',
+            name: 'ScannerLatency');
+      }
+    }
 
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
@@ -190,6 +212,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     setState(() {
       _scanResult = null;
       _isProcessing = false;
+      _detectionWindowStart = DateTime.now();
     });
   }
 
@@ -220,25 +243,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             ).animate().fade(),
           ),
 
-          // Flash Toggle
-          Positioned(
-            top: 50,
-            right: 20,
-            child: ValueListenableBuilder(
-              valueListenable: _cameraController,
-              builder: (context, value, child) {
-                return IconButton(
-                  icon: Icon(
-                      value.torchState == TorchState.on
-                          ? Icons.flash_on
-                          : Icons.flash_off,
-                      color: Colors.white,
-                      size: 30),
-                  onPressed: () => _cameraController.toggleTorch(),
-                );
-              },
-            ),
-          ),
+          // Sin botón de linterna: en web mobile_scanner devuelve hasTorch:false
+          // de forma fija (barcode_reader.dart:73-75), así que el control nunca
+          // podría encender nada.
 
           // Scanner Frame Overlay (Interactive UI)
           Center(
@@ -291,7 +298,34 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                                 fontWeight: FontWeight.bold)),
                   ],
                 )).animate().slideY(begin: 1, end: 0),
-          )
+          ),
+
+          // Overlay de latencia para el spike de rendimiento en dispositivos
+          // reales. La guarda es `!kReleaseMode` y no `kDebugMode` a propósito:
+          // el spike corre sobre un build `--profile`, donde `kDebugMode` es
+          // false. Con esa guarda el overlay nunca se vería justo cuando hace
+          // falta. En release no se compila.
+          if (!kReleaseMode && _detectionLatencies.isNotEmpty)
+            Positioned(
+              left: 8,
+              bottom: 8,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: Colors.black.withValues(alpha: 0.7),
+                child: Text(
+                  'n=${_detectionLatencies.length}  '
+                  'últ=${_detectionLatencies.last}ms  '
+                  'med=${(_detectionLatencies.reduce((a, b) => a + b) / _detectionLatencies.length).round()}ms  '
+                  'máx=${_detectionLatencies.reduce((a, b) => a > b ? a : b)}ms',
+                  style: const TextStyle(
+                    color: Colors.greenAccent,
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
