@@ -1,48 +1,60 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+/// Configuración de la app, provista en tiempo de compilación.
+///
+/// Deliberadamente **no** se lee de un archivo `.env`: en web los assets de
+/// Flutter se sirven por HTTP, así que un `.env` empaquetado queda público en
+/// `/assets/.env`. Todo entra por `--dart-define`.
+///
+/// Build:
+/// ```
+/// flutter build web --release \
+///   --dart-define=SUPABASE_URL=https://xxxx.supabase.co \
+///   --dart-define=SUPABASE_ANON_KEY=xxxx
+/// ```
 class Env {
-  static String get supabaseUrl {
-    final fromEnvFile = dotenv.env['SUPABASE_URL']?.trim() ?? '';
-    const fromDartDefine = String.fromEnvironment('SUPABASE_URL');
-    final value = fromEnvFile.isNotEmpty ? fromEnvFile : fromDartDefine.trim();
+  const Env._();
 
-    if (value.isEmpty) {
-      throw Exception(
-        'SUPABASE_URL not found. Set it in .env or pass --dart-define=SUPABASE_URL=...',
-      );
+  static const _placeholders = <String>[
+    'your-project.supabase.co',
+    'tu-proyecto.supabase.co',
+    'your-anon-key',
+    'tu-anon-key',
+    'YOUR_SUPABASE_URL',
+    'YOUR_SUPABASE_ANON_KEY',
+  ];
+
+  /// `true` si [value] es uno de los valores de ejemplo de `.env.example`.
+  static bool isPlaceholder(String value) =>
+      _placeholders.any(value.contains);
+
+  /// `true` si [value] es demasiado corto para ser una credencial real.
+  static bool isTooShort(String value) => value.length < 20;
+
+  static String get supabaseUrl =>
+      _require(const String.fromEnvironment('SUPABASE_URL'), 'SUPABASE_URL');
+
+  static String get supabaseAnonKey {
+    final value = _require(
+      const String.fromEnvironment('SUPABASE_ANON_KEY'),
+      'SUPABASE_ANON_KEY',
+    );
+    if (isTooShort(value)) {
+      throw Exception('SUPABASE_ANON_KEY parece inválida (demasiado corta).');
     }
-
-    if (value.contains('your-project.supabase.co') ||
-        value.contains('tu-proyecto.supabase.co')) {
-      throw Exception(
-        'SUPABASE_URL contains a placeholder value. Replace it with your real Supabase project URL.',
-      );
-    }
-
     return value;
   }
 
-  static String get supabaseAnonKey {
-    final fromEnvFile = dotenv.env['SUPABASE_ANON_KEY']?.trim() ?? '';
-    const fromDartDefine = String.fromEnvironment('SUPABASE_ANON_KEY');
-    final value = fromEnvFile.isNotEmpty ? fromEnvFile : fromDartDefine.trim();
-
+  static String _require(String raw, String name) {
+    final value = raw.trim();
     if (value.isEmpty) {
       throw Exception(
-        'SUPABASE_ANON_KEY not found. Set it in .env or pass --dart-define=SUPABASE_ANON_KEY=...',
+        '$name no está configurada. Compilá con --dart-define=$name=...',
       );
     }
-
-    if (value.contains('your-anon-key') || value.contains('tu-anon-key')) {
+    if (isPlaceholder(value)) {
       throw Exception(
-        'SUPABASE_ANON_KEY contains a placeholder value. Replace it with your real anon key.',
+        '$name tiene un valor de ejemplo. Reemplazalo por el valor real.',
       );
     }
-
-    if (value.length < 20) {
-      throw Exception('SUPABASE_ANON_KEY looks invalid (too short).');
-    }
-
     return value;
   }
 }

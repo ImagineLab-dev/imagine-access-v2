@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'core/config/env.dart';
 import 'core/router/app_router.dart';
@@ -59,24 +58,6 @@ Future<void> main({
       );
       return true;
     };
-
-    // Load environment file based on flavor
-    final envFile = switch (appFlavor) {
-      Flavor.dev => '.env.dev',
-      Flavor.staging => '.env.staging',
-      Flavor.prod || null => '.env',
-    };
-
-    try {
-      await dotenv.load(fileName: envFile);
-    } catch (e) {
-      // Fallback: try loading default .env if flavor-specific file fails
-      try {
-        await dotenv.load(fileName: '.env');
-      } catch (_) {
-        // .env not available — dart-define values will be used as fallback
-      }
-    }
 
     try {
       await Supabase.initialize(
