@@ -876,17 +876,31 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             .withValues(alpha: 0.1)),
                   ),
                 ),
+                // Solo los países donde se puede cobrar. Ofrecer una zona
+                // horaria de un país sin pasarela habilitada deja crear un
+                // evento que después no puede vender entradas, y eso se
+                // descubre tarde. Salieron EEUU, España y Reino Unido.
+                //
+                // Esta lista hay que contrastarla contra la cobertura vigente
+                // de dLocal antes de dar por buena cualquiera de las plazas:
+                // los proveedores de pago dan de alta y de baja países, y esto
+                // se escribió sin consultar su documentación.
                 items: const [
                   DropdownMenuItem(value: 'America/Asuncion', child: Text('Paraguay (GMT-3)')),
                   DropdownMenuItem(value: 'America/Argentina/Buenos_Aires', child: Text('Argentina (GMT-3)')),
+                  DropdownMenuItem(value: 'America/Montevideo', child: Text('Uruguay (GMT-3)')),
                   DropdownMenuItem(value: 'America/Sao_Paulo', child: Text('Brasil (GMT-3)')),
                   DropdownMenuItem(value: 'America/Santiago', child: Text('Chile (GMT-3/-4)')),
+                  DropdownMenuItem(value: 'America/La_Paz', child: Text('Bolivia (GMT-4)')),
                   DropdownMenuItem(value: 'America/Bogota', child: Text('Colombia (GMT-5)')),
+                  DropdownMenuItem(value: 'America/Lima', child: Text('Perú (GMT-5)')),
+                  DropdownMenuItem(value: 'America/Guayaquil', child: Text('Ecuador (GMT-5)')),
+                  DropdownMenuItem(value: 'America/Panama', child: Text('Panamá (GMT-5)')),
+                  DropdownMenuItem(value: 'America/Santo_Domingo', child: Text('Rep. Dominicana (GMT-4)')),
+                  DropdownMenuItem(value: 'America/Costa_Rica', child: Text('Costa Rica (GMT-6)')),
+                  DropdownMenuItem(value: 'America/Guatemala', child: Text('Guatemala (GMT-6)')),
+                  DropdownMenuItem(value: 'America/El_Salvador', child: Text('El Salvador (GMT-6)')),
                   DropdownMenuItem(value: 'America/Mexico_City', child: Text('México (GMT-6)')),
-                  DropdownMenuItem(value: 'America/New_York', child: Text('Este EEUU (GMT-4/-5)')),
-                  DropdownMenuItem(value: 'America/Los_Angeles', child: Text('Oeste EEUU (GMT-7/-8)')),
-                  DropdownMenuItem(value: 'Europe/Madrid', child: Text('España (GMT+1/+2)')),
-                  DropdownMenuItem(value: 'Europe/London', child: Text('Reino Unido (GMT+0/+1)')),
                 ],
                 onChanged: (v) => setState(() => _timezone = v!),
               ),
