@@ -1,3 +1,12 @@
+// Este proyecto es web-only: `main.dart` depende transitivamente de `package:web`
+// (main.dart -> offline_sync_banner.dart -> connectivity_provider.dart ->
+// browser_connectivity_signals.dart -> package:web), que a su vez requiere
+// `dart:js_interop`. Esa librería no existe en la plataforma VM que usa `flutter test`
+// por defecto, así que este archivo sólo compila en la plataforma "browser" — hay que
+// correrlo con `flutter test --platform chrome`, no en la corrida por defecto.
+@TestOn('browser')
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
