@@ -82,6 +82,7 @@ Proyecto Flutter, 71 archivos Dart / ~14.4k LOC, Riverpod + go_router + Supabase
 |---|---|---|
 | C1 | El escáner carga ZXing desde `https://unpkg.com/@zxing/library@0.21.3` en runtime → sin internet no arranca | `mobile_scanner-7.2.0/lib/src/web/zxing/zxing_barcode_reader.dart:60` |
 | C2 | `printing` carga pdf.js desde `https://unpkg.com/pdfjs-dist` | `printing-5.14.3/lib/printing_web.dart:52` |
+| | ↳ **Resolución revisada:** `printing` resultó ser dependencia muerta — solo la usa `EventReportService.printPreview()`, que no invoca nadie. Se elimina el método y la dependencia en vez de self-hostear pdf.js. | `event_report_service.dart:400` |
 | C3 | Sin manejo de actualización del service worker → dispositivos pegados a versiones viejas | — |
 | C4 | Cola offline en `SharedPreferences` → `localStorage` en web (5MB, purgable por el navegador) | `lib/core/offline/offline_queue_service.dart:41` |
 | C5 | `flutter_secure_storage_web` cifra con una clave guardada en el mismo localStorage → legible por XSS. Guarda `last_access_token` y **`auth_device_pin`** | `lib/main.dart:89`, `lib/features/auth/presentation/auth_controller.dart:105,123` |
@@ -118,13 +119,14 @@ repita.
 
 ### 3.2 Dependencias
 
-**Fuera:** `flutter_secure_storage`, `app_links`, `flutter_dotenv`,
+**Fuera:** `flutter_secure_storage`, `app_links`, `flutter_dotenv`, `printing`,
 `flutter_launcher_icons` (dev), `flutter_native_splash` (dev).
 
 **Dentro:** `web` (js interop), `idb_shim` (IndexedDB).
 
-**Se quedan:** `mobile_scanner` (con ZXing self-hosteado), `pdf` + `printing` (con pdf.js
-self-hosteado), `share_plus` (Web Share API), `shared_preferences` (preferencias chicas —
+**Se quedan:** `mobile_scanner` (con ZXing self-hosteado), `pdf`,
+`share_plus` (se usa en `ticket_list_screen.dart:487` para compartir tickets por texto),
+`shared_preferences` (preferencias chicas —
 tema, idioma, evento seleccionado — más el token de sesión de dispositivo de §6),
 `supabase_flutter`, `go_router`,
 `flutter_riverpod`, `fl_chart`, `flutter_svg`, `flutter_animate`, `intl`, `uuid`.
@@ -294,7 +296,8 @@ Iconos regenerados desde `assets/icon/app_icon.png` en 192 y 512, normal y maska
 
 - Loader moderno: `{{flutter_js}}`, `{{flutter_build_config}}`, `_flutter.loader.load()` (resuelve B1)
 - Splash inline sobre `#0B0F16` con el logo, removido en `onEntrypointLoaded` (resuelve M4)
-- `<script>var dartPdfJsBaseUrl = "js/pdfjs/";</script>` antes de `</head>` (resuelve C2)
+- ~~`dartPdfJsBaseUrl` para pdf.js local~~ — innecesario: C2 se resuelve dando de baja
+  `printing`, que no tiene consumidores reales (ver §2, C2)
 - `<script id="mobile-scanner-barcode-reader">` (resuelve C1)
 - `<meta name="theme-color" content="#0B0F16">` y meta tags `apple-mobile-web-app-*`
 
