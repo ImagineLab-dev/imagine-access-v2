@@ -2709,6 +2709,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Promo'**
   String get reportCatPromo;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @profileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account, security and preferences'**
+  String get profileSubtitle;
+
+  /// No description provided for @accountData.
+  ///
+  /// In en, this message translates to:
+  /// **'Account details'**
+  String get accountData;
+
+  /// No description provided for @security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @organization.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization'**
+  String get organization;
+
+  /// No description provided for @profilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo'**
+  String get profilePhoto;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get removePhoto;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// No description provided for @phoneOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone (optional)'**
+  String get phoneOptional;
+
+  /// No description provided for @emailCannotChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot be changed'**
+  String get emailCannotChange;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get profileSaved;
+
+  /// No description provided for @profileSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save profile'**
+  String get profileSaveError;
+
+  /// No description provided for @photoTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Image exceeds 2 MB'**
+  String get photoTooLarge;
+
+  /// No description provided for @photoUploadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not upload photo'**
+  String get photoUploadError;
+
+  /// No description provided for @passwordChangeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change password'**
+  String get passwordChangeError;
+
+  /// No description provided for @signOutOtherSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out other devices'**
+  String get signOutOtherSessions;
+
+  /// No description provided for @signOutOtherSessionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Useful if you lost a phone or shared your account'**
+  String get signOutOtherSessionsHint;
+
+  /// No description provided for @otherSessionsClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Other sessions were closed'**
+  String get otherSessionsClosed;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @orgCommercialName.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade name'**
+  String get orgCommercialName;
+
+  /// No description provided for @orgLegalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal name'**
+  String get orgLegalName;
+
+  /// No description provided for @orgTaxId.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax ID'**
+  String get orgTaxId;
+
+  /// No description provided for @orgAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get orgAddress;
+
+  /// No description provided for @orgContactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact email'**
+  String get orgContactEmail;
+
+  /// No description provided for @orgContactPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact phone'**
+  String get orgContactPhone;
+
+  /// No description provided for @orgLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo'**
+  String get orgLogo;
+
+  /// No description provided for @orgSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization updated'**
+  String get orgSaved;
+
+  /// No description provided for @orgSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save organization'**
+  String get orgSaveError;
+
+  /// No description provided for @orgAdminOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only an administrator can edit these details'**
+  String get orgAdminOnly;
+
+  /// No description provided for @orgBillingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These details are used for billing'**
+  String get orgBillingHint;
 }
 
 class _AppLocalizationsDelegate

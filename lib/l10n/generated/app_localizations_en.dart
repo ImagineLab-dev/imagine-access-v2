@@ -1393,4 +1393,110 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportCatPromo => 'Promo';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get profileSubtitle => 'Your account, security and preferences';
+
+  @override
+  String get accountData => 'Account details';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get organization => 'Organization';
+
+  @override
+  String get profilePhoto => 'Profile photo';
+
+  @override
+  String get changePhoto => 'Change photo';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get phoneOptional => 'Phone (optional)';
+
+  @override
+  String get emailCannotChange => 'Email cannot be changed';
+
+  @override
+  String get profileSaved => 'Profile updated';
+
+  @override
+  String get profileSaveError => 'Could not save profile';
+
+  @override
+  String get photoTooLarge => 'Image exceeds 2 MB';
+
+  @override
+  String get photoUploadError => 'Could not upload photo';
+
+  @override
+  String get passwordChangeError => 'Could not change password';
+
+  @override
+  String get signOutOtherSessions => 'Sign out other devices';
+
+  @override
+  String get signOutOtherSessionsHint =>
+      'Useful if you lost a phone or shared your account';
+
+  @override
+  String get otherSessionsClosed => 'Other sessions were closed';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get orgCommercialName => 'Trade name';
+
+  @override
+  String get orgLegalName => 'Legal name';
+
+  @override
+  String get orgTaxId => 'Tax ID';
+
+  @override
+  String get orgAddress => 'Address';
+
+  @override
+  String get orgContactEmail => 'Contact email';
+
+  @override
+  String get orgContactPhone => 'Contact phone';
+
+  @override
+  String get orgLogo => 'Logo';
+
+  @override
+  String get orgSaved => 'Organization updated';
+
+  @override
+  String get orgSaveError => 'Could not save organization';
+
+  @override
+  String get orgAdminOnly => 'Only an administrator can edit these details';
+
+  @override
+  String get orgBillingHint => 'These details are used for billing';
 }

@@ -1403,4 +1403,110 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportCatPromo => 'Promo';
+
+  @override
+  String get profile => 'Perfil';
+
+  @override
+  String get profileSubtitle => 'Tu cuenta, seguridad y preferencias';
+
+  @override
+  String get accountData => 'Datos de la cuenta';
+
+  @override
+  String get security => 'Seguridad';
+
+  @override
+  String get preferences => 'Preferencias';
+
+  @override
+  String get organization => 'Organizacion';
+
+  @override
+  String get profilePhoto => 'Foto de perfil';
+
+  @override
+  String get changePhoto => 'Cambiar foto';
+
+  @override
+  String get removePhoto => 'Quitar foto';
+
+  @override
+  String get phone => 'Telefono';
+
+  @override
+  String get phoneOptional => 'Telefono (opcional)';
+
+  @override
+  String get emailCannotChange => 'El correo no se puede cambiar';
+
+  @override
+  String get profileSaved => 'Perfil actualizado';
+
+  @override
+  String get profileSaveError => 'No se pudo guardar el perfil';
+
+  @override
+  String get photoTooLarge => 'La imagen supera los 2 MB';
+
+  @override
+  String get photoUploadError => 'No se pudo subir la foto';
+
+  @override
+  String get passwordChangeError => 'No se pudo cambiar la contrasena';
+
+  @override
+  String get signOutOtherSessions => 'Cerrar sesion en otros dispositivos';
+
+  @override
+  String get signOutOtherSessionsHint =>
+      'Util si perdiste un telefono o prestaste tu cuenta';
+
+  @override
+  String get otherSessionsClosed => 'Se cerraron las demas sesiones';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Automatico';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Oscuro';
+
+  @override
+  String get orgCommercialName => 'Nombre comercial';
+
+  @override
+  String get orgLegalName => 'Razon social';
+
+  @override
+  String get orgTaxId => 'RUC';
+
+  @override
+  String get orgAddress => 'Direccion';
+
+  @override
+  String get orgContactEmail => 'Correo de contacto';
+
+  @override
+  String get orgContactPhone => 'Telefono de contacto';
+
+  @override
+  String get orgLogo => 'Logo';
+
+  @override
+  String get orgSaved => 'Organizacion actualizada';
+
+  @override
+  String get orgSaveError => 'No se pudo guardar la organizacion';
+
+  @override
+  String get orgAdminOnly => 'Solo un administrador puede editar estos datos';
+
+  @override
+  String get orgBillingHint => 'Estos datos se usan para la facturacion';
 }

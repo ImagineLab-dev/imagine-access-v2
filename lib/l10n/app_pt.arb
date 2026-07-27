@@ -478,7 +478,13 @@
   "eventArchived": "Evento arquivado com sucesso.",
   "eventArchiveError": "Não foi possível arquivar o evento.",
   "duplicateTicketTypeNames": "Os tipos de ingresso devem ter nomes únicos. Duplicados: {names}",
-  "@duplicateTicketTypeNames": {"placeholders": {"names": {"type": "String"}}},
+  "@duplicateTicketTypeNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
   "eventSaveError": "Não foi possível salvar o evento. Tente novamente.",
   "voidTicketError": "Não foi possível anular o ingresso.",
   "scanError": "Falha na validação do scan. Tente novamente.",
@@ -513,16 +519,34 @@
   "errorIdValidation": "Erro de validação por ID",
   "offlineValidationQueued": "Sem conexão. Validação em fila para sincronizar.",
   "urlCopied": "URL copiada: {url}",
-  "@urlCopied": {"placeholders": {"url": {"type": "String"}}},
+  "@urlCopied": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
   "errorNoOrganization": "Nenhuma organização encontrada para o usuário atual. Faça login novamente.",
   "errorCreateOrgProfile": "Não foi possível criar o perfil da organização. Tente novamente.",
   "processing": "PROCESSANDO",
   "emailWithValue": "Email: {email}",
-  "@emailWithValue": {"placeholders": {"email": {"type": "String"}}},
+  "@emailWithValue": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "noDataAvailable": "Ainda não há dados disponíveis",
   "reportFullTitle": "RELATÓRIO COMPLETO DO EVENTO",
   "reportGenerated": "Gerado: {date}",
-  "@reportGenerated": {"placeholders": {"date": {"type": "String"}}},
+  "@reportGenerated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "reportSummary": "RESUMO GERAL",
   "reportTotalTickets": "Total Ingressos",
   "reportValid": "Válidos",
@@ -544,9 +568,21 @@
   "reportDetailTitle": "DETALHE COMPLETO DE INGRESSOS",
   "reportNoData": "Sem dados",
   "reportPage": "Página {num}",
-  "@reportPage": {"placeholders": {"num": {"type": "int"}}},
+  "@reportPage": {
+    "placeholders": {
+      "num": {
+        "type": "int"
+      }
+    }
+  },
   "reportSubject": "Relatório {name}",
-  "@reportSubject": {"placeholders": {"name": {"type": "String"}}},
+  "@reportSubject": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "reportSystem": "Sistema",
   "reportUnknown": "Desconhecido",
   "reportHeaderName": "Nome",
@@ -570,18 +606,80 @@
   "reportStatusUsed": "Usado",
   "reportStatusVoid": "Anulado",
   "offlinePendingOps": "Modo offline. {count} operações pendentes.",
-  "@offlinePendingOps": {"placeholders": {"count": {"type": "int"}}},
+  "@offlinePendingOps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offlineWillSync": "Modo offline. Sincronizará ao reconectar.",
   "offlineOpsDropped": "{count} operação(ões) não puderam ser sincronizadas e foram descartadas.",
-  "@offlineOpsDropped": {"placeholders": {"count": {"type": "int"}}},
+  "@offlineOpsDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "enablePromoPack": "Habilitar Pack Promo",
   "promoPackSubtitle": "Cria um tipo de ingresso promocional com preço e quantidade configuráveis",
   "promoPrice": "Preço promo",
   "promoQty": "Quantidade de ingressos",
   "ticketTypePromo": "Promo",
   "promoTicketsCreated": "{count} ingressos promo criados com sucesso",
-  "@promoTicketsCreated": {"placeholders": {"count": {"type": "int"}}},
+  "@promoTicketsCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "promoCreatingTickets": "Criando {current} de {total}...",
-  "@promoCreatingTickets": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
-  "reportCatPromo": "Promo"
+  "@promoCreatingTickets": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "reportCatPromo": "Promo",
+  "profile": "Perfil",
+  "profileSubtitle": "Sua conta, seguranca e preferencias",
+  "accountData": "Dados da conta",
+  "security": "Seguranca",
+  "preferences": "Preferencias",
+  "organization": "Organizacao",
+  "profilePhoto": "Foto de perfil",
+  "changePhoto": "Alterar foto",
+  "removePhoto": "Remover foto",
+  "phone": "Telefone",
+  "phoneOptional": "Telefone (opcional)",
+  "emailCannotChange": "O e-mail nao pode ser alterado",
+  "profileSaved": "Perfil atualizado",
+  "profileSaveError": "Nao foi possivel salvar o perfil",
+  "photoTooLarge": "A imagem excede 2 MB",
+  "photoUploadError": "Nao foi possivel enviar a foto",
+  "passwordChangeError": "Nao foi possivel alterar a senha",
+  "signOutOtherSessions": "Sair em outros dispositivos",
+  "signOutOtherSessionsHint": "Util se voce perdeu um telefone ou emprestou sua conta",
+  "otherSessionsClosed": "As outras sessoes foram encerradas",
+  "theme": "Tema",
+  "themeSystem": "Automatico",
+  "themeLight": "Claro",
+  "themeDark": "Escuro",
+  "orgCommercialName": "Nome comercial",
+  "orgLegalName": "Razao social",
+  "orgTaxId": "CNPJ",
+  "orgAddress": "Endereco",
+  "orgContactEmail": "E-mail de contato",
+  "orgContactPhone": "Telefone de contato",
+  "orgLogo": "Logo",
+  "orgSaved": "Organizacao atualizada",
+  "orgSaveError": "Nao foi possivel salvar a organizacao",
+  "orgAdminOnly": "Apenas um administrador pode editar estes dados",
+  "orgBillingHint": "Estes dados sao usados para faturamento"
 }

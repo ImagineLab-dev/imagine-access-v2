@@ -478,7 +478,13 @@
   "eventArchived": "Event archived successfully.",
   "eventArchiveError": "Could not archive the event.",
   "duplicateTicketTypeNames": "Ticket types must have unique names. Found duplicates: {names}",
-  "@duplicateTicketTypeNames": {"placeholders": {"names": {"type": "String"}}},
+  "@duplicateTicketTypeNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
   "eventSaveError": "Could not save the event. Please try again.",
   "voidTicketError": "Could not void the ticket.",
   "scanError": "Scan validation failed. Please try again.",
@@ -513,16 +519,34 @@
   "errorIdValidation": "ID validation error",
   "offlineValidationQueued": "No connection. Validation queued for sync.",
   "urlCopied": "URL copied: {url}",
-  "@urlCopied": {"placeholders": {"url": {"type": "String"}}},
+  "@urlCopied": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
   "errorNoOrganization": "No organization found for current user. Please sign in again.",
   "errorCreateOrgProfile": "Could not create organization profile. Please try again.",
   "processing": "PROCESSING",
   "emailWithValue": "Email: {email}",
-  "@emailWithValue": {"placeholders": {"email": {"type": "String"}}},
+  "@emailWithValue": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "noDataAvailable": "No data available yet",
   "reportFullTitle": "COMPLETE EVENT REPORT",
   "reportGenerated": "Generated: {date}",
-  "@reportGenerated": {"placeholders": {"date": {"type": "String"}}},
+  "@reportGenerated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "reportSummary": "GENERAL SUMMARY",
   "reportTotalTickets": "Total Tickets",
   "reportValid": "Valid",
@@ -544,9 +568,21 @@
   "reportDetailTitle": "COMPLETE TICKET DETAIL",
   "reportNoData": "No data",
   "reportPage": "Page {num}",
-  "@reportPage": {"placeholders": {"num": {"type": "int"}}},
+  "@reportPage": {
+    "placeholders": {
+      "num": {
+        "type": "int"
+      }
+    }
+  },
   "reportSubject": "Report {name}",
-  "@reportSubject": {"placeholders": {"name": {"type": "String"}}},
+  "@reportSubject": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "reportSystem": "System",
   "reportUnknown": "Unknown",
   "reportHeaderName": "Name",
@@ -570,18 +606,80 @@
   "reportStatusUsed": "Used",
   "reportStatusVoid": "Voided",
   "offlinePendingOps": "Offline mode. {count} pending operations.",
-  "@offlinePendingOps": {"placeholders": {"count": {"type": "int"}}},
+  "@offlinePendingOps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offlineWillSync": "Offline mode. Will sync on reconnect.",
   "offlineOpsDropped": "{count} offline operation(s) could not be synced and were discarded.",
-  "@offlineOpsDropped": {"placeholders": {"count": {"type": "int"}}},
+  "@offlineOpsDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "enablePromoPack": "Enable Promo Pack",
   "promoPackSubtitle": "Creates a promotional ticket type with configurable price and quantity",
   "promoPrice": "Promo price",
   "promoQty": "Ticket quantity",
   "ticketTypePromo": "Promo",
   "promoTicketsCreated": "{count} promo tickets created successfully",
-  "@promoTicketsCreated": {"placeholders": {"count": {"type": "int"}}},
+  "@promoTicketsCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "promoCreatingTickets": "Creating {current} of {total}...",
-  "@promoCreatingTickets": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
-  "reportCatPromo": "Promo"
+  "@promoCreatingTickets": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "reportCatPromo": "Promo",
+  "profile": "Profile",
+  "profileSubtitle": "Your account, security and preferences",
+  "accountData": "Account details",
+  "security": "Security",
+  "preferences": "Preferences",
+  "organization": "Organization",
+  "profilePhoto": "Profile photo",
+  "changePhoto": "Change photo",
+  "removePhoto": "Remove photo",
+  "phone": "Phone",
+  "phoneOptional": "Phone (optional)",
+  "emailCannotChange": "Email cannot be changed",
+  "profileSaved": "Profile updated",
+  "profileSaveError": "Could not save profile",
+  "photoTooLarge": "Image exceeds 2 MB",
+  "photoUploadError": "Could not upload photo",
+  "passwordChangeError": "Could not change password",
+  "signOutOtherSessions": "Sign out other devices",
+  "signOutOtherSessionsHint": "Useful if you lost a phone or shared your account",
+  "otherSessionsClosed": "Other sessions were closed",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "orgCommercialName": "Trade name",
+  "orgLegalName": "Legal name",
+  "orgTaxId": "Tax ID",
+  "orgAddress": "Address",
+  "orgContactEmail": "Contact email",
+  "orgContactPhone": "Contact phone",
+  "orgLogo": "Logo",
+  "orgSaved": "Organization updated",
+  "orgSaveError": "Could not save organization",
+  "orgAdminOnly": "Only an administrator can edit these details",
+  "orgBillingHint": "These details are used for billing"
 }

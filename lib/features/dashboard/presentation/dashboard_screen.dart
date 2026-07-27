@@ -221,6 +221,19 @@ class DashboardScreen extends ConsumerWidget {
                 context.push('/events');
               },
             ),
+            // El perfil va antes de Configuración: es lo personal del usuario,
+            // mientras que Configuración es del sistema y la organización.
+            ListTile(
+              leading: Icon(Icons.person_outline,
+                  color: isDark ? Colors.white70 : Colors.black87),
+              title: Text(l10n.profile,
+                  style:
+                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              onTap: () {
+                context.pop();
+                context.push('/profile');
+              },
+            ),
             ListTile(
               leading: Icon(Icons.settings,
                   color: isDark ? Colors.white70 : Colors.black87),

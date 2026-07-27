@@ -13,6 +13,7 @@ import '../../features/tickets/presentation/ticket_list_screen.dart';
 import '../../features/events/presentation/event_selector_screen.dart';
 import '../../features/events/presentation/create_event_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/settings/presentation/user_management_screen.dart';
 import '../../features/settings/presentation/device_management_screen.dart';
 import '../../features/settings/presentation/event_staff_screen.dart';
@@ -154,6 +155,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/event_staff',
         builder: (context, state) => const EventStaffScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/settings',
