@@ -64,7 +64,11 @@
   #
   # connect-src tiene que listar el proyecto Supabase real. REEMPLAZAR
   # PROJECT por el subdominio del proyecto antes de subir esto.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://PROJECT.supabase.co wss://PROJECT.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  # fonts.gstatic.com es una concesión conocida, no un descuido: CanvasKit baja
+  # Roboto de ahí como fuente de respaldo y el build no la empaqueta. Sin esta
+  # excepción el texto no renderiza. Se elimina cuando Roboto se incluya como
+  # asset del proyecto — ver "Pendientes conocidos" en DEPLOY.md.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://fonts.gstatic.com https://PROJECT.supabase.co wss://PROJECT.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 </IfModule>
 
 # --------------------------------------------------------------------------

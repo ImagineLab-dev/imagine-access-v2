@@ -77,6 +77,14 @@ def read_env_file(path: Path) -> dict:
 def run_flutter_build(url: str, key: str) -> None:
     cmd = [
         find_flutter(), "build", "web", "--release",
+        # Sin esto Flutter carga CanvasKit desde www.gstatic.com en runtime: la
+        # app no arranca sin internet y la CSP la bloquea. Es el mismo problema
+        # que ZXing y pdf.js, pero en el propio renderer.
+        "--no-web-resources-cdn",
+        # Evita que flutter_bootstrap.js registre el flutter_service_worker.js
+        # que ya no generamos. Al no existir, el fallback SPA le devolvía
+        # index.html y el navegador rechazaba el MIME type text/html.
+        "--pwa-strategy=none",
         f"--dart-define=SUPABASE_URL={url}",
         f"--dart-define=SUPABASE_ANON_KEY={key}",
     ]
