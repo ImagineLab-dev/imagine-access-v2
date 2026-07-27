@@ -22,6 +22,34 @@ funcional completa incluido el escaneo de QR en puerta y la cola offline.
 | WordPress actual | Se reemplaza (requiere backup previo, ver §8) |
 | PIN de dispositivo | Se cambia por token de sesión con expiración (§6) |
 | Carpetas nativas | Tag `pre-pwa-native` y borrado |
+| Stack | Se migra el Flutter existente, no se reescribe (§1.1) |
+
+### 1.1 Por qué se mantiene Flutter y no se reescribe en un stack web
+
+"PWA" describe cómo se instala y se comporta la app en el navegador (manifest + service
+worker + HTTPS), no el lenguaje. Flutter compila a JS/WASM y produce una PWA válida. La
+decisión real evaluada fue si convenía reescribir en React/Next + TypeScript.
+
+**A favor de migrar (opción elegida):**
+
+- Son 14.4k LOC de lógica ya depurada: wizard de tickets (875), creación de eventos (1070),
+  generación de PDF (746), guards multi-tenant, cola offline, i18n en 3 idiomas, integración
+  con 15 Edge Functions. Los últimos commits del repo son correcciones finas sobre esa
+  lógica (packs promocionales, precios, timezone, validación) — bugs que costaron encontrar
+  y que un rewrite reintroduce.
+- Las debilidades reales de Flutter web —SEO, primera carga anónima, contenido de texto
+  denso— **no aplican**: es una herramienta interna detrás de login, tipo app, que el
+  personal instala una vez por evento y queda cacheada por el service worker.
+- Estimación: 3-5 semanas contra 6-10 de un rewrite.
+
+**En contra (aceptado conscientemente):** Flutter web es un impuesto técnico permanente —
+rendering en canvas, rarezas de Safari, huecos del ecosistema de plugins. Si el producto
+pasara a ser público con SEO y landing, la decisión debería revisarse.
+
+**El argumento más fuerte del rewrite quedó neutralizado:** en JS hay librerías de QR
+mejores que el ZXing que arrastra `mobile_scanner`, pero Flutter web puede llamar
+JavaScript directo vía `dart:js_interop`. Se puede envolver `zxing-wasm` o
+`BarcodeDetector` en un shim chico y usarlo desde el scanner de Flutter (ver §4.2).
 
 **Fuera de alcance:** auditoría de RLS (ver §10), detección de duplicados en validación
 offline (limitación preexistente, §5), rendimiento del `refreshSession()` previo a cada
@@ -156,9 +184,18 @@ y en pantalla, con luz buena y mala, contra una cola simulada de personas.
 **Criterio de aceptación:** detección en menos de 1.5s de forma consistente.
 
 **Contingencias si Safari no llega, en orden:**
+
 1. Bajar la resolución del video y recortar a un ROI central — ZXing procesa mucho menos píxel.
-2. `zxing-wasm` como lector custom (port a WASM, notablemente más rápido que zxing-js).
+2. **Shim de `dart:js_interop` a `zxing-wasm`.** No estamos atados al ZXing que trae
+   `mobile_scanner`: Flutter web puede llamar cualquier librería JS. Un módulo chico
+   (~50 líneas) que exponga `Future<String?> decode(ImageData)` sobre `zxing-wasm` —port a
+   WASM, notablemente más rápido que zxing-js— reemplaza al lector del plugin manteniendo
+   el resto (cámara, permisos, ciclo de vida, UI). El mismo shim puede usar
+   `BarcodeDetector` cuando existe (Chrome/Android) y caer a WASM en Safari.
 3. Aceptar que en iPhone la vía primaria sea `/document_search`, que ya existe en la app.
+
+La contingencia 2 es la que sostiene la decisión de §1.1: la ventaja de un stack web en
+cuanto a librerías de QR es recuperable sin reescribir la app.
 
 Si ninguna alcanza, se replantea el alcance con el usuario antes de seguir.
 
@@ -374,7 +411,7 @@ Ningún ítem se declara "verificado" sin la matriz completa; los parciales se r
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| ZXing inusable en Safari | Rompe el caso de uso principal | Etapa 2 lo mide antes de construir encima; 3 contingencias en §4.2 |
+| ZXing inusable en Safari | Rompe el caso de uso principal | Etapa 2 lo mide antes de construir encima; 3 contingencias en §4.2, siendo el shim de js_interop a `zxing-wasm` la que da margen real |
 | iOS purga storage de la cola offline | Pérdida de validaciones pendientes | `navigator.storage.persist()`; instalada en pantalla de inicio, iOS no aplica el límite de 7 días |
 | Bundle pesado en 4G en la puerta | Primera carga lenta | Medir en etapa 0; evaluar `skwasm` vs `canvaskit` |
 | Reemplazar el WordPress es irreversible | Pérdida del sitio actual | Backup como paso bloqueante (§8.4) |
