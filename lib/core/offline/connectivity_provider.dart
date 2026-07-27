@@ -11,8 +11,19 @@ import 'offline_queue_service.dart';
 
 export '../platform/connectivity_service.dart' show AppConnectivity;
 
-/// Endpoint de salud de GoTrue: responde sin apikey y es liviano.
-String _probeUrl() => '${Env.supabaseUrl}/auth/v1/health';
+/// Endpoint de salud de GoTrue: liviano y sin efectos secundarios.
+///
+/// La clave va por query string y no por cabecera a propósito: la sonda usa
+/// `mode: 'no-cors'`, que descarta las cabeceras no estándar, así que un
+/// `apikey:` nunca llegaría. Sin la clave, Kong responde 401 y el navegador
+/// ensucia la consola con un error en cada sondeo. La detección funcionaba
+/// igual —con no-cors alcanza con que la promesa resuelva— pero el ruido
+/// hacía parecer que algo estaba roto.
+///
+/// Exponer la clave anon en la URL no agrega riesgo: ya viaja en el bundle
+/// JS, es pública por diseño, y la barrera real es RLS.
+String _probeUrl() =>
+    '${Env.supabaseUrl}/auth/v1/health?apikey=${Uri.encodeQueryComponent(Env.supabaseAnonKey)}';
 
 final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   return ConnectivityService(
