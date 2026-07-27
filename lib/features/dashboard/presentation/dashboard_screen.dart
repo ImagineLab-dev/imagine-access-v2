@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../events/presentation/event_state.dart';
 import '../../events/data/event_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/dashboard_repository.dart';
+import '../../profile/data/profile_repository.dart';
 import 'widgets/admin_dashboard_view.dart';
 import 'widgets/rrpp_dashboard_view.dart';
 import 'widgets/door_dashboard_view.dart';
@@ -103,7 +105,10 @@ class DashboardScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
-          child: Column(
+          // Sin tope de ancho, en un monitor las tarjetas se estiran a casi
+          // 1000px con el número en una esquina y la etiqueta en la otra.
+          child: ContenidoCentrado(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ROLE-BASED DASHBOARD CONTENT
@@ -154,7 +159,8 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               const RecentActivityList(),
               const SizedBox(height: 40),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -178,8 +184,35 @@ class DashboardScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.flash_on,
-                      size: 48, color: AppTheme.neonBlue),
+                  // Foto del usuario si la cargó; si no, el rayo de la marca.
+                  // Los dispositivos de puerta entran con alias y PIN, sin
+                  // cuenta de usuario, así que nunca tienen foto.
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final avatar = ref
+                          .watch(profileProvider)
+                          .valueOrNull
+                          ?.avatarUrl;
+
+                      if (avatar == null || avatar.isEmpty) {
+                        return const Icon(Icons.flash_on,
+                            size: 48, color: AppTheme.neonBlue);
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          context.pop();
+                          context.push('/profile');
+                        },
+                        child: CircleAvatar(
+                          radius: 30,
+                          backgroundColor:
+                              AppTheme.neonBlue.withValues(alpha: 0.2),
+                          backgroundImage: NetworkImage(avatar),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 8),
                   Consumer(
                     builder: (context, ref, _) {
@@ -211,19 +244,6 @@ class DashboardScreen extends ConsumerWidget {
           ),
           if (!isDoor) ...[
             ListTile(
-              leading: Icon(Icons.event,
-                  color: isDark ? Colors.white70 : Colors.black87),
-              title: Text(l10n.events,
-                  style:
-                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
-              onTap: () {
-                context.pop();
-                context.push('/events');
-              },
-            ),
-            // El perfil va antes de Configuración: es lo personal del usuario,
-            // mientras que Configuración es del sistema y la organización.
-            ListTile(
               leading: Icon(Icons.person_outline,
                   color: isDark ? Colors.white70 : Colors.black87),
               title: Text(l10n.profile,
@@ -232,6 +252,17 @@ class DashboardScreen extends ConsumerWidget {
               onTap: () {
                 context.pop();
                 context.push('/profile');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.event,
+                  color: isDark ? Colors.white70 : Colors.black87),
+              title: Text(l10n.events,
+                  style:
+                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              onTap: () {
+                context.pop();
+                context.push('/events');
               },
             ),
             ListTile(

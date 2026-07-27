@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../theme/app_theme.dart';
 
-class CustomInput extends StatelessWidget {
+class CustomInput extends StatefulWidget {
   final String label;
   final String? hint;
   final TextEditingController? controller;
@@ -34,17 +35,29 @@ class CustomInput extends StatelessWidget {
   });
 
   @override
+  State<CustomInput> createState() => _CustomInputState();
+}
+
+class _CustomInputState extends State<CustomInput> {
+  /// Solo aplica a campos de contraseña. Arranca oculto siempre: mostrarla por
+  /// defecto expondría la clave a quien esté al lado, que en la puerta de un
+  /// evento es bastante gente.
+  bool _revelada = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+    final l10n = AppLocalizations.of(context);
+    final esPassword = widget.obscureText;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            label.toUpperCase(),
+            widget.label.toUpperCase(),
             style: TextStyle(
               color: isDark ? Colors.white70 : Colors.black54,
               fontSize: 12,
@@ -66,38 +79,51 @@ class CustomInput extends StatelessWidget {
             ],
           ),
           child: TextFormField(
-            controller: controller,
-            initialValue: controller == null ? initialValue : null,
-            enabled: enabled,
-            keyboardType: keyboardType,
-            obscureText: obscureText,
-            validator: validator,
-            onChanged: onChanged,
+            controller: widget.controller,
+            initialValue: widget.controller == null ? widget.initialValue : null,
+            enabled: widget.enabled,
+            keyboardType: widget.keyboardType,
+            obscureText: esPassword && !_revelada,
+            validator: widget.validator,
+            onChanged: widget.onChanged,
             style: TextStyle(
-              color: enabled 
+              color: widget.enabled 
                 ? (isDark ? Colors.white : Colors.black87)
                 : (isDark ? Colors.white60 : Colors.black38),
               fontWeight: FontWeight.w500,
               fontSize: 16,
             ),
             decoration: InputDecoration(
-              hintText: hint,
-              prefixText: prefixText,
+              hintText: widget.hint,
+              prefixText: widget.prefixText,
               prefixStyle: TextStyle(
                   color: isDark ? Colors.white70 : Colors.black54, 
                   fontWeight: FontWeight.bold,
                   fontSize: 16
               ),
-              prefixIcon: prefixWidget ?? ((prefixIcon ?? icon) != null 
+              prefixIcon: widget.prefixWidget ?? ((widget.prefixIcon ?? widget.icon) != null 
                   ? Icon(
-                      prefixIcon ?? icon, 
-                      color: enabled 
+                      widget.prefixIcon ?? widget.icon, 
+                      color: widget.enabled 
                         ? (isDark ? Colors.white54 : Colors.black45)
                         : (isDark ? Colors.white24 : Colors.black26)
                     )
                   : null),
+              suffixIcon: esPassword
+                  ? IconButton(
+                      icon: Icon(
+                        _revelada
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                        size: 20,
+                      ),
+                      tooltip: _revelada ? l10n.hidePassword : l10n.showPassword,
+                      onPressed: () => setState(() => _revelada = !_revelada),
+                    )
+                  : null,
               fillColor: isDark 
-                ? AppTheme.surfaceColor.withValues(alpha: enabled ? 0.5 : 0.2)
+                ? AppTheme.surfaceColor.withValues(alpha: widget.enabled ? 0.5 : 0.2)
                 : AppTheme.lightInput,
               filled: true,
               border: OutlineInputBorder(

@@ -1509,4 +1509,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get orgBillingHint => 'Estos datos se usan para la facturacion';
+
+  @override
+  String get showPassword => 'Mostrar contraseña';
+
+  @override
+  String get hidePassword => 'Ocultar contraseña';
 }

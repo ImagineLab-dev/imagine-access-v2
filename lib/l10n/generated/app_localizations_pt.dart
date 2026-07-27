@@ -1510,4 +1510,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get orgBillingHint => 'Estes dados sao usados para faturamento';
+
+  @override
+  String get showPassword => 'Mostrar senha';
+
+  @override
+  String get hidePassword => 'Ocultar senha';
 }

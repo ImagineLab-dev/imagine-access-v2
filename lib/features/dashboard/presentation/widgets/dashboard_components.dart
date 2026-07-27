@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
@@ -206,8 +207,9 @@ class QuickActions extends StatelessWidget {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount:
+                Responsive.columnas(context, anchoObjetivo: 340, maximo: 3),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
             childAspectRatio: 1.8,

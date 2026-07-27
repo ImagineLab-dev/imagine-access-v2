@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -19,10 +20,10 @@ class DoorDashboardView extends ConsumerWidget {
       children: [
         GridView.count(
           shrinkWrap: true,
-          crossAxisCount: 2,
+          crossAxisCount: Responsive.columnas(context),
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 1.75,
+          childAspectRatio: Responsive.proporcionTarjeta(context),
           physics: const NeverScrollableScrollPhysics(),
           children: [
             MetricCard(

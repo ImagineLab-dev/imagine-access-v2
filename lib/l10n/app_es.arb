@@ -681,5 +681,7 @@
   "orgSaved": "Organizacion actualizada",
   "orgSaveError": "No se pudo guardar la organizacion",
   "orgAdminOnly": "Solo un administrador puede editar estos datos",
-  "orgBillingHint": "Estos datos se usan para la facturacion"
+  "orgBillingHint": "Estos datos se usan para la facturacion",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña"
 }

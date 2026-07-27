@@ -681,5 +681,7 @@
   "orgSaved": "Organization updated",
   "orgSaveError": "Could not save organization",
   "orgAdminOnly": "Only an administrator can edit these details",
-  "orgBillingHint": "These details are used for billing"
+  "orgBillingHint": "These details are used for billing",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password"
 }

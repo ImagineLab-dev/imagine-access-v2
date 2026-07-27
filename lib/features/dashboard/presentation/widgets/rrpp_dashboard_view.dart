@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -45,10 +46,10 @@ class RrppDashboardView extends ConsumerWidget {
       children: [
         GridView.count(
           shrinkWrap: true,
-          crossAxisCount: 2,
+          crossAxisCount: Responsive.columnas(context),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 1.3,
+          childAspectRatio: Responsive.proporcionTarjeta(context) * 0.75,
           physics: const NeverScrollableScrollPhysics(),
           children: [
             EliteMetricCard(
