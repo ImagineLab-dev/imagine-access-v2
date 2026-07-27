@@ -1,5 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
@@ -48,22 +47,30 @@ class ErrorHandler {
   static NetworkError analyzeError(dynamic error) {
     final errorString = error.toString().toLowerCase();
     
-    // Error de conexión (sin internet)
-    if (error is SocketException || 
+    // Error de conexión (sin internet).
+    //
+    // En web el mensaje depende del navegador y no hay una excepción tipada
+    // que los unifique, así que se matchea por texto:
+    //   Chrome/Edge → "Failed to fetch"
+    //   Safari      → "Load failed"
+    //   Firefox     → "NetworkError when attempting to fetch resource"
+    if (errorString.contains('failed to fetch') ||
+        errorString.contains('load failed') ||
+        errorString.contains('networkerror') ||
+        errorString.contains('network error') ||
         errorString.contains('socket') ||
-        errorString.contains('network') ||
         errorString.contains('failed host lookup') ||
-        errorString.contains('connection refused')) {
+        errorString.contains('connection refused') ||
+        errorString.contains('connection closed')) {
       return const NetworkError(
         type: NetworkErrorType.noConnection,
         message: 'Sin conexión a internet. Verifique su red.',
         isRetryable: true,
       );
     }
-    
+
     // Timeout
-    if (errorString.contains('timeout') || 
-        error is HttpException && errorString.contains('connection closed')) {
+    if (errorString.contains('timeout')) {
       return const NetworkError(
         type: NetworkErrorType.timeout,
         message: 'La operación tardó demasiado. Intente nuevamente.',
