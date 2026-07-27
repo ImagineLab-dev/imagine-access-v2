@@ -1,37 +1,35 @@
-import 'dart:async';
 import 'dart:developer' as dev;
-import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../config/env.dart';
+import '../platform/browser_connectivity_signals.dart';
+import '../platform/connectivity_service.dart';
 import 'offline_queue_service.dart';
 
-/// Simple connectivity status without native plugin dependency.
-enum AppConnectivity { online, offline }
+export '../platform/connectivity_service.dart' show AppConnectivity;
 
-final connectivityStatusProvider =
-    StreamProvider<AppConnectivity>((ref) {
-  return Stream.periodic(const Duration(seconds: 5), (i) => i)
-      .asyncMap((i) async {
-    try {
-      final result = await InternetAddress.lookup('google.com')
-          .timeout(const Duration(seconds: 3));
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty
-          ? AppConnectivity.online
-          : AppConnectivity.offline;
-    } catch (_) {
-      return AppConnectivity.offline;
-    }
-  }).distinct();
+/// Endpoint de salud de GoTrue: responde sin apikey y es liviano.
+String _probeUrl() => '${Env.supabaseUrl}/auth/v1/health';
+
+final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
+  return ConnectivityService(
+    BrowserConnectivitySignals(probeUrl: _probeUrl()),
+  );
 });
 
-/// Watches connectivity and auto-processes offline queue when connection is restored
+final connectivityStatusProvider = StreamProvider<AppConnectivity>((ref) {
+  return ref.watch(connectivityServiceProvider).watch();
+});
+
+/// Observa la conectividad y procesa la cola offline al recuperar conexión.
 final offlineAutoSyncProvider = Provider<void>((ref) {
   ref.listen<AsyncValue<AppConnectivity>>(connectivityStatusProvider,
       (previous, next) {
     final wasOffline = previous?.valueOrNull == AppConnectivity.offline;
-    final isOnline = next.valueOrNull != null &&
-        next.valueOrNull == AppConnectivity.online;
+    final isOnline = next.valueOrNull == AppConnectivity.online;
 
     if (wasOffline && isOnline) {
       if (kDebugMode) {
@@ -39,9 +37,7 @@ final offlineAutoSyncProvider = Provider<void>((ref) {
             name: 'OfflineAutoSync');
       }
       final queue = ref.read(offlineQueueProvider);
-      queue
-          .processQueue(client: Supabase.instance.client)
-          .then((result) {
+      queue.processQueue(client: Supabase.instance.client).then((result) {
         if (kDebugMode) {
           dev.log(
               'Offline sync: ${result.succeeded} ok, ${result.failed} failed, ${result.remaining} remaining',
