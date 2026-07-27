@@ -73,3 +73,8 @@ UsersHp.git-credentials-imagine
 
 # Scratch de superpowers (subagent-driven development)
 .superpowers/
+
+# Artefactos de builds anteriores
+build_old/
+
+# Nunca versionar credenciales
