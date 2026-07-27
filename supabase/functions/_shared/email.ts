@@ -85,7 +85,10 @@ export const sendEmail = async (
     console.log(`Sending email via ${SMTP_HOST}...`);
 
     try {
-        const fromDomain = SMTP_USER.split('@')[1] || 'imaginelab.shop';
+        // El dominio del Message-ID sale siempre del remitente real. El fallback
+        // solo aplica si SMTP_USER no tuviera "@", que sería configuración rota;
+        // se deja para no generar un Message-ID inválido en ese caso.
+        const fromDomain = SMTP_USER.split('@')[1] || 'imaginecloud.digital';
         const info = await transporter.sendMail({
             from: `"Imagine Access" <${SMTP_USER}>`,
             to,
