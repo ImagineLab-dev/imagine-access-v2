@@ -37,11 +37,36 @@
     Header set Expires "0"
   </FilesMatch>
 
-  # El resto lo revalida el service worker por hash de contenido, así que
-  # puede cachearse agresivamente.
-  <FilesMatch "\.(js|css|wasm|png|jpg|jpeg|svg|woff2?|ttf|otf|bin|json)$">
+  # Todo lo demás: revalidar contra el servidor antes de usar.
+  #
+  # `no-cache` NO significa "no cachear": el archivo se guarda igual, pero el
+  # navegador pregunta si cambió antes de servirlo. Con ETag eso es un 304 de
+  # unos pocos bytes, así que el costo es despreciable — y el service worker
+  # es quien resuelve el offline de verdad, no esta capa.
+  #
+  # Aquí NO va `immutable`. Un build de Flutter web casi no tiene nombres con
+  # hash de contenido: `main.dart.js` y `flutter_bootstrap.js` se llaman igual
+  # en cada deploy, con contenido distinto. Marcarlos inmutables por un año
+  # hace que el navegador jamás los vuelva a pedir y que ningún deploy llegue
+  # a los usuarios ya instalados. Pasó: un fix desplegado y verificado en el
+  # servidor seguía sin aparecer en el navegador.
+  <FilesMatch "\.(js|css|wasm|html|json|bin)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  # Solo lo que lleva la versión en el nombre puede cachearse a largo plazo,
+  # porque un cambio de contenido implica un nombre distinto.
+  <FilesMatch "-[0-9]+\.[0-9]+\.[0-9]+\.min\.js$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
+
+  # Imágenes y fuentes: cambian junto con un deploy, pero servir una versión
+  # vieja unas horas no rompe nada.
+  <FilesMatch "\.(png|jpg|jpeg|svg|webp|woff2?|ttf|otf|ico)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
+  # Estos nunca se cachean: son los que definen qué versión corre.
   <FilesMatch "^(index\.html|sw\.js|manifest\.json|version\.json)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
   </FilesMatch>
