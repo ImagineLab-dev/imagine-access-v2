@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_roles.dart';
+import '../platform/host.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
@@ -39,7 +40,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuth = user != null || deviceSession != null;
 
       if (!isAuth && !isPublicEntry) return '/welcome';
-      if (isAuth && isPublicEntry) return '/dashboard';
+      if (isAuth && isPublicEntry) {
+        // Entrando por super-admin.imaginecloud.digital se aterriza en el
+        // panel en vez del dashboard. Es comodidad, no seguridad: sin el rol
+        // el guard de más abajo lo manda igual al dashboard.
+        return esHostSuperAdmin && AppRoles.isSuperadmin(role)
+            ? '/super-admin'
+            : '/dashboard';
+      }
 
       // Role Guards
       final path = state.matchedLocation;
