@@ -8,6 +8,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/platform/camara.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/glass_card.dart';
 import '../data/scanner_repository.dart';
@@ -46,9 +47,24 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     _cameraController = MobileScannerController(
       detectionSpeed: DetectionSpeed.noDuplicates,
       facing: CameraFacing.back,
+      // Solo QR. Vacío significa "buscá los quince formatos de código de barras
+      // en cada cuadro", y en web eso lo resuelve ZXing por software: el
+      // trabajo por cuadro se multiplica y la lectura se vuelve lenta e
+      // intermitente justo cuando hay una fila esperando en la puerta.
+      formats: const [BarcodeFormat.qrCode],
+      // La implementación web del plugin ignora esta opción —construye el
+      // constraint solo con facingMode— pero queda correcta para el día que se
+      // compile a móvil. En web la resolución la sube `mejorarCamara()`.
+      cameraResolution: const Size(1280, 720),
     );
     WidgetsBinding.instance.addObserver(this);
     _detectionWindowStart = DateTime.now();
+
+    // El plugin pide la cámara sin resolución ni modo de enfoque, así que el
+    // navegador entrega su modo por defecto: en muchos Android, 640x480 con
+    // foco fijo. Un QR impreso entra borroso y no se lee. Esto ajusta la pista
+    // de video una vez que el plugin la creó.
+    WidgetsBinding.instance.addPostFrameCallback((_) => mejorarCamara());
   }
 
   @override
