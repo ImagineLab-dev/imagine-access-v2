@@ -673,7 +673,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lightMode => 'Claro';
 
   @override
-  String get reloadLocaleData => 'Recargar datos e interfaz';
+  String get reloadLocaleData =>
+      'Recarga los datos y busca una versión nueva de la app';
 
   @override
   String get updated => '¡Actualizado!';
@@ -1738,4 +1739,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorGeneric => 'No pudimos cargar esta información.';
+
+  @override
+  String get updateAvailable =>
+      'Hay una versión nueva. Tocá \"Actualizar\" abajo.';
+
+  @override
+  String get upToDate => 'Datos recargados. Ya tenés la última versión.';
 }

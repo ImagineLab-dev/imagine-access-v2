@@ -14,6 +14,7 @@ import 'package:imagine_access/features/auth/presentation/auth_controller.dart';
 import 'package:imagine_access/features/settings/data/settings_repository.dart';
 import 'package:imagine_access/features/events/data/event_repository.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../../../core/platform/pwa.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -126,24 +127,39 @@ class SettingsScreen extends ConsumerWidget {
             title: l10n.forceRefresh,
             subtitle: l10n.reloadLocaleData,
             onTap: () async {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(l10n.refreshing)));
+              final mensajero = ScaffoldMessenger.of(context);
+              mensajero.showSnackBar(SnackBar(content: Text(l10n.refreshing)));
 
-              // Force invalidate providers
+              // Recarga de datos.
               ref.invalidate(localeProvider);
               ref.invalidate(themeNotifierProvider);
               ref.invalidate(defaultCurrencyProvider);
-              ref.invalidate(eventsProvider); // Reload events list
-              ref.invalidate(dashboardMetricsProvider); // Reset metrics
+              ref.invalidate(eventsProvider);
+              ref.invalidate(dashboardMetricsProvider);
 
-              await Future.delayed(const Duration(seconds: 1)); // UX delay
+              // Y de la app.
+              //
+              // Antes esto solo refrescaba los datos, pese a llamarse "Forzar
+              // Actualización": quien lo tocaba esperando la versión nueva
+              // seguía con la vieja y sin ninguna señal de que no había pasado
+              // nada. El chequeo automático del service worker es horario y
+              // solo corre con la app abierta, así que hacía falta una vía
+              // manual de verdad — sobre todo en iPhone, donde el sistema
+              // suspende la app instalada y ese temporizador deja de correr.
+              final resultado = await buscarActualizacion();
 
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(l10n.updated),
-                    backgroundColor: Colors.green));
-              }
+              mensajero.hideCurrentSnackBar();
+              mensajero.showSnackBar(SnackBar(
+                content: Text(switch (resultado) {
+                  // El aviso para aplicarla lo dibuja el propio service worker.
+                  ResultadoActualizacion.nueva => l10n.updateAvailable,
+                  ResultadoActualizacion.alDia => l10n.upToDate,
+                  ResultadoActualizacion.sinSoporte => l10n.updated,
+                }),
+                backgroundColor: resultado == ResultadoActualizacion.nueva
+                    ? AppTheme.neonBlue
+                    : Colors.green,
+              ));
             },
           ),
 

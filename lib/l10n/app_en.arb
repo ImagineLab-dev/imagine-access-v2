@@ -225,7 +225,7 @@
   "retry": "RETRY",
   "darkMode": "Dark",
   "lightMode": "Light",
-  "reloadLocaleData": "Reload locale & data",
+  "reloadLocaleData": "Reloads data and checks for a new version of the app",
   "updated": "Updated!",
   "addMember": "Add Member",
   "unknown": "Unknown",
@@ -787,5 +787,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "updateAvailable": "A new version is available. Tap \"Update\" below.",
+  "upToDate": "Data reloaded. You're on the latest version."
 }

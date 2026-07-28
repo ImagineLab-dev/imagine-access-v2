@@ -87,7 +87,27 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_isProcessing) return;
-    _isProcessing = true; // Set synchronously before async gap
+
+    // El código se busca ANTES de marcar el escáner como ocupado.
+    //
+    // Antes se marcaba ocupado en la primera línea y solo se liberaba dentro
+    // del camino que encuentra un código. ZXing puede reportar una detección
+    // sin texto decodificado, o una lista vacía; cuando eso pasaba una sola
+    // vez, `_isProcessing` quedaba en true para siempre y TODAS las lecturas
+    // siguientes salían por el return de arriba. La cámara seguía andando y el
+    // escáner quedaba muerto sin ninguna señal — el operador en la puerta
+    // apunta al QR y no pasa nada.
+    String? codigo;
+    for (final barcode in capture.barcodes) {
+      final valor = barcode.rawValue;
+      if (valor != null && valor.isNotEmpty) {
+        codigo = valor;
+        break; // Solo el primero
+      }
+    }
+    if (codigo == null) return;
+
+    _isProcessing = true; // Antes del hueco asíncrono
 
     final start = _detectionWindowStart;
     if (start != null) {
@@ -100,13 +120,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       }
     }
 
-    final List<Barcode> barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      if (barcode.rawValue != null) {
-        _processCode(barcode.rawValue!);
-        break; // Process only first code
-      }
-    }
+    _processCode(codigo);
   }
 
   Future<void> _processCode(String code) async {
@@ -143,7 +157,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
         // Check if ticket was expired
         if (result['expired'] == true) {
-          setState(() => _isProcessing = false);
+          // El escáner NO se libera acá: si se libera antes del diálogo, la
+          // cámara sigue leyendo por detrás y valida el siguiente ticket
+          // mientras el operador todavía está leyendo el rechazo. Se libera al
+          // cerrarlo.
           HapticFeedback.heavyImpact();
           await Future.delayed(const Duration(milliseconds: 100));
           HapticFeedback.heavyImpact();
@@ -194,7 +211,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                 ),
               ],
             ),
-          );
+          ).then((_) {
+            // Recién acá vuelve a escanear, y se reinicia también el punto
+            // cero de la medición de latencia.
+            if (mounted) _resetScanner();
+          });
           return;
         }
 

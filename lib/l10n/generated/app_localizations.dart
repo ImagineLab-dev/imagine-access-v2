@@ -1411,7 +1411,7 @@ abstract class AppLocalizations {
   /// No description provided for @reloadLocaleData.
   ///
   /// In en, this message translates to:
-  /// **'Reload locale & data'**
+  /// **'Reloads data and checks for a new version of the app'**
   String get reloadLocaleData;
 
   /// No description provided for @updated.
@@ -3327,6 +3327,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We couldn\'t load this information.'**
   String get errorGeneric;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version is available. Tap \"Update\" below.'**
+  String get updateAvailable;
+
+  /// No description provided for @upToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Data reloaded. You\'re on the latest version.'**
+  String get upToDate;
 }
 
 class _AppLocalizationsDelegate

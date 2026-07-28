@@ -225,7 +225,7 @@
   "retry": "REINTENTAR",
   "darkMode": "Oscuro",
   "lightMode": "Claro",
-  "reloadLocaleData": "Recargar datos e interfaz",
+  "reloadLocaleData": "Recarga los datos y busca una versión nueva de la app",
   "updated": "¡Actualizado!",
   "addMember": "Agregar Miembro",
   "unknown": "Desconocido",
@@ -763,5 +763,7 @@
   "statusSuspended": "Cuenta suspendida",
   "statusQuotaExhausted": "Sin tickets gratuitos",
   "renewsOn": "Válida hasta el {date}",
-  "errorGeneric": "No pudimos cargar esta información."
+  "errorGeneric": "No pudimos cargar esta información.",
+  "updateAvailable": "Hay una versión nueva. Tocá \"Actualizar\" abajo.",
+  "upToDate": "Datos recargados. Ya tenés la última versión."
 }

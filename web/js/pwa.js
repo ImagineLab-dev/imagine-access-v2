@@ -85,6 +85,40 @@
     });
   }
 
+  var registroActual = null;
+
+  window.imaginePWA = {
+    /**
+     * Busca una versión nueva ahora mismo.
+     *
+     * Existe porque el chequeo automático es horario y solo corre con la app
+     * abierta: alguien que cierra y abre puede quedarse sin saber que hay algo
+     * nuevo hasta la próxima carga. En iPhone importa más, porque el sistema
+     * suspende la app y ese temporizador deja de correr.
+     *
+     * Resuelve 'nueva' si quedó una versión esperando —ahí aparece el aviso
+     * para aplicarla—, 'al-dia' si no hay nada, o 'sin-soporte'.
+     */
+    buscarActualizacion: function () {
+      if (!registroActual) return Promise.resolve('sin-soporte');
+      return registroActual.update()
+        .then(function () {
+          // `update()` resuelve cuando termina de consultar, pero el nuevo
+          // worker puede seguir instalándose. Se le da un momento antes de
+          // decidir, o diría 'al-dia' con la versión nueva a medio instalar.
+          return new Promise(function (r) { setTimeout(r, 1500); });
+        })
+        .then(function () {
+          if (registroActual.waiting) {
+            showUpdateBanner(registroActual.waiting);
+            return 'nueva';
+          }
+          return registroActual.installing ? 'nueva' : 'al-dia';
+        })
+        .catch(function () { return 'sin-soporte'; });
+    },
+  };
+
   var refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', function () {
     if (refreshing) return;   // guard: Chrome puede disparar esto más de una vez
@@ -94,6 +128,7 @@
 
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js').then(function (registration) {
+      registroActual = registration;
       watchForUpdate(registration);
       // Chequeo horario: un dispositivo de puerta puede quedar abierto todo un
       // evento sin recargar nunca.

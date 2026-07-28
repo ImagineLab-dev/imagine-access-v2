@@ -674,7 +674,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lightMode => 'Claro';
 
   @override
-  String get reloadLocaleData => 'Recarregar idioma e dados';
+  String get reloadLocaleData =>
+      'Recarrega os dados e procura uma versão nova do app';
 
   @override
   String get updated => 'Atualizado!';
@@ -1738,4 +1739,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Não conseguimos carregar esta informação.';
+
+  @override
+  String get updateAvailable =>
+      'Há uma versão nova. Toque em \"Atualizar\" abaixo.';
+
+  @override
+  String get upToDate => 'Dados recarregados. Você já está na última versão.';
 }
