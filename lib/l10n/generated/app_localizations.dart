@@ -3183,6 +3183,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Access is suspended. Contact the system administrator to restore it.'**
   String get orgSuspendedBody;
+
+  /// No description provided for @billingCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing country'**
+  String get billingCountry;
+
+  /// No description provided for @billingCountryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'We use it to charge your subscription. You can change it later.'**
+  String get billingCountryHelp;
+
+  /// No description provided for @trialDaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {days} days left in your trial'**
+  String trialDaysLeft(int days);
+
+  /// No description provided for @trialEndsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trial ends today'**
+  String get trialEndsToday;
+
+  /// No description provided for @subscriptionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription expired. You can still view and validate your tickets, but not create new events.'**
+  String get subscriptionExpired;
+
+  /// No description provided for @organizationSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is suspended. Contact us to reactivate it.'**
+  String get organizationSuspended;
+
+  /// No description provided for @subscribeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate subscription'**
+  String get subscribeNow;
+
+  /// No description provided for @planMonthlyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'USD 25 per month'**
+  String get planMonthlyPrice;
+
+  /// No description provided for @planAnnualPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'USD 250 per year (2 months free)'**
+  String get planAnnualPrice;
 }
 
 class _AppLocalizationsDelegate

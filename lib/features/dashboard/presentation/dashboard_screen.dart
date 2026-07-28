@@ -3,6 +3,7 @@ import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/ui/glass_scaffold.dart';
+import '../../../core/ui/subscription_banner.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../events/presentation/event_state.dart';
@@ -108,6 +109,10 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Aviso de suscripción. Se dibuja solo si hay algo que decir
+              // (prueba por vencer, vencida o suspendida); si no, ocupa cero.
+              const SubscriptionBanner(),
+
               // ROLE-BASED DASHBOARD CONTENT
               Consumer(
                 builder: (context, ref, _) {

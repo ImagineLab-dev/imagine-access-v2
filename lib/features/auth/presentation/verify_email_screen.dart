@@ -16,12 +16,14 @@ class VerifyEmailScreen extends ConsumerStatefulWidget {
   final String email;
   final String displayName;
   final String organizationName;
+  final String? country;
 
   const VerifyEmailScreen({
     super.key,
     required this.email,
     required this.displayName,
     required this.organizationName,
+    this.country,
   });
 
   @override
@@ -107,6 +109,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
             _otpController.text.trim(),
             widget.displayName,
             widget.organizationName,
+            country: widget.country,
           );
       if (mounted) context.go('/dashboard');
     } catch (e) {

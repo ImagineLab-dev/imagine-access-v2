@@ -111,6 +111,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             email: extra['email'] as String,
             displayName: extra['displayName'] as String,
             organizationName: extra['organizationName'] as String,
+            country: extra['country'] as String?,
           );
         },
       ),

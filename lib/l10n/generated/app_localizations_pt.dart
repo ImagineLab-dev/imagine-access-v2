@@ -1653,4 +1653,36 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get orgSuspendedBody =>
       'O acesso esta suspenso. Contate o administrador do sistema para reativar.';
+
+  @override
+  String get billingCountry => 'País de faturamento';
+
+  @override
+  String get billingCountryHelp =>
+      'Usamos para cobrar sua assinatura. Você pode alterar depois.';
+
+  @override
+  String trialDaysLeft(int days) {
+    return 'Faltam $days dias do seu teste';
+  }
+
+  @override
+  String get trialEndsToday => 'Seu teste termina hoje';
+
+  @override
+  String get subscriptionExpired =>
+      'Sua assinatura venceu. Você ainda pode ver e validar seus ingressos, mas não criar novos eventos.';
+
+  @override
+  String get organizationSuspended =>
+      'Sua conta está suspensa. Fale conosco para reativá-la.';
+
+  @override
+  String get subscribeNow => 'Ativar assinatura';
+
+  @override
+  String get planMonthlyPrice => 'USD 25 por mês';
+
+  @override
+  String get planAnnualPrice => 'USD 250 por ano (2 meses grátis)';
 }

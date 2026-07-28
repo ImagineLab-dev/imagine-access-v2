@@ -739,5 +739,14 @@
   "tenantEvents": "Eventos",
   "tenantTickets": "Ingressos",
   "orgSuspendedTitle": "Organizacao suspensa",
-  "orgSuspendedBody": "O acesso esta suspenso. Contate o administrador do sistema para reativar."
+  "orgSuspendedBody": "O acesso esta suspenso. Contate o administrador do sistema para reativar.",
+  "billingCountry": "País de faturamento",
+  "billingCountryHelp": "Usamos para cobrar sua assinatura. Você pode alterar depois.",
+  "trialDaysLeft": "Faltam {days} dias do seu teste",
+  "trialEndsToday": "Seu teste termina hoje",
+  "subscriptionExpired": "Sua assinatura venceu. Você ainda pode ver e validar seus ingressos, mas não criar novos eventos.",
+  "organizationSuspended": "Sua conta está suspensa. Fale conosco para reativá-la.",
+  "subscribeNow": "Ativar assinatura",
+  "planMonthlyPrice": "USD 25 por mês",
+  "planAnnualPrice": "USD 250 por ano (2 meses grátis)"
 }

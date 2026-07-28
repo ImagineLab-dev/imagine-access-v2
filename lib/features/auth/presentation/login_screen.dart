@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_controller.dart';
+import '../../../core/billing/paises_dlocal.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/custom_input.dart';
@@ -41,6 +42,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   final _orgController = TextEditingController();
   final _deviceIdController = TextEditingController();
   final _pinController = TextEditingController();
+
+  /// País de facturación. Se precarga con lo que sugiere la zona horaria del
+  /// dispositivo; queda en null si esa zona no es una plaza de dLocal, y ahí el
+  /// campo obliga a elegir en vez de arriesgar un país al azar.
+  String? _pais = paisSugerido();
 
   final _formKeyUser = GlobalKey<FormState>();
   final _formKeyDevice = GlobalKey<FormState>();
@@ -119,6 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               _passwordController.text.trim(),
               _nameController.text.trim(),
               _orgController.text.trim(),
+              country: _pais,
             );
         // Check if email verification is required (no session = OTP sent)
         final session = Supabase.instance.client.auth.currentSession;
@@ -127,6 +134,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             'email': _emailController.text.trim(),
             'displayName': _nameController.text.trim(),
             'organizationName': _orgController.text.trim(),
+            'country': _pais,
           });
           return;
         }
@@ -282,6 +290,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         validator: (v) => v?.isNotEmpty == true
                                             ? null
                                             : l10n.enterCompanyName,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      // País de facturación. Viene precargado
+                                      // con lo que sugiere la zona horaria del
+                                      // dispositivo, pero se puede cambiar: de
+                                      // vacaciones o detrás de una VPN la
+                                      // sugerencia es incorrecta.
+                                      DropdownButtonFormField<String>(
+                                        initialValue: _pais,
+                                        isExpanded: true,
+                                        decoration: InputDecoration(
+                                          labelText: l10n.billingCountry,
+                                          helperText: l10n.billingCountryHelp,
+                                          helperMaxLines: 2,
+                                          prefixIcon: const Icon(
+                                              Icons.public_outlined),
+                                        ),
+                                        items: [
+                                          for (final p in paisesDLocal)
+                                            DropdownMenuItem(
+                                              value: p.codigo,
+                                              child: Text(p.nombre),
+                                            ),
+                                        ],
+                                        validator: (v) =>
+                                            v == null ? l10n.required : null,
+                                        onChanged: (v) =>
+                                            setState(() => _pais = v),
                                       ),
                                       const SizedBox(height: 12),
                                     ],

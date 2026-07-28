@@ -392,6 +392,7 @@ class AuthController extends StateNotifier<bool> {
     required String email,
     required String displayName,
     required String organizationName,
+    String? country,
   }) async {
     bool profileCreated = false;
     for (int attempt = 0; attempt < 3 && !profileCreated; attempt++) {
@@ -403,6 +404,7 @@ class AuthController extends StateNotifier<bool> {
             'email': email,
             'display_name': displayName,
             'organization_name': organizationName,
+            'country': country,
           },
         );
 
@@ -469,8 +471,9 @@ class AuthController extends StateNotifier<bool> {
   }
 
   // 1b. Admin/RRPP Sign Up - Creates NEW ORGANIZATION automatically
-  Future<void> signUpEmail(
-      String email, String password, String displayName, String organizationName) async {
+  Future<void> signUpEmail(String email, String password, String displayName,
+      String organizationName,
+      {String? country}) async {
     state = true;
     try {
       final response = await Supabase.instance.client.auth.signUp(
@@ -491,6 +494,7 @@ class AuthController extends StateNotifier<bool> {
           email: email,
           displayName: displayName,
           organizationName: organizationName,
+          country: country,
         );
 
         // Final verification: ensure role is 'admin' for new signups
@@ -520,7 +524,8 @@ class AuthController extends StateNotifier<bool> {
 
   // 1c. Verify OTP and setup profile after email confirmation
   Future<void> verifyOtpAndSetupProfile(
-      String email, String otp, String displayName, String organizationName) async {
+      String email, String otp, String displayName, String organizationName,
+      {String? country}) async {
     state = true;
     try {
       final response = await Supabase.instance.client.auth.verifyOTP(

@@ -31,10 +31,21 @@ serve(async (req) => {
         if (callerError || !caller) throw new Error('Unauthorized')
 
         // 2. Get Data Body
-        const { user_id, display_name, email, organization_name } = await req.json()
+        const { user_id, display_name, email, organization_name, country } = await req.json()
 
         if (typeof display_name === 'string' && display_name.length > 200) throw new Error('display_name max 200 characters')
         if (typeof organization_name === 'string' && organization_name.length > 200) throw new Error('organization_name max 200 characters')
+
+        // País de facturación. Se valida contra la lista de plazas de dLocal
+        // acá y no solo con el CHECK de la base: un país inválido tiene que
+        // fallar con un mensaje claro, no con un error de constraint que el
+        // cliente no sabe interpretar. Un valor desconocido se descarta en vez
+        // de abortar el alta — quedarse sin cuenta por un país mal mandado es
+        // peor que quedarse sin país, que el admin puede corregir después.
+        const PAISES_DLOCAL = ['PY','AR','UY','BR','CL','BO','CO','PE','EC','PA','DO','CR','GT','SV','MX']
+        const paisFacturacion = (typeof country === 'string' && PAISES_DLOCAL.includes(country))
+            ? country
+            : null
 
         const requestedUserId = typeof user_id === 'string' && user_id.trim().length > 0
             ? user_id.trim()
@@ -158,6 +169,8 @@ serve(async (req) => {
                 name: orgName,
                 slug: uniqueSlug,
                 owner_id: requestedUserId,
+                country: paisFacturacion,
+                // subscription_expires_at lo pone la base: 14 días de prueba.
             })
             .select()
             .single()
