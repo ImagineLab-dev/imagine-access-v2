@@ -1,17 +1,17 @@
 /**
  * Maqueta de la entrada en el correo del ticket.
  *
- * Formato horizontal: QR a la izquierda, datos del evento en el medio, arte
- * del evento a la derecha.
+ * Dos columnas: a la izquierda el arte del evento arriba y el QR abajo; a la
+ * derecha toda la informacion.
+ *
+ * Empezo con tres columnas (QR, datos, arte) y en el celular quedaba ilegible:
+ * Gmail ignora las media queries, asi que no se apilaba, y la columna del
+ * medio terminaba en unos 90px partiendo cada palabra en dos renglones.
  *
  * Todo se arma con <table> y atributos HTML viejos a propósito. Outlook
  * renderiza con el motor de Word: ignora flexbox, grid, y buena parte de
  * position. Una maqueta que se ve perfecta en el navegador puede quedar
  * apilada y rota ahí, que es donde abre buena parte de la gente.
- *
- * En pantallas angostas las tres columnas se apilan por media query. Gmail en
- * Android las ignora, así que los anchos están elegidos para que la fila siga
- * siendo legible aunque no se apile.
  */
 
 export interface DatosEntrada {
@@ -68,50 +68,47 @@ export function bloqueEntrada(d: DatosEntrada): string {
 
     const lugarCompleto = [d.lugar, d.ciudad].filter(Boolean).map(escapar).join(' · ')
 
+    // Dos columnas y no tres: en el celular Gmail ignora las media queries, y
+    // con tres la columna del medio quedaba de unos 90px, partiendo cada
+    // palabra en dos renglones. Con dos, la de datos respira.
+    //
+    // Izquierda: arte arriba, QR abajo. Derecha: toda la informacion.
     return `
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
        style="border-collapse:collapse;background:#fff;border:1px solid #E4E8EF;border-radius:14px;margin:0 0 18px 0;">
   <tr>
-    <td style="padding:22px;">
+    <td style="padding:20px;">
       ${encabezado}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
         <tr>
 
-          <!-- QR -->
-          <td class="ticket-col" valign="top" width="180" style="width:180px;">
-            <img src="cid:${escapar(d.qrCid)}" alt="QR" width="160" height="160"
-                 style="display:block;width:160px;height:160px;border:0;" />
-            <div style="color:#111;font-size:10px;font-weight:700;letter-spacing:.6px;margin-top:10px;line-height:1.4;">
+          <!-- Columna izquierda: arte arriba, QR abajo -->
+          <td class="ticket-col" valign="top" width="170" style="width:170px;padding-right:18px;">
+            ${conArte ? `
+            <img src="${escapar(d.imagenUrl!)}" alt="" width="150"
+                 style="display:block;width:150px;max-width:150px;height:auto;border:0;border-radius:10px;margin:0 0 14px 0;" />` : ''}
+            <img src="cid:${escapar(d.qrCid)}" alt="QR" width="150" height="150"
+                 style="display:block;width:150px;height:150px;border:0;" />
+            <div style="color:#111;font-size:10px;font-weight:700;letter-spacing:.5px;margin-top:8px;line-height:1.4;">
               MOSTRÁ ESTE CÓDIGO AL INGRESAR
             </div>
-            <div style="color:#A8AFBC;font-size:9px;margin-top:4px;word-break:break-all;">${escapar(d.ticketId)}</div>
           </td>
 
-          <!-- Separador punteado, como el troquel de una entrada -->
-          <td class="ticket-sep" width="24" style="width:24px;">
-            <div style="border-left:2px dashed #DCE1EA;height:170px;margin:0 auto;width:1px;"></div>
-          </td>
-
-          <!-- Datos -->
-          <td class="ticket-col" valign="top" style="padding:0;">
-            <div style="color:#111;font-size:19px;font-weight:800;line-height:1.25;padding:0 0 14px 0;">
+          <!-- Columna derecha: toda la informacion -->
+          <td class="ticket-col" valign="top" style="padding:0;border-left:2px dashed #DCE1EA;padding-left:18px;">
+            <div style="color:#111;font-size:20px;font-weight:800;line-height:1.25;padding:0 0 16px 0;">
               ${escapar(d.eventoNombre)}
             </div>
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
-              ${dato('Fecha', `${escapar(d.fecha)} · ${escapar(d.hora)} hs`)}
+              ${dato('Fecha', `${escapar(d.fecha)}`)}
+              ${dato('Hora', `${escapar(d.hora)} hs`)}
               ${dato('Lugar', lugarCompleto)}
               ${dato('Entrada', escapar(d.tipo.toUpperCase()))}
               ${d.organizador ? dato('Organiza', escapar(d.organizador)) : ''}
             </table>
-            ${d.direccion ? `<a href="${escapar(d.direccion)}" style="display:inline-block;margin-top:2px;color:#2563EB;font-size:13px;text-decoration:none;font-weight:600;">Ver ubicación &rsaquo;</a>` : ''}
+            ${d.direccion ? `<a href="${escapar(d.direccion)}" style="display:inline-block;margin-top:4px;color:#2563EB;font-size:13px;text-decoration:none;font-weight:600;">Ver ubicación &rsaquo;</a>` : ''}
+            <div style="color:#C2C8D4;font-size:9px;margin-top:14px;word-break:break-all;">${escapar(d.ticketId)}</div>
           </td>
-
-          ${conArte ? `
-          <!-- Arte del evento -->
-          <td class="ticket-col ticket-art" valign="top" width="170" style="width:170px;padding-left:18px;">
-            <img src="${escapar(d.imagenUrl!)}" alt="" width="160"
-                 style="display:block;width:160px;max-width:160px;height:auto;border:0;border-radius:10px;" />
-          </td>` : ''}
 
         </tr>
       </table>

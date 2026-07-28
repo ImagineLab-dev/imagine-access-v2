@@ -334,34 +334,8 @@ serve(async (req) => {
                     <h2 style="color: #333; margin-top: 0;">¡Hola ${escapeHtml(buyer_name)}!</h2>
                     <p style="color: #555; font-size: 16px; line-height: 1.5;">Aquí tienes ${ticketCount > 1 ? `tus <strong>${ticketCount} accesos</strong>` : 'tu acceso confirmado'} para <strong>${escapeHtml(event.name)}</strong>.</p>
                     
-                    <div style="margin: 30px 0; padding: 20px; background-color: #f9f9f9; border-radius: 8px; border-left: 4px solid #000;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tr>
-                                <td style="padding: 5px 0; color: #777; font-size: 13px;">TIPO</td>
-                                <td style="padding: 5px 0; color: #777; font-size: 13px;">FECHA Y HORA</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 0 0 15px 0; color: #000; font-weight: bold; font-size: 16px;">${escapeHtml(type.toUpperCase())}${ticketCount > 1 ? ` x${ticketCount}` : ''}</td>
-                                <td style="padding: 0 0 15px 0; color: #000; font-weight: bold; font-size: 16px;">${formattedDate}<br><span style="font-weight: normal; font-size: 14px;">A las ${formattedTime} hs</span></td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="padding: 5px 0; color: #777; font-size: 13px;">LUGAR</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="padding:0; color: #000; font-weight: bold; font-size: 16px;">${escapeHtml(event.venue)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="padding:0; color: #555; font-size: 14px;">${escapeHtml(event.address)}${event.city ? `, ${escapeHtml(event.city)}` : ''}</td>
-                            </tr>
-                            ${isInvitation && validUntil ? `<tr>
-                                <td colspan="2" style="padding: 12px 0 5px 0; color: #777; font-size: 13px;">VÁLIDA HASTA</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="padding:0; color: #c0392b; font-weight: bold; font-size: 16px;">⏰ ${parseWallClockTime(validUntil)} hs</td>
-                            </tr>` : ''}
-                        </table>
-                    </div>
-
+                    <!-- El recuadro de datos se eliminó: repetía tipo, fecha y
+                         lugar, que ya vienen dentro de la entrada. -->
                     ${qrSections}
                 </div>
                 <div style="background-color: #f4f4f4; padding: 20px; text-align: center; color: #999; font-size: 12px;">
