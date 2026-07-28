@@ -1,0 +1,34 @@
+# Acceso HTTPS al panel de Easypanel por un dominio que resuelve.
+#
+# El panel escucha en el puerto 3000 por HTTP plano: entrar por ahi manda la
+# contrasena de administrador sin cifrar, y ese panel controla TODOS los
+# sistemas de clientes del VPS.
+#
+# La ruta que trae Easypanel usa yk50nb.easypanel.host, que no resuelve en DNS
+# publico. Esta apunta al mismo servicio interno desde un dominio propio.
+#
+# Archivo escrito a mano, fuera de main.yaml, para que una regeneracion de la
+# configuracion de Easypanel no lo borre.
+http:
+  routers:
+    https-panel-imaginecloud:
+      rule: "Host(`panel.imaginecloud.digital`)"
+      entryPoints: [https]
+      service: panel-imaginecloud
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "panel.imaginecloud.digital"
+
+    http-panel-imaginecloud:
+      rule: "Host(`panel.imaginecloud.digital`)"
+      entryPoints: [http]
+      service: panel-imaginecloud
+      middlewares:
+        - redirect-to-https
+
+  services:
+    panel-imaginecloud:
+      loadBalancer:
+        servers:
+          - url: "http://easypanel:3000"

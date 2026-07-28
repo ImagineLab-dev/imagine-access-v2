@@ -77,13 +77,34 @@ mover el contador a Postgres.
 
 ## Pendiente, por orden de riesgo
 
-### 1. Panel de Easypanel expuesto en el puerto 3000
+### 1. El puerto 3000 del panel sigue abierto en HTTP plano
 
-`http://72.60.51.162:3000` responde desde internet. Es el panel que administra **todos** los
-sistemas de clientes del VPS: chillberry, el CRM, las landings. Comprometerlo es
-comprometer todo.
+**Mitigado, no cerrado.**
 
-Debería quedar detrás de un túnel SSH, o al menos restringido por IP en el firewall.
+El panel de Easypanel administra **todos** los sistemas de clientes del VPS —chillberry, el
+CRM, las landings—, y se servía únicamente por `http://72.60.51.162:3000`, sin cifrado: la
+contraseña de administrador viajaba en texto plano en cada inicio de sesión.
+
+Verificado que **sí exige autenticación** (`401 UNAUTHORIZED` sin credenciales), así que no
+era una puerta abierta. El problema era el transporte.
+
+Existía una ruta HTTPS de Easypanel, pero su dominio `yk50nb.easypanel.host` no resuelve en
+DNS público, así que nadie la usaba. Se agregó una propia:
+
+- DNS: `panel.imaginecloud.digital` → `72.60.51.162`
+- Traefik: `/etc/easypanel/traefik/config/panel-imaginecloud.yaml`, apuntando al mismo
+  servicio interno `http://easypanel:3000`
+- Verificado: HTTPS 200 con certificado Let's Encrypt propio, HTTP redirige con 301, y el
+  API sigue devolviendo 401 sin credenciales
+
+**Falta cerrar el 3000.** Se dejó abierto a propósito para no dejar a nadie afuera antes de
+confirmar que la ruta nueva funciona en el uso diario. Una vez confirmado:
+
+```bash
+ufw deny 3000/tcp     # o restringir por IP de origen
+```
+
+Copia versionada de la ruta en `deploy/traefik-panel-imaginecloud.yaml`.
 
 ### 2. Sin captcha en registro ni login
 
