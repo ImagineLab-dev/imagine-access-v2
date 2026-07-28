@@ -101,8 +101,29 @@ docker compose up -d
 Se restaura como `supabase_admin`, no como `postgres`: `postgres` no es superusuario en
 Supabase y no puede tocar los esquemas `auth` ni `storage`.
 
-**Los backups viven en el mismo disco que la base.** Si el VPS se pierde, se pierden los
-dos. Copiarlos fuera del servidor es lo próximo pendiente.
+### Qué protege qué
+
+Hay dos capas, y ninguna cubre sola lo que hace falta:
+
+| | Frecuencia | Dónde | Sirve para |
+|---|---|---|---|
+| Dumps de `pg_dumpall` | Diaria, 03:15 | Mismo disco del VPS | Restaurar la base sola, sin tocar el resto |
+| Backups del VPS (Hostinger) | **Semanal** | Infraestructura de Hostinger | Sobrevivir a la pérdida del servidor |
+
+Verificado el 2026-07-27: el VPS tiene backups automáticos de Hostinger en
+`node1011-br-cam-1-pbs`, con copias del 19 y del 26 de julio.
+
+**El hueco real está en la intersección.** Si la base se corrompe un martes:
+
+- El dump del día existe y tiene la granularidad correcta, pero está en el mismo disco: no
+  sirve si lo que falla es el disco o el servidor.
+- El backup del VPS sí está afuera, pero es del domingo —se pierden dos días— y restaura la
+  máquina **entera**: volvería atrás también chillberry, el CRM y el resto de los sistemas
+  de clientes que conviven ahí. No es una opción realista para recuperar solo Postgres.
+
+Cerrar eso requiere copiar el dump diario fuera del VPS. Hay espacio de sobra para
+retenerlos localmente —132 GB libres, y cada dump pesa decenas de KB— así que el problema
+no es capacidad sino ubicación.
 
 ## Correo
 
@@ -116,7 +137,8 @@ DMARC en `p=none`. Subir DMARC a `quarantine` cuando haya historial de envíos l
 
 ## Pendientes conocidos
 
-- **Backups fuera del servidor.** Hoy están en el mismo disco que la base.
+- **El dump diario no sale del VPS.** Los backups de Hostinger son semanales y de la
+  máquina entera, así que no cubren una recuperación puntual de la base.
 - **El procedimiento de restauración no se ensayó en frío.**
 - **`crm.imaginecloud.digital` da 502**, y es previo a esta migración: Easypanel lo rutea a
   `crm_imagine-crm`, un servicio que no existe — el CRM corre como `imagine_app`.
