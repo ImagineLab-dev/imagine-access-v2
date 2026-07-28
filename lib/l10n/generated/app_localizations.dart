@@ -3237,6 +3237,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'USD 250 per year (2 months free)'**
   String get planAnnualPrice;
+
+  /// No description provided for @subscriptionLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t generate the payment link. Please try again in a moment.'**
+  String get subscriptionLinkFailed;
 }
 
 class _AppLocalizationsDelegate

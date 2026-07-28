@@ -1675,4 +1675,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get planAnnualPrice => 'USD 250 per year (2 months free)';
+
+  @override
+  String get subscriptionLinkFailed =>
+      'We couldn\'t generate the payment link. Please try again in a moment.';
 }

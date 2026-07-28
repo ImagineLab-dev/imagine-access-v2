@@ -64,6 +64,25 @@ class SubscriptionRepository {
     if (filas.isEmpty) return null;
     return Subscription.fromRow(Map<String, dynamic>.from(filas.first as Map));
   }
+
+  /// Enlace de pago de dLocal para la organización del usuario.
+  ///
+  /// El plan se crea del lado del servidor la primera vez y se reutiliza después.
+  /// Se hace allá y no acá porque crear un plan exige la clave secreta de dLocal,
+  /// que no puede estar en el bundle: cualquiera abriría `main.dart.js` y podría
+  /// crear cobros a nombre de la cuenta.
+  Future<String> enlaceDePago({String plan = 'monthly'}) async {
+    final res = await _client.functions.invoke(
+      'dlocal_subscribe',
+      body: {'plan': plan},
+    );
+
+    final datos = Map<String, dynamic>.from(res.data as Map);
+    if (datos['ok'] != true || datos['url'] == null) {
+      throw Exception(datos['mensaje'] ?? 'No se pudo generar el enlace de pago');
+    }
+    return datos['url'] as String;
+  }
 }
 
 final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
@@ -80,3 +99,4 @@ final subscriptionProvider = FutureProvider<Subscription?>((ref) async {
     return null;
   }
 });
+

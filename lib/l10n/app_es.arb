@@ -755,5 +755,6 @@
   "organizationSuspended": "Tu cuenta está suspendida. Escribinos para reactivarla.",
   "subscribeNow": "Activar suscripción",
   "planMonthlyPrice": "USD 25 por mes",
-  "planAnnualPrice": "USD 250 por año (2 meses bonificados)"
+  "planAnnualPrice": "USD 250 por año (2 meses bonificados)",
+  "subscriptionLinkFailed": "No pudimos generar el enlace de pago. Intentá de nuevo en un momento."
 }

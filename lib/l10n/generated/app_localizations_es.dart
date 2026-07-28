@@ -1685,4 +1685,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get planAnnualPrice => 'USD 250 por año (2 meses bonificados)';
+
+  @override
+  String get subscriptionLinkFailed =>
+      'No pudimos generar el enlace de pago. Intentá de nuevo en un momento.';
 }

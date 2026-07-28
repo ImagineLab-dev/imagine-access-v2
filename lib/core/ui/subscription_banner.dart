@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../features/billing/data/subscription_repository.dart';
+import '../platform/abrir_url.dart';
 
 /// Aviso del estado de la suscripción.
 ///
@@ -74,7 +75,7 @@ class SubscriptionBanner extends ConsumerWidget {
           if (!sub.suspendida) ...[
             const SizedBox(width: 8),
             TextButton(
-              onPressed: () => _mostrarPlanes(context, l10n),
+              onPressed: () => _mostrarPlanes(context, ref, l10n),
               child: Text(l10n.subscribeNow,
                   style: TextStyle(color: color, fontWeight: FontWeight.bold)),
             ),
@@ -84,11 +85,12 @@ class SubscriptionBanner extends ConsumerWidget {
     );
   }
 
-  /// Precios, mientras el cobro automático por dLocal no esté conectado.
-  void _mostrarPlanes(BuildContext context, AppLocalizations l10n) {
+  /// Elegir plan y salir al checkout de dLocal.
+  void _mostrarPlanes(
+      BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogo) => AlertDialog(
         title: Text(l10n.subscribeNow),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -98,21 +100,43 @@ class SubscriptionBanner extends ConsumerWidget {
               leading: const Icon(Icons.calendar_month_outlined),
               title: Text(l10n.planMonthlyPrice),
               contentPadding: EdgeInsets.zero,
+              onTap: () => _irAlPago(dialogo, ref, l10n, 'monthly'),
             ),
             ListTile(
               leading: const Icon(Icons.workspace_premium_outlined),
               title: Text(l10n.planAnnualPrice),
               contentPadding: EdgeInsets.zero,
+              onTap: () => _irAlPago(dialogo, ref, l10n, 'annual'),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogo).pop(),
             child: Text(l10n.close),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _irAlPago(BuildContext dialogo, WidgetRef ref,
+      AppLocalizations l10n, String plan) async {
+    final navegador = Navigator.of(dialogo);
+    final mensajero = ScaffoldMessenger.of(dialogo);
+    try {
+      final url = await ref
+          .read(subscriptionRepositoryProvider)
+          .enlaceDePago(plan: plan);
+      navegador.pop();
+      // Pestaña nueva: si el pago se abriera encima, volver de dLocal
+      // recargaría la PWA entera y el usuario perdería lo que estaba haciendo.
+      abrirEnPestanaNueva(url);
+    } catch (e) {
+      navegador.pop();
+      mensajero.showSnackBar(
+        SnackBar(content: Text(l10n.subscriptionLinkFailed)),
+      );
+    }
   }
 }

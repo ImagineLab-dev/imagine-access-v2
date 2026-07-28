@@ -748,5 +748,6 @@
   "organizationSuspended": "Sua conta está suspensa. Fale conosco para reativá-la.",
   "subscribeNow": "Ativar assinatura",
   "planMonthlyPrice": "USD 25 por mês",
-  "planAnnualPrice": "USD 250 por ano (2 meses grátis)"
+  "planAnnualPrice": "USD 250 por ano (2 meses grátis)",
+  "subscriptionLinkFailed": "Não conseguimos gerar o link de pagamento. Tente novamente em instantes."
 }
