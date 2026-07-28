@@ -1534,4 +1534,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get imageUploadError => 'Nao foi possivel enviar a imagem';
+
+  @override
+  String get selectEventFirstTitle => 'Escolha um evento primeiro';
+
+  @override
+  String get selectEventFirstBody =>
+      'A equipe e atribuida por evento: cada promotor e dispositivo de porta trabalha em um evento especifico.';
+
+  @override
+  String get goToEvents => 'Ver meus eventos';
 }

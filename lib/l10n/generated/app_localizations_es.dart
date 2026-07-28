@@ -1534,4 +1534,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get imageUploadError => 'No se pudo subir la imagen';
+
+  @override
+  String get selectEventFirstTitle => 'Elegí un evento primero';
+
+  @override
+  String get selectEventFirstBody =>
+      'El equipo se asigna por evento: cada RRPP y cada dispositivo de puerta trabaja sobre un evento concreto.';
+
+  @override
+  String get goToEvents => 'Ver mis eventos';
 }

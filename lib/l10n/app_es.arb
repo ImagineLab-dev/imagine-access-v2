@@ -689,5 +689,8 @@
   "uploadImage": "Subir imagen",
   "removeImage": "Quitar imagen",
   "imageTooLarge": "La imagen supera los 2 MB",
-  "imageUploadError": "No se pudo subir la imagen"
+  "imageUploadError": "No se pudo subir la imagen",
+  "selectEventFirstTitle": "Elegí un evento primero",
+  "selectEventFirstBody": "El equipo se asigna por evento: cada RRPP y cada dispositivo de puerta trabaja sobre un evento concreto.",
+  "goToEvents": "Ver mis eventos"
 }

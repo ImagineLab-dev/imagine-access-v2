@@ -2967,6 +2967,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not upload image'**
   String get imageUploadError;
+
+  /// No description provided for @selectEventFirstTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an event first'**
+  String get selectEventFirstTitle;
+
+  /// No description provided for @selectEventFirstBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The team is assigned per event: each promoter and door device works on a specific event.'**
+  String get selectEventFirstBody;
+
+  /// No description provided for @goToEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to my events'**
+  String get goToEvents;
 }
 
 class _AppLocalizationsDelegate

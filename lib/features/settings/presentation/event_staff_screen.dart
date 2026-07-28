@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
@@ -28,7 +29,46 @@ class EventStaffScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     if (selectedEvent == null) {
-      return Scaffold(body: Center(child: Text(l10n.pleaseSelectEvent)));
+      // Antes esto era un Scaffold pelado con una linea de texto: sin barra,
+      // sin boton de volver y sin forma de ir a elegir el evento. El usuario
+      // quedaba atrapado y tenia que usar el atras del navegador.
+      return GlassScaffold(
+        appBar: AppBar(title: Text(l10n.manageTeam)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.event_busy_outlined,
+                    size: 56, color: Theme.of(context).hintColor),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.selectEventFirstTitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.selectEventFirstBody,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Theme.of(context).hintColor, height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: () => context.push('/events'),
+                  icon: const Icon(Icons.calendar_today, size: 18),
+                  label: Text(l10n.goToEvents),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return GlassScaffold(

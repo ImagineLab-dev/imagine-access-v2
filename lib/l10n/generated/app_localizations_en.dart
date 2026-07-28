@@ -1524,4 +1524,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageUploadError => 'Could not upload image';
+
+  @override
+  String get selectEventFirstTitle => 'Choose an event first';
+
+  @override
+  String get selectEventFirstBody =>
+      'The team is assigned per event: each promoter and door device works on a specific event.';
+
+  @override
+  String get goToEvents => 'Go to my events';
 }

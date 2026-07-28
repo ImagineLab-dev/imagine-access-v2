@@ -689,5 +689,8 @@
   "uploadImage": "Upload image",
   "removeImage": "Remove image",
   "imageTooLarge": "Image exceeds 2 MB",
-  "imageUploadError": "Could not upload image"
+  "imageUploadError": "Could not upload image",
+  "selectEventFirstTitle": "Choose an event first",
+  "selectEventFirstBody": "The team is assigned per event: each promoter and door device works on a specific event.",
+  "goToEvents": "Go to my events"
 }

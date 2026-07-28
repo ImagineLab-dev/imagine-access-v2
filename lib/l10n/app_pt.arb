@@ -689,5 +689,8 @@
   "uploadImage": "Enviar imagem",
   "removeImage": "Remover imagem",
   "imageTooLarge": "A imagem excede 2 MB",
-  "imageUploadError": "Nao foi possivel enviar a imagem"
+  "imageUploadError": "Nao foi possivel enviar a imagem",
+  "selectEventFirstTitle": "Escolha um evento primeiro",
+  "selectEventFirstBody": "A equipe e atribuida por evento: cada promotor e dispositivo de porta trabalha em um evento especifico.",
+  "goToEvents": "Ver meus eventos"
 }
