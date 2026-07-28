@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -27,9 +28,16 @@ class AdminEventList extends ConsumerWidget {
     final isAdmin = AppRoles.isAdmin(displayRole);
 
     if (events.isEmpty) {
-      return Center(
-          child: Text(l10n.noEventsFound,
-              style: Theme.of(context).textTheme.bodyLarge));
+      return EmptyState(
+        icon: Icons.event_outlined,
+        title: l10n.noEventsYet,
+        body: l10n.noEventsYetBody,
+        // Solo un admin puede crear eventos: a un RRPP ofrecerle el botón lo
+        // manda a una pantalla que le va a rebotar.
+        actionLabel: isAdmin ? l10n.createFirstEvent : null,
+        actionIcon: Icons.add,
+        onAction: isAdmin ? () => context.push('/create_event') : null,
+      );
     }
 
     return ListView.separated(

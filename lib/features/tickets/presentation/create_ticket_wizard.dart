@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/utils/error_handler.dart';
 import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -172,7 +173,10 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString()),
+            // Nunca e.toString(): vuelca errores técnicos de PostgREST en
+            // pantalla, en inglés y sin sentido para el usuario.
+            content: Text(ErrorHandler.localizedMessage(
+                context, ErrorHandler.analyzeError(e).type)),
             backgroundColor: AppTheme.errorColor));
       }
     } finally {

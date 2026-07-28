@@ -692,5 +692,11 @@
   "imageUploadError": "No se pudo subir la imagen",
   "selectEventFirstTitle": "Elegí un evento primero",
   "selectEventFirstBody": "El equipo se asigna por evento: cada RRPP y cada dispositivo de puerta trabaja sobre un evento concreto.",
-  "goToEvents": "Ver mis eventos"
+  "goToEvents": "Ver mis eventos",
+  "noEventsYet": "Todavía no hay eventos",
+  "noEventsYetBody": "Un evento es el punto de partida: los tickets, el equipo y el escáner trabajan siempre sobre uno.",
+  "createFirstEvent": "Crear mi primer evento",
+  "noTicketsYet": "Todavía no hay tickets",
+  "noTicketsYetBody": "Cuando emitas un ticket va a aparecer acá, con su QR y su estado.",
+  "createFirstTicket": "Crear un ticket"
 }

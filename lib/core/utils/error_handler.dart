@@ -26,7 +26,13 @@ enum NetworkErrorType {
   }
 }
 
-/// Clase para información de error de red
+/// Clase para información de error de red.
+///
+/// [message] NO es texto para mostrarle al usuario: es una clave interna. Los
+/// mensajes visibles salen de [ErrorHandler.localizedMessage], que resuelve
+/// contra el idioma activo. Antes eran cadenas fijas en español, así que un
+/// usuario en inglés o portugués recibía errores en un idioma que no era el
+/// suyo pese a que la app declara tres.
 class NetworkError {
   final NetworkErrorType type;
   final String message;
@@ -64,7 +70,7 @@ class ErrorHandler {
         errorString.contains('connection closed')) {
       return const NetworkError(
         type: NetworkErrorType.noConnection,
-        message: 'Sin conexión a internet. Verifique su red.',
+        message: 'errorNoConnection',
         isRetryable: true,
       );
     }
@@ -73,7 +79,7 @@ class ErrorHandler {
     if (errorString.contains('timeout')) {
       return const NetworkError(
         type: NetworkErrorType.timeout,
-        message: 'La operación tardó demasiado. Intente nuevamente.',
+        message: 'errorTimeout',
         isRetryable: true,
       );
     }
@@ -82,7 +88,7 @@ class ErrorHandler {
     if (errorString.contains('401') || errorString.contains('unauthorized')) {
       return const NetworkError(
         type: NetworkErrorType.unauthorized,
-        message: 'Sesión expirada. Por favor inicie sesión nuevamente.',
+        message: 'errorUnauthorized',
         statusCode: 401,
         isRetryable: false,
       );
@@ -91,7 +97,7 @@ class ErrorHandler {
     if (errorString.contains('403') || errorString.contains('forbidden')) {
       return const NetworkError(
         type: NetworkErrorType.forbidden,
-        message: 'No tiene permisos para realizar esta acción.',
+        message: 'errorForbidden',
         statusCode: 403,
         isRetryable: false,
       );
@@ -100,7 +106,7 @@ class ErrorHandler {
     if (errorString.contains('404') || errorString.contains('not found')) {
       return const NetworkError(
         type: NetworkErrorType.notFound,
-        message: 'Recurso no encontrado.',
+        message: 'errorNotFound',
         statusCode: 404,
         isRetryable: false,
       );
@@ -109,7 +115,7 @@ class ErrorHandler {
     if (errorString.contains('400') || errorString.contains('bad request')) {
       return const NetworkError(
         type: NetworkErrorType.badRequest,
-        message: 'Datos inválidos. Verifique la información ingresada.',
+        message: 'errorBadRequest',
         statusCode: 400,
         isRetryable: false,
       );
@@ -121,7 +127,7 @@ class ErrorHandler {
         errorString.contains('server error')) {
       return const NetworkError(
         type: NetworkErrorType.serverError,
-        message: 'Error del servidor. Intente más tarde.',
+        message: 'errorServer',
         statusCode: 500,
         isRetryable: true,
       );
@@ -130,7 +136,7 @@ class ErrorHandler {
     // Error desconocido
     return NetworkError(
       type: NetworkErrorType.unknown,
-      message: error is String ? error : 'Ha ocurrido un error inesperado.',
+      message: 'errorUnknown',
       isRetryable: false,
     );
   }

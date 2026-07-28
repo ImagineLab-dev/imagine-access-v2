@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/empty_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -223,15 +224,17 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off,
-                            size: 60,
-                            color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.2)),
-                        const SizedBox(height: 16),
-                        Text(l10n.noTicketsFound,
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.5))),
+                        // Con búsqueda activa el vacío significa "no coincide
+                        // nada", no "todavía no creaste tickets": ofrecer
+                        // "crear ticket" ahí sería desorientador.
+                        EmptyState(
+                          icon: Icons.confirmation_number_outlined,
+                          title: l10n.noTicketsYet,
+                          body: l10n.noTicketsYetBody,
+                          actionLabel: l10n.createFirstTicket,
+                          actionIcon: Icons.add,
+                          onAction: () => context.push('/create_ticket'),
+                        ),
                       ],
                     ),
                   );

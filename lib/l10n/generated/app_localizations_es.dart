@@ -1544,4 +1544,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get goToEvents => 'Ver mis eventos';
+
+  @override
+  String get noEventsYet => 'Todavía no hay eventos';
+
+  @override
+  String get noEventsYetBody =>
+      'Un evento es el punto de partida: los tickets, el equipo y el escáner trabajan siempre sobre uno.';
+
+  @override
+  String get createFirstEvent => 'Crear mi primer evento';
+
+  @override
+  String get noTicketsYet => 'Todavía no hay tickets';
+
+  @override
+  String get noTicketsYetBody =>
+      'Cuando emitas un ticket va a aparecer acá, con su QR y su estado.';
+
+  @override
+  String get createFirstTicket => 'Crear un ticket';
 }

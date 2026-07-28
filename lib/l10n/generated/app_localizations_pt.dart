@@ -1544,4 +1544,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get goToEvents => 'Ver meus eventos';
+
+  @override
+  String get noEventsYet => 'Ainda nao ha eventos';
+
+  @override
+  String get noEventsYetBody =>
+      'Um evento e o ponto de partida: ingressos, equipe e scanner trabalham sempre sobre um.';
+
+  @override
+  String get createFirstEvent => 'Criar meu primeiro evento';
+
+  @override
+  String get noTicketsYet => 'Ainda nao ha ingressos';
+
+  @override
+  String get noTicketsYetBody =>
+      'Quando voce emitir um ingresso ele aparecera aqui, com seu QR e status.';
+
+  @override
+  String get createFirstTicket => 'Criar um ingresso';
 }

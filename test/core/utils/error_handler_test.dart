@@ -80,11 +80,15 @@ void main() {
       expect(result.message, isNotEmpty);
     });
 
-    test('devuelve el string tal cual cuando el error es un String', () {
+    test('nunca devuelve texto para mostrar, solo una clave', () {
+      // `message` dejó de ser texto visible: los mensajes que ve el usuario
+      // salen de localizedMessage, que resuelve contra el idioma activo. Antes
+      // esto devolvía el string crudo del error, que además de estar en el
+      // idioma equivocado podía filtrar detalles técnicos a la pantalla.
       final result = ErrorHandler.analyzeError('algo raro pasó');
 
       expect(result.type, NetworkErrorType.unknown);
-      expect(result.message, 'algo raro pasó');
+      expect(result.message, 'errorUnknown');
     });
   });
 }

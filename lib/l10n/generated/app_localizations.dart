@@ -2985,6 +2985,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to my events'**
   String get goToEvents;
+
+  /// No description provided for @noEventsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No events yet'**
+  String get noEventsYet;
+
+  /// No description provided for @noEventsYetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An event is the starting point: tickets, team and scanner all work on one.'**
+  String get noEventsYetBody;
+
+  /// No description provided for @createFirstEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Create my first event'**
+  String get createFirstEvent;
+
+  /// No description provided for @noTicketsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No tickets yet'**
+  String get noTicketsYet;
+
+  /// No description provided for @noTicketsYetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you issue a ticket it will show up here, with its QR and status.'**
+  String get noTicketsYetBody;
+
+  /// No description provided for @createFirstTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket'**
+  String get createFirstTicket;
 }
 
 class _AppLocalizationsDelegate

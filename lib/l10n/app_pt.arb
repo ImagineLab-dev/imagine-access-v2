@@ -692,5 +692,11 @@
   "imageUploadError": "Nao foi possivel enviar a imagem",
   "selectEventFirstTitle": "Escolha um evento primeiro",
   "selectEventFirstBody": "A equipe e atribuida por evento: cada promotor e dispositivo de porta trabalha em um evento especifico.",
-  "goToEvents": "Ver meus eventos"
+  "goToEvents": "Ver meus eventos",
+  "noEventsYet": "Ainda nao ha eventos",
+  "noEventsYetBody": "Um evento e o ponto de partida: ingressos, equipe e scanner trabalham sempre sobre um.",
+  "createFirstEvent": "Criar meu primeiro evento",
+  "noTicketsYet": "Ainda nao ha ingressos",
+  "noTicketsYetBody": "Quando voce emitir um ingresso ele aparecera aqui, com seu QR e status.",
+  "createFirstTicket": "Criar um ingresso"
 }

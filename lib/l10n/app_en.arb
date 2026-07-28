@@ -692,5 +692,11 @@
   "imageUploadError": "Could not upload image",
   "selectEventFirstTitle": "Choose an event first",
   "selectEventFirstBody": "The team is assigned per event: each promoter and door device works on a specific event.",
-  "goToEvents": "Go to my events"
+  "goToEvents": "Go to my events",
+  "noEventsYet": "No events yet",
+  "noEventsYetBody": "An event is the starting point: tickets, team and scanner all work on one.",
+  "createFirstEvent": "Create my first event",
+  "noTicketsYet": "No tickets yet",
+  "noTicketsYetBody": "Once you issue a ticket it will show up here, with its QR and status.",
+  "createFirstTicket": "Create a ticket"
 }
