@@ -58,7 +58,8 @@ producto, por eso no se aplicó.
 | TLS | Let's Encrypt, HSTS `max-age=31536000` |
 | Cabeceras | CSP, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` con `camera=(self)` |
 | Secretos del stack | `chmod 600` |
-| RLS | Habilitado en las 10 tablas, 26 policies |
+| RLS — lectura anónima | **Verificado.** Con la clave anon sin autenticar, las 10 tablas devuelven vacío |
+| RLS — lectura entre organizaciones | **Verificado.** Usuario autenticado de otra organización ve 0 filas en `tickets`, `events`, `organizations`, `users_profile`, `checkins` y `devices` |
 
 **Fuerza bruta contra el login de dispositivos:** `login_device` tiene bloqueo tras 5
 intentos fallidos por combinación alias+IP, con 10 minutos de espera. Pero el contador vive
@@ -70,17 +71,15 @@ mover el contador a Postgres.
 
 ## Pendiente, por orden de riesgo
 
-### 1. RLS nunca fue auditado
+### 1. Escritura entre organizaciones, sin probar
 
-Es el más importante y **no lo verifiqué**. Está habilitado en las 10 tablas y hay 26
-policies, pero nadie comprobó que efectivamente aíslen los datos entre organizaciones.
+La **lectura** ya se verificó y aísla bien (ver sección de RLS más abajo). Lo que no se
+probó es la escritura: si un usuario de la organización A puede **insertar o modificar**
+filas asociadas a la B. Una policy puede filtrar correctamente en `SELECT` y ser permisiva
+en `INSERT` o `UPDATE`; son cláusulas distintas.
 
-Con la clave anon pública en el bundle JS —lo cual es correcto y esperado—, **RLS es la
-única barrera** entre un atacante y los datos de todos los clientes. Una policy mal escrita
-en una sola tabla expone los tickets, compradores y montos de todas las organizaciones.
-
-Requiere una prueba deliberada: autenticarse como usuario de la organización A e intentar
-leer y escribir filas de la B, tabla por tabla.
+El escenario concreto a probar: autenticado como usuario de A, intentar crear un ticket con
+el `event_id` de un evento de B, o modificar un `checkin` ajeno.
 
 ### 2. Panel de Easypanel expuesto en el puerto 3000
 
@@ -116,7 +115,7 @@ dominios, DNS, hosting y VPS de la cuenta.
 
 ## Lo que esta revisión NO cubrió
 
-- **RLS**, que es lo más importante (ver punto 1).
+- **Escritura** entre organizaciones (la lectura sí se verificó).
 - Inyección SQL en las funciones `SECURITY DEFINER`.
 - Validación de entrada en las 15 Edge Functions.
 - Dependencias con vulnerabilidades conocidas.
