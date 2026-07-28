@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/utils/tiempo_limite.dart';
 
 /// Estado de la suscripción de la organización del usuario actual.
 class Subscription {
@@ -92,10 +93,9 @@ class SubscriptionRepository {
   /// que no puede estar en el bundle: cualquiera abriría `main.dart.js` y podría
   /// crear cobros a nombre de la cuenta.
   Future<String> enlaceDePago({String plan = 'monthly'}) async {
-    final res = await _client.functions.invoke(
-      'dlocal_subscribe',
-      body: {'plan': plan},
-    );
+    final res = await _client.functions
+        .invoke('dlocal_subscribe', body: {'plan': plan})
+        .conLimite(TiempoLimite.normal, 'dlocal_subscribe');
 
     final datos = Map<String, dynamic>.from(res.data as Map);
     if (datos['ok'] != true || datos['url'] == null) {

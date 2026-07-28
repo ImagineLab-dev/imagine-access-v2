@@ -6,6 +6,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/ttl_cache.dart';
 import '../../../core/i18n/locale_provider.dart';
+import '../../../core/utils/tiempo_limite.dart';
 
 class SettingsRepository {
   final SupabaseClient _client;
@@ -293,7 +294,8 @@ class SettingsRepository {
 
       FunctionResponse response;
       try {
-        response = await invokeCreateUser();
+        response = await invokeCreateUser()
+            .conLimite(TiempoLimite.conCorreo, 'create_user');
       } on FunctionException catch (e) {
         final details = (e.details ?? '').toString().toLowerCase();
         final isJwtError = e.status == 401 ||

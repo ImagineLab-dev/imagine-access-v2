@@ -10,6 +10,7 @@ import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/ttl_cache.dart';
 import '../../../core/offline/offline_queue_service.dart';
 import '../../../core/offline/pending_operation.dart';
+import '../../../core/utils/tiempo_limite.dart';
 
 /// Repository for ticket-related operations
 class TicketRepository {
@@ -56,8 +57,9 @@ class TicketRepository {
       final token = sessionToken ?? await _secureStorage.read(key: 'last_access_token');
       if (token != null) payload['_auth_token'] = token;
 
-      final response = await _client.functions.invoke('create_ticket',
-          body: payload);
+      final response = await _client.functions
+          .invoke('create_ticket', body: payload)
+          .conLimite(TiempoLimite.conCorreo, 'create_ticket');
 
       if (response.status != 200) {
         if (kDebugMode) {

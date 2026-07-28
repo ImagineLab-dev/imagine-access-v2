@@ -8,6 +8,7 @@ import '../../../core/utils/error_handler.dart';
 import '../../../core/offline/offline_queue_service.dart';
 import '../../../core/offline/pending_operation.dart';
 import '../../../core/config/env.dart';
+import '../../../core/utils/tiempo_limite.dart';
 
 /// Error type keys used by scanner for l10n lookup in UI layer
 class ScannerErrorKeys {
@@ -43,11 +44,13 @@ class ScannerRepository {
     };
 
     try {
-      final response = await _client.functions.invoke(
-        'validate_ticket',
-        body: payload,
-        headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
-      );
+      final response = await _client.functions
+          .invoke(
+            'validate_ticket',
+            body: payload,
+            headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
+          )
+          .conLimite(TiempoLimite.puerta, 'validate_ticket');
 
       if (response.status != 200) {
         final data = response.data;
@@ -98,11 +101,13 @@ class ScannerRepository {
     };
 
     try {
-      final response = await _client.functions.invoke(
-        'validate_ticket',
-        body: payload,
-        headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
-      );
+      final response = await _client.functions
+          .invoke(
+            'validate_ticket',
+            body: payload,
+            headers: {'Authorization': 'Bearer ${Env.supabaseAnonKey}'},
+          )
+          .conLimite(TiempoLimite.puerta, 'validate_ticket');
 
       if (response.status != 200) {
         final data = response.data;
