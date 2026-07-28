@@ -38,11 +38,10 @@ CREATE TABLE IF NOT EXISTS public.subscription_events (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Idempotencia. dLocal reintenta los avisos que no recibieron 200, y sin esto
--- cada reintento sumaría otro mes de suscripción regalado.
-CREATE UNIQUE INDEX IF NOT EXISTS subscription_events_reference_idx
-  ON public.subscription_events (organization_id, reference)
-  WHERE reference IS NOT NULL AND event = 'payment_confirmed';
+-- Sin índice único sobre `reference`: el id de suscripción de dLocal se repite
+-- en cada renovación, y un único rechazaría el cobro del mes siguiente. La
+-- protección contra reintentos vive en apply_subscription_payment, por ventana
+-- de tiempo. `reference` queda como dato de auditoría.
 
 CREATE INDEX IF NOT EXISTS subscription_events_org_idx
   ON public.subscription_events (organization_id, created_at DESC);
@@ -96,20 +95,25 @@ DECLARE
   v_lapso  INTERVAL;
   v_previo TIMESTAMPTZ;
 BEGIN
-  -- Este cobro ya se acreditó: se devuelve el vencimiento vigente sin sumar
-  -- nada. dLocal reintenta los avisos que fallan, y sin este corte cada
-  -- reintento regalaría otro mes.
-  IF p_reference IS NOT NULL THEN
-    SELECT e.extended_to INTO v_previo
-      FROM public.subscription_events e
-     WHERE e.organization_id = p_organization_id
-       AND e.reference = p_reference
-       AND e.event = 'payment_confirmed'
-     LIMIT 1;
+  -- Idempotencia por VENTANA DE TIEMPO, no por referencia del cobro.
+  --
+  -- La referencia natural sería el id de la suscripción en dLocal, pero ese id
+  -- NO cambia entre renovaciones: el segundo mes llegaría con el mismo y se
+  -- descartaría como duplicado, dejando vencer a alguien que sigue pagando.
+  --
+  -- Los reintentos de dLocal ocurren en minutos u horas; una renovación real
+  -- llega recién al mes. Una ventana de 24 horas separa los dos casos sin
+  -- depender de campos del aviso cuyo nombre no está documentado.
+  SELECT e.extended_to INTO v_previo
+    FROM public.subscription_events e
+   WHERE e.organization_id = p_organization_id
+     AND e.event = 'payment_confirmed'
+     AND e.created_at > now() - interval '24 hours'
+   ORDER BY e.created_at DESC
+   LIMIT 1;
 
-    IF v_previo IS NOT NULL THEN
-      RETURN v_previo;
-    END IF;
+  IF v_previo IS NOT NULL THEN
+    RETURN v_previo;
   END IF;
 
   IF p_plan NOT IN ('monthly', 'annual') THEN
