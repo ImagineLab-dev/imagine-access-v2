@@ -122,19 +122,38 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        const { method, qr_token, buyer_doc, event_id, notes, device_id, pin, request_id, ticket_id } = await req.json()
+        const { method, qr_token, buyer_doc, event_id, notes, device_id, pin, request_id, ticket_id, _auth_token } = await req.json()
 
-        // 1. OPTIONAL AUTH: best-effort JWT + device credentials (for audit only)
+        // 1. AUTENTICACIÓN — OBLIGATORIA.
+        //
+        // Era "best-effort, for audit only": si no llegaba credencial, la
+        // verificación de organización de más abajo se salteaba entera y
+        // cualquiera podía marcar un ticket como usado sabiendo solo su id.
+        // Verificado con un POST sin ninguna credencial: devolvió allowed:true,
+        // dejó el ticket en 'used' y entregó nombre, correo, teléfono y
+        // documento del comprador a quien lo pidió.
+        //
+        // Se puede quemar la entrada de alguien de forma remota para que le
+        // rechacen el acceso en la puerta. Y había ids de tickets reales
+        // commiteados en una migración del repositorio.
         let callerRole: string | null = null;
         let callerOrgId: string | null = null;
         let callerUserId: string | null = null;
         let callerDeviceId: string | null = null;
 
-        // Try JWT (best-effort — never blocks the request)
+        // El token del usuario viaja en el CUERPO, no en la cabecera: el
+        // cliente pone la anon key en Authorization y con eso `getUser` nunca
+        // identificaba a nadie. Es el mismo mecanismo que ya usaba
+        // create_ticket, que por eso sí sabía quién llamaba.
         const authHeader = req.headers.get('Authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
+        const headerToken = authHeader?.startsWith('Bearer ')
+            ? authHeader.replace('Bearer ', '')
+            : null;
+        const userToken = _auth_token || headerToken;
+
+        if (userToken) {
             try {
-                const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
+                const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(userToken);
                 if (!authError && user) {
                     callerUserId = user.id;
                     callerRole = user.app_metadata?.role;
@@ -171,6 +190,18 @@ serve(async (req) => {
                     }
                 }
             } catch (_e) { /* device auth failed — continue */ }
+        }
+
+        // Sin organización identificada no se valida nada. Es la línea que
+        // convierte el chequeo de organización de más abajo en obligatorio:
+        // antes, un llamante anónimo simplemente lo esquivaba.
+        if (!callerOrgId) {
+            return new Response(JSON.stringify({
+                success: false,
+                allowed: false,
+                result: 'unauthorized',
+                error: 'Authentication required to validate tickets'
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 });
         }
 
         let ticket;

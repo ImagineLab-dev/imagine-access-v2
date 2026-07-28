@@ -31,6 +31,15 @@ class ScannerRepository {
       'pin': pin,
       'event_id': eventId,
       'request_id': requestId,
+      // La sesión del usuario viaja en el CUERPO porque la cabecera
+      // Authorization lleva la anon key: con eso el servidor no identificaba a
+      // nadie, y de ahí que su autenticación fuera opcional. Es el mismo
+      // mecanismo que ya usaba create_ticket.
+      //
+      // Una sesión de puerta no tiene token de usuario: se identifica con
+      // device_id + pin, que ya van acá arriba.
+      if (_client.auth.currentSession?.accessToken != null)
+        '_auth_token': _client.auth.currentSession!.accessToken,
     };
 
     try {
@@ -83,6 +92,9 @@ class ScannerRepository {
       'pin': pin,
       'event_id': eventId,
       'request_id': requestId,
+      // Ver la nota en validateQr: sin esto el servidor no sabe quién llama.
+      if (_client.auth.currentSession?.accessToken != null)
+        '_auth_token': _client.auth.currentSession!.accessToken,
     };
 
     try {
