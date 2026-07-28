@@ -1,0 +1,51 @@
+# Endurecimiento de la exposicion de red.
+#
+# El compose oficial publica al host: Kong en 8000/8443 y supavisor en
+# 5432/6543. En una IP publica eso significa Postgres accesible desde
+# internet, que es de lo peor que se puede dejar abierto.
+#
+# Aca se reemplazan esas listas (`!override`, no merge) para que:
+#   - Kong no publique nada: Traefik lo alcanza por la red overlay de
+#     Easypanel, por nombre de contenedor, y agrega TLS.
+#   - supavisor solo escuche en loopback, para administracion via tunel SSH.
+services:
+  kong:
+    ports: !override []
+    networks:
+      - default
+      - easypanel
+
+  supavisor:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6543:6543"
+
+  # Las Edge Functions de Imagine Access necesitan estos secretos. El compose
+  # oficial solo pasa un conjunto fijo, asi que se agregan aca.
+  #   - SMTP_*        : envio de tickets por mail
+  #   - QR_SECRET_KEY : firma de los codigos QR
+  #   - ALLOWED_ORIGIN: _shared/cors.ts LANZA si no esta seteado fuera de local,
+  #                     y sin el las ~17 funciones que llama el cliente fallan.
+  functions:
+    environment:
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_DEBUG: "false"
+      QR_SECRET_KEY: ${QR_SECRET_KEY}
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN}
+      ENVIRONMENT: ${ENVIRONMENT}
+
+  # Limites de tasa de GoTrue. El compose oficial no los expone, asi que hay
+  # que pasarlos explicitamente o quedan en los valores por defecto.
+  auth:
+    environment:
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: ${GOTRUE_RATE_LIMIT_EMAIL_SENT}
+      GOTRUE_RATE_LIMIT_VERIFY: ${GOTRUE_RATE_LIMIT_VERIFY}
+      GOTRUE_RATE_LIMIT_TOKEN_REFRESH: ${GOTRUE_RATE_LIMIT_TOKEN_REFRESH}
+      GOTRUE_RATE_LIMIT_OTP: ${GOTRUE_RATE_LIMIT_OTP}
+
+networks:
+  easypanel:
+    external: true
