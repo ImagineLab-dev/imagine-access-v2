@@ -1,9 +1,58 @@
-import 'package:web/web.dart' as web;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
-/// Abre una URL en una pestaña nueva.
+/// Pestaña reservada antes de una operación asíncrona.
 ///
-/// `noopener` corta el acceso de la página destino a `window.opener`: sin eso,
-/// el sitio abierto puede redirigir al nuestro desde su propia pestaña.
+/// Los navegadores solo permiten `window.open` durante el gesto que lo
+/// disparó. Si primero se consulta al servidor y después se intenta abrir, el
+/// gesto ya venció y la pestaña se bloquea SIN AVISO: para el usuario, tocar el
+/// botón simplemente no hace nada.
+///
+/// Por eso la pestaña se reserva vacía en el mismo instante del toque y se le
+/// pone la dirección cuando llega.
+class PestanaReservada {
+  PestanaReservada._(this._ventana);
+
+  final JSObject? _ventana;
+
+  /// La lleva a la dirección final.
+  ///
+  /// Si el navegador igual bloqueó la reserva —hay bloqueadores que lo hacen
+  /// siempre— se navega en la pestaña actual. Salir de la app es peor que
+  /// abrir al lado, pero es infinitamente mejor que un botón que no responde.
+  void navegarA(String url) {
+    final v = _ventana;
+    if (v != null) {
+      v.setProperty('location'.toJS, url.toJS);
+    } else {
+      globalContext.setProperty('location'.toJS, url.toJS);
+    }
+  }
+
+  /// Cierra la pestaña reservada. Se usa cuando la operación falló y quedaría
+  /// una pestaña en blanco abierta sin explicación.
+  void cerrar() {
+    try {
+      _ventana?.callMethod<JSAny?>('close'.toJS);
+    } catch (_) {
+      // Ya cerrada o inaccesible.
+    }
+  }
+}
+
+PestanaReservada reservarPestana() {
+  try {
+    final v = globalContext.callMethod<JSObject?>(
+        'open'.toJS, ''.toJS, '_blank'.toJS, 'noopener,noreferrer'.toJS);
+    return PestanaReservada._(v);
+  } catch (_) {
+    return PestanaReservada._(null);
+  }
+}
+
+/// Abre una URL en una pestaña nueva, para cuando NO hay operación asíncrona
+/// de por medio y el gesto sigue vigente.
 void abrirEnPestanaNueva(String url) {
-  web.window.open(url, '_blank', 'noopener,noreferrer');
+  globalContext.callMethod<JSAny?>(
+      'open'.toJS, url.toJS, '_blank'.toJS, 'noopener,noreferrer'.toJS);
 }

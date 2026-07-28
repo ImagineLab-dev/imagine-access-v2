@@ -128,15 +128,19 @@ class SubscriptionBanner extends ConsumerWidget {
       AppLocalizations l10n, String plan) async {
     final navegador = Navigator.of(dialogo);
     final mensajero = ScaffoldMessenger.of(dialogo);
+
+    // Reservada dentro del gesto: después del await el navegador ya no la deja
+    // abrir y el botón queda sin efecto visible.
+    final pestana = reservarPestana();
+
     try {
       final url = await ref
           .read(subscriptionRepositoryProvider)
           .enlaceDePago(plan: plan);
       navegador.pop();
-      // Pestaña nueva: si el pago se abriera encima, volver de dLocal
-      // recargaría la PWA entera y el usuario perdería lo que estaba haciendo.
-      abrirEnPestanaNueva(url);
+      pestana.navegarA(url);
     } catch (e) {
+      pestana.cerrar();
       navegador.pop();
       mensajero.showSnackBar(
         SnackBar(content: Text(l10n.subscriptionLinkFailed)),

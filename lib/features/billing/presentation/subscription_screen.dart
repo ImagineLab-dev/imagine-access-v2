@@ -161,15 +161,21 @@ class _PlanesState extends State<_Planes> {
   Future<void> _contratar(String plan) async {
     final l10n = widget.l10n;
     final mensajero = ScaffoldMessenger.of(context);
+
+    // La pestaña se reserva ACÁ, todavía dentro del gesto del usuario. Pedir
+    // primero el enlace al servidor y abrir después hace que el navegador la
+    // bloquee sin aviso, y el botón parece no funcionar.
+    final pestana = reservarPestana();
+
     setState(() => _cargando = plan);
     try {
       final url = await widget.ref
           .read(subscriptionRepositoryProvider)
           .enlaceDePago(plan: plan);
-      // Pestaña nueva: si el checkout se abriera encima, volver de dLocal
-      // recargaría la PWA entera.
-      abrirEnPestanaNueva(url);
+      pestana.navegarA(url);
     } catch (_) {
+      // Sin esto queda una pestaña en blanco abierta sin ninguna explicación.
+      pestana.cerrar();
       mensajero.showSnackBar(
         SnackBar(content: Text(l10n.subscriptionLinkFailed)),
       );

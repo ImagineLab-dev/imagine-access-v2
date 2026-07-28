@@ -248,8 +248,25 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       appBar: AppBar(
         title: Text(l10n.createTicket),
       ),
-      body: Column(
-        children: [
+      // Todo el paso se desplaza junto, en vez de tener el formulario metido en
+      // un Expanded entre el indicador y unos botones fijos.
+      //
+      // Con la estructura anterior, al abrirse el teclado el cuerpo se achicaba
+      // y ese Expanded se aplastaba hasta quedar en una franja de unos pocos
+      // píxeles, mientras los botones seguían pegados justo encima del teclado:
+      // en un teléfono no se veía lo que se estaba escribiendo.
+      //
+      // minHeight mantiene el aspecto en pantallas altas —los botones siguen
+      // abajo de todo— y `spaceBetween` reparte el sobrante. Cuando el teclado
+      // reduce el alto disponible, el contenido pasa a desplazarse y Flutter
+      // lleva solo el campo enfocado a la vista.
+      body: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
           // STEPS INDICATOR
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -269,16 +286,12 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
             ),
           ),
 
-          Expanded(
-            child: GlassCard(
-              margin: const EdgeInsets.all(20),
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _buildStepContent(theme),
-                ),
-              ),
+          GlassCard(
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _buildStepContent(theme),
             ),
           ),
 
@@ -306,7 +319,10 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
               ],
             ),
           )
-        ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
