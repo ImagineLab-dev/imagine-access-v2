@@ -36,7 +36,7 @@ class Responsive {
   /// tamaños que nadie previó, como una ventana partida a la mitad.
   static int columnas(
     BuildContext context, {
-    double anchoObjetivo = 280,
+    double anchoObjetivo = 240,
     int minimo = 2,
     int maximo = 4,
   }) {
@@ -45,16 +45,28 @@ class Responsive {
     return calculado.clamp(minimo, maximo);
   }
 
-  /// Proporción de las tarjetas de métrica.
+  /// Proporción de una tarjeta de métrica, para que su ALTURA quede fija.
   ///
-  /// En teléfono conviene que sean más altas que anchas para que el número
-  /// respire; a medida que hay más columnas, cada una se angosta y hay que
-  /// acompañar o el texto se corta.
-  static double proporcionTarjeta(BuildContext context) {
+  /// `childAspectRatio` es ancho/alto, así que fijarlo por tramos da tarjetas
+  /// que crecen en las dos direcciones: al pasar de 2 a 4 columnas en un
+  /// monitor quedaban de 370x275px para mostrar un número y una etiqueta.
+  ///
+  /// Acá se hace al revés: se calcula el ancho real que va a tener cada
+  /// tarjeta y se deriva la proporción que deja la altura en [alturaObjetivo].
+  /// El contenido es el mismo en cualquier pantalla, así que la altura no
+  /// tiene por qué cambiar — solo cuántas entran por fila.
+  static double proporcionTarjeta(
+    BuildContext context, {
+    double alturaObjetivo = 118,
+    double separacion = 16,
+    double paddingHorizontal = 40,
+  }) {
     final n = columnas(context);
-    if (n >= 4) return 1.35;
-    if (n == 3) return 1.5;
-    return 1.75;
+    final disponible =
+        anchoMaximo(context) - paddingHorizontal - separacion * (n - 1);
+    final anchoTarjeta = disponible / n;
+    // El clamp evita extremos absurdos si el contenedor es diminuto.
+    return (anchoTarjeta / alturaObjetivo).clamp(1.1, 3.4);
   }
 }
 

@@ -49,7 +49,9 @@ class RrppDashboardView extends ConsumerWidget {
           crossAxisCount: Responsive.columnas(context),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: Responsive.proporcionTarjeta(context) * 0.75,
+          // Estas tarjetas llevan una barra de progreso además del número.
+          childAspectRatio:
+              Responsive.proporcionTarjeta(context, alturaObjetivo: 150),
           physics: const NeverScrollableScrollPhysics(),
           children: [
             EliteMetricCard(
