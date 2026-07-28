@@ -1737,4 +1737,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get upToDate => 'Data reloaded. You\'re on the latest version.';
+
+  @override
+  String get wrongEvent => 'WRONG EVENT';
+
+  @override
+  String get ticketBelongsTo => 'THIS TICKET IS FOR:';
 }

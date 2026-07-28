@@ -252,6 +252,32 @@ serve(async (req) => {
             throw new Error("Invalid validation method");
         }
 
+        // 3.5 EVENT VERIFICATION — el ticket tiene que ser DEL evento que la
+        // puerta tiene seleccionado.
+        //
+        // La verificación de organización de más abajo impide usar el ticket de
+        // otro cliente, pero no el de OTRO EVENTO DEL MISMO cliente. Sin esto,
+        // en una productora que hace fiestas todas las semanas alguien compra
+        // la entrada barata de dentro de un mes y entra con ella esta noche —
+        // firma válida, ticket existente, organización correcta.
+        //
+        // Solo aplica cuando la puerta manda el evento. Hoy lo manda siempre,
+        // incluso en la cola sin conexión, que reenvía el mismo cuerpo; la
+        // condición está por si alguna integración futura no lo hace, para que
+        // no falle de forma silenciosa.
+        if (event_id && ticket.event_id && ticket.event_id !== event_id) {
+            return new Response(JSON.stringify({
+                success: false,
+                allowed: false,
+                result: 'wrong_event',
+                // El nombre del evento va en el mensaje porque es lo que le
+                // permite al operador explicárselo a la persona en la puerta.
+                event_name: ticket.events?.name ?? null,
+                error: `Ticket belongs to another event: ${ticket.events?.name ?? ticket.event_id}`,
+                ticket: ticket
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+        }
+
         // 4. ORG VERIFICATION — Ensure ticket belongs to caller's organization
         if (callerOrgId) {
             const { data: eventData } = await supabaseAdmin

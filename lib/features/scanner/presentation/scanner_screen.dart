@@ -426,9 +426,11 @@ class _ResultOverlay extends StatelessWidget {
     final color = allowed ? AppTheme.accentGreen : AppTheme.errorColor;
     final icon = allowed ? Icons.check_circle : Icons.cancel;
     final ticket = scanResult['ticket'];
-    final titleText = scanResult['message']?.toString() ??
-      (allowed ? l10n.accessGranted : l10n.accessDenied);
     final resultCode = scanResult['result']?.toString();
+    final titleText = resultCode == 'wrong_event'
+        ? l10n.wrongEvent
+        : (scanResult['message']?.toString() ??
+            (allowed ? l10n.accessGranted : l10n.accessDenied));
 
     return Scaffold(
       backgroundColor: color, // Full screen color flood
@@ -491,6 +493,17 @@ class _ResultOverlay extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16)),
                           ),
+                            if (!allowed && resultCode == 'wrong_event') ...[
+                            const Divider(height: 32),
+                            Text(l10n.ticketBelongsTo,
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 12)),
+                            Text((scanResult['event_name'] ?? l10n.unknown).toString(),
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18)),
+                          ],
                             if (!allowed && resultCode == 'already_used') ...[
                             const Divider(height: 32),
                             Text(l10n.firstEntry,

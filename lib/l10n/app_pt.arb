@@ -765,5 +765,7 @@
   "renewsOn": "Válida até {date}",
   "errorGeneric": "Não conseguimos carregar esta informação.",
   "updateAvailable": "Há uma versão nova. Toque em \"Atualizar\" abaixo.",
-  "upToDate": "Dados recarregados. Você já está na última versão."
+  "upToDate": "Dados recarregados. Você já está na última versão.",
+  "wrongEvent": "OUTRO EVENTO",
+  "ticketBelongsTo": "ESTE INGRESSO É PARA:"
 }

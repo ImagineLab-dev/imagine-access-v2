@@ -789,5 +789,7 @@
     }
   },
   "updateAvailable": "A new version is available. Tap \"Update\" below.",
-  "upToDate": "Data reloaded. You're on the latest version."
+  "upToDate": "Data reloaded. You're on the latest version.",
+  "wrongEvent": "WRONG EVENT",
+  "ticketBelongsTo": "THIS TICKET IS FOR:"
 }

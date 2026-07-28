@@ -1746,4 +1746,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get upToDate => 'Datos recargados. Ya tenés la última versión.';
+
+  @override
+  String get wrongEvent => 'OTRO EVENTO';
+
+  @override
+  String get ticketBelongsTo => 'ESTE TICKET ES PARA:';
 }

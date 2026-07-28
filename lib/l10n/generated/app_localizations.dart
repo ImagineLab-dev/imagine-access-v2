@@ -3339,6 +3339,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data reloaded. You\'re on the latest version.'**
   String get upToDate;
+
+  /// No description provided for @wrongEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'WRONG EVENT'**
+  String get wrongEvent;
+
+  /// No description provided for @ticketBelongsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'THIS TICKET IS FOR:'**
+  String get ticketBelongsTo;
 }
 
 class _AppLocalizationsDelegate
