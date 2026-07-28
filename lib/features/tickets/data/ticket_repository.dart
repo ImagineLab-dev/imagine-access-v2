@@ -93,11 +93,17 @@ class TicketRepository {
         };
       }
 
+      // `dev.log` solo escribe en modo debug, así que en producción la causa
+      // real se perdía por completo: un fallo inesperado al emitir un ticket no
+      // dejaba ningún rastro en ningún lado. La causa se adjunta a la
+      // excepción, que sí viaja. El texto para el usuario no cambia — el
+      // detalle es para quien lee el error, no para quien lo sufre.
       if (kDebugMode) {
         dev.log('Unexpected error call to create_ticket',
             error: e, name: 'TicketRepository');
       }
-      throw TicketException('Error al crear ticket. Intente nuevamente.');
+      throw TicketException('Error al crear ticket. Intente nuevamente.',
+          causa: e);
     }
   }
 
@@ -238,7 +244,7 @@ class TicketRepository {
     } catch (e) {
       if (e is TicketException) rethrow;
       if (kDebugMode) dev.log('Error in resendTicket', error: e, name: 'TicketRepository');
-      throw TicketException('Error crítico al reenviar ticket');
+      throw TicketException('Error crítico al reenviar ticket', causa: e);
     }
   }
 
@@ -267,19 +273,27 @@ class TicketRepository {
     } catch (e) {
       if (e is TicketException) rethrow;
       if (kDebugMode) dev.log('Error in voidTicket', error: e, name: 'TicketRepository');
-      throw TicketException('Error crítico al anular ticket');
+      throw TicketException('Error crítico al anular ticket', causa: e);
     }
   }
 }
 
 /// Custom exception for ticket-related errors
 class TicketException implements Exception {
+  TicketException(this.message, {this.causa});
+
+  /// Texto para el usuario.
   final String message;
 
-  TicketException(this.message);
+  /// Lo que realmente falló, cuando la excepción envuelve a otra.
+  ///
+  /// Sin esto, un fallo inesperado al emitir un ticket llegaba como "Error al
+  /// crear ticket. Intente nuevamente." y nada más: el detalle se escribía con
+  /// `dev.log`, que en producción no escribe en ningún lado.
+  final Object? causa;
 
   @override
-  String toString() => message;
+  String toString() => causa == null ? message : '$message (causa: $causa)';
 }
 
 /// Provider for TicketRepository

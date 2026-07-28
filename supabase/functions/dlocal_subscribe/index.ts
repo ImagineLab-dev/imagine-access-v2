@@ -93,15 +93,24 @@ Deno.serve(async (req) => {
     const notificationUrl =
       `${urlPublica}/functions/v1/dlocal_webhook?org=${org.id}&plan=${plan}`
 
+    const precio = PRECIOS[plan as keyof typeof PRECIOS]
+
     let planDLocal
     if (org.dlocal_plan_id) {
       // Reutilizar. Si el plan se borró del panel, se crea otro en vez de
       // devolver un enlace muerto.
       planDLocal = await obtenerPlan(org.dlocal_plan_id).catch(() => null)
+
+      // Y si el plan guardado no es del tipo que se está pidiendo, tampoco
+      // sirve. Sin esta comprobación, alguien que primero mira el mensual y
+      // después elige el anual recibía el enlace del MENSUAL: el checkout le
+      // cobraba USD 25 al mes habiendo elegido USD 250 al año.
+      if (planDLocal && planDLocal.frequency_type !== precio.frecuencia) {
+        planDLocal = null
+      }
     }
 
     if (!planDLocal) {
-      const precio = PRECIOS[plan as keyof typeof PRECIOS]
       planDLocal = await crearPlan({
         // Guion simple y no raya larga, por precaución: el nombre viaja a un
         // tercero y después vuelve en sus correos y su checkout. No está

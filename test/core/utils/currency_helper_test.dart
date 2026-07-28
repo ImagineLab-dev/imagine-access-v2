@@ -4,30 +4,43 @@ import 'package:imagine_access/core/utils/currency_helper.dart';
 
 void main() {
   group('CurrencyHelper', () {
+    // La app formatea con la convención latinoamericana: punto para los miles
+    // y coma para los decimales. Estos tests afirmaban la convención
+    // estadounidense y fallaban desde siempre, contradiciendo a la
+    // implementación en vez de verificarla. Cinco fallos permanentes enseñan a
+    // ignorar la corrida entera, que es como se cuelan las regresiones de
+    // verdad.
     group('format', () {
-      test('should format PYG without decimals', () {
-        final result = CurrencyHelper.format(150000.0, 'PYG');
-        expect(result, 'Gs 150000');
+      test('PYG va sin decimales y con punto de miles', () {
+        expect(CurrencyHelper.format(150000.0, 'PYG'), 'Gs 150.000');
       });
 
-      test('should format USD with 2 decimals', () {
-        final result = CurrencyHelper.format(99.99, 'USD');
-        expect(result, '\$ 99.99');
+      test('USD lleva dos decimales, con coma', () {
+        expect(CurrencyHelper.format(99.99, 'USD'), '\$ 99,99');
       });
 
-      test('should format default currency correctly', () {
-        final result = CurrencyHelper.format(1000.0, 'XYZ');
-        expect(result, 'XYZ 1000.00');
+      test('una moneda desconocida usa su código y dos decimales', () {
+        expect(CurrencyHelper.format(1000.0, 'XYZ'), 'XYZ 1.000,00');
       });
 
-      test('should handle zero correctly', () {
-        final result = CurrencyHelper.format(0.0, 'USD');
-        expect(result, '\$ 0.00');
+      test('el cero se muestra completo', () {
+        expect(CurrencyHelper.format(0.0, 'USD'), '\$ 0,00');
       });
 
-      test('should handle negative numbers', () {
-        final result = CurrencyHelper.format(-50.0, 'USD');
-        expect(result, '\$ -50.00');
+      test('el signo va delante del número, no del símbolo', () {
+        expect(CurrencyHelper.format(-50.0, 'USD'), '\$ -50,00');
+      });
+
+      // Regresión: antes se truncaba la parte entera y se redondeaba el resto
+      // por separado, así que el acarreo nunca subía al entero.
+      test('el redondeo arrastra al entero en vez de desbordarse', () {
+        expect(CurrencyHelper.format(99.999, 'USD'), '\$ 100,00');
+        expect(CurrencyHelper.format(1.999, 'USD'), '\$ 2,00');
+        expect(CurrencyHelper.format(1234.996, 'USD'), '\$ 1.235,00');
+      });
+
+      test('una moneda sin decimales redondea, no trunca', () {
+        expect(CurrencyHelper.format(999999.6, 'PYG'), 'Gs 1.000.000');
       });
     });
 

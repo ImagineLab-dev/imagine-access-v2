@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,12 @@ class MockRef extends Mock implements Ref {}
 
 class MockOfflineQueueService extends Mock implements OfflineQueueService {}
 
+/// El repositorio lee la sesión antes de invocar la función: guarda el token,
+/// intenta refrescar y vuelve a leerlo. Sin estos dobles, mocktail lanza al
+/// primer acceso, el catch genérico lo convierte en TicketException y los
+/// cuatro tests fallaban por el andamiaje, no por el código que querían probar.
+class MockGoTrueClient extends Mock implements GoTrueClient {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(
@@ -31,6 +38,21 @@ void main() {
   late MockFunctionsClient mockFunctions;
   late MockRef mockRef;
   late MockOfflineQueueService mockOfflineQueue;
+  late MockGoTrueClient mockAuth;
+
+  // El repositorio lee el token de respaldo con flutter_secure_storage, que
+  // habla por un canal de plataforma. En un test unitario ese canal no existe:
+  // sin el binding y sin este doble, cualquier lectura lanza "Binding has not
+  // yet been initialized" y el catch genérico lo disfraza de fallo al crear el
+  // ticket.
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+      (call) async => call.method == 'read' ? null : <String, String>{},
+    );
+  });
   late TicketRepository repository;
 
   setUp(() {
@@ -38,6 +60,15 @@ void main() {
     mockFunctions = MockFunctionsClient();
     mockRef = MockRef();
     mockOfflineQueue = MockOfflineQueueService();
+
+    mockAuth = MockGoTrueClient();
+    when(() => mockClient.auth).thenReturn(mockAuth);
+    // Sin sesión: el repositorio cae en su respaldo y sigue igual. Es el camino
+    // que importa acá — lo que se prueba es la llamada a la función, no el
+    // manejo del token.
+    when(() => mockAuth.currentSession).thenReturn(null);
+    when(() => mockAuth.refreshSession()).thenAnswer(
+        (_) async => AuthResponse(session: null, user: null));
 
     when(() => mockClient.functions).thenReturn(mockFunctions);
     when(() => mockRef.read(offlineQueueProvider)).thenReturn(mockOfflineQueue);

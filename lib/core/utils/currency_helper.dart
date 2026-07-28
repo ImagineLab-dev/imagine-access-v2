@@ -30,8 +30,20 @@ class CurrencyHelper {
   /// Formats a number with dot as thousands separator and comma as decimal
   static String _formatWithThousands(double value, int decimals) {
     final isNeg = value < 0;
-    final abs = value.abs();
-    final intPart = abs.truncate();
+    final factor = _pow10(decimals);
+
+    // Se redondea el número ENTERO de centavos y recién después se parte en
+    // entera y decimal.
+    //
+    // Antes se truncaba la parte entera primero y se redondeaba el resto por
+    // separado, así que el acarreo no llegaba a subir el entero: 99.999 salía
+    // como "99,100" en vez de "100,00", y 1234.996 como "1.234,100". Aparece
+    // solo, sin que nadie cargue esos números, cuando un total se divide entre
+    // varios tickets y el punto flotante deja un x,99…
+    final total = (value.abs() * factor).round();
+    final intPart = total ~/ factor;
+    final frac = total % factor;
+
     final intStr = intPart.toString();
     final buf = StringBuffer();
     for (var i = 0; i < intStr.length; i++) {
@@ -39,7 +51,6 @@ class CurrencyHelper {
       buf.write(intStr[i]);
     }
     if (decimals > 0) {
-      final frac = ((abs - intPart) * _pow10(decimals)).round();
       buf.write(',${frac.toString().padLeft(decimals, '0')}');
     }
     return isNeg ? '-${buf.toString()}' : buf.toString();
