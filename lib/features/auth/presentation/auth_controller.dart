@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/platform/captcha.dart';
 import '../../events/data/event_repository.dart';
 import '../../events/presentation/event_state.dart';
 
@@ -312,6 +313,7 @@ class AuthController extends StateNotifier<bool> {
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
+        captchaToken: await tokenCaptcha(),
       );
       if (response.user != null) {
         ref.read(userProvider.notifier).state = response.user;
@@ -475,6 +477,7 @@ class AuthController extends StateNotifier<bool> {
         email: email,
         password: password,
         data: {'display_name': displayName},
+        captchaToken: await tokenCaptcha(),
       );
       if (response.user != null && response.session == null) {
         // Email confirmation required — OTP sent, stop here
@@ -552,6 +555,7 @@ class AuthController extends StateNotifier<bool> {
     await Supabase.instance.client.auth.resend(
       type: OtpType.signup,
       email: email,
+      captchaToken: await tokenCaptcha(),
     );
   }
 

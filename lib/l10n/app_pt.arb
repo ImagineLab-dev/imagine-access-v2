@@ -512,6 +512,7 @@
   "errorForbidden": "Você não tem permissão para realizar esta ação.",
   "errorNotFound": "Recurso não encontrado.",
   "errorBadRequest": "Dados inválidos. Verifique as informações inseridas.",
+  "errorCaptcha": "Não conseguimos verificar que você é uma pessoa. Recarregue a página e tente novamente.",
   "errorServer": "Erro do servidor. Tente mais tarde.",
   "errorUnknown": "Ocorreu um erro inesperado.",
   "retryAction": "TENTAR NOVAMENTE",

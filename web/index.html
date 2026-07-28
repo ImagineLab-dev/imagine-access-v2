@@ -115,6 +115,20 @@
       #app-splash .bar::after { animation: none; }
       #app-splash .bar::after { width: 100%; }
     }
+
+    /* Turnstile. Normalmente resuelve solo y nunca se ve: el contenedor está
+       oculto hasta que Cloudflare pide interacción humana. Como Flutter pinta
+       sobre un canvas, el widget tiene que vivir por encima con z-index. */
+    #turnstile-container {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      place-items: center;
+      background: rgba(11, 15, 22, .72);
+    }
+
+    #turnstile-container.visible { display: grid; }
   </style>
 </head>
 <body>
@@ -123,9 +137,12 @@
     <div class="bar"></div>
   </div>
 
+  <div id="turnstile-container"></div>
+
   <script src="flutter_bootstrap.js" async></script>
   <script src="js/splash.js"></script>
   <script src="js/pwa.js" defer></script>
   <script src="js/install.js" defer></script>
+  <script src="js/turnstile.js" defer></script>
 </body>
 </html>

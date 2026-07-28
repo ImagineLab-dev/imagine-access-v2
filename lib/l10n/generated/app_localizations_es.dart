@@ -1176,6 +1176,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Datos inválidos. Verifique la información ingresada.';
 
   @override
+  String get errorCaptcha =>
+      'No pudimos verificar que seas una persona. Recargá la página e intentá de nuevo.';
+
+  @override
   String get errorServer => 'Error del servidor. Intente más tarde.';
 
   @override

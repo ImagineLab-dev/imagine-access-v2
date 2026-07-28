@@ -2296,6 +2296,12 @@ abstract class AppLocalizations {
   /// **'Invalid data. Check the information entered.'**
   String get errorBadRequest;
 
+  /// No description provided for @errorCaptcha.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t verify that you\'re human. Reload the page and try again.'**
+  String get errorCaptcha;
+
   /// No description provided for @errorServer.
   ///
   /// In en, this message translates to:

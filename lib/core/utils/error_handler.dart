@@ -12,6 +12,7 @@ enum NetworkErrorType {
   forbidden,
   notFound,
   badRequest,
+  captchaFailed,
   unknown;
 
   bool get isRetryable {
@@ -84,6 +85,22 @@ class ErrorHandler {
       );
     }
     
+    // Captcha rechazado por el servidor.
+    //
+    // Va ANTES de los códigos HTTP porque GoTrue devuelve estos fallos como
+    // 400, y "solicitud inválida" no le dice nada al usuario sobre qué hacer.
+    // Los mensajes de GoTrue varían — "captcha protection: request disallowed
+    // (missing-input-response)", "captcha verification process failed" — pero
+    // todos contienen la palabra.
+    if (errorString.contains('captcha')) {
+      return const NetworkError(
+        type: NetworkErrorType.captchaFailed,
+        message: 'errorCaptcha',
+        statusCode: 400,
+        isRetryable: false,
+      );
+    }
+
     // Errores HTTP específicos
     if (errorString.contains('401') || errorString.contains('unauthorized')) {
       return const NetworkError(
@@ -172,6 +189,8 @@ class ErrorHandler {
         return l10n.errorUnauthorized;
       case NetworkErrorType.forbidden:
         return l10n.errorForbidden;
+      case NetworkErrorType.captchaFailed:
+        return l10n.errorCaptcha;
       case NetworkErrorType.notFound:
         return l10n.errorNotFound;
       case NetworkErrorType.badRequest:

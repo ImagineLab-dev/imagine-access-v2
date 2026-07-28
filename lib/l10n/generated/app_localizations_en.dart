@@ -1166,6 +1166,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorBadRequest => 'Invalid data. Check the information entered.';
 
   @override
+  String get errorCaptcha =>
+      'We couldn\'t verify that you\'re human. Reload the page and try again.';
+
+  @override
   String get errorServer => 'Server error. Try again later.';
 
   @override

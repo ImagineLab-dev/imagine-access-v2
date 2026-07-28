@@ -512,6 +512,7 @@
   "errorForbidden": "You do not have permission to perform this action.",
   "errorNotFound": "Resource not found.",
   "errorBadRequest": "Invalid data. Check the information entered.",
+  "errorCaptcha": "We couldn't verify that you're human. Reload the page and try again.",
   "errorServer": "Server error. Try again later.",
   "errorUnknown": "An unexpected error occurred.",
   "retryAction": "RETRY",

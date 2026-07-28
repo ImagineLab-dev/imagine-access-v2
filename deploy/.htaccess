@@ -93,7 +93,14 @@
   # Roboto de ahí como fuente de respaldo y el build no la empaqueta. Sin esta
   # excepción el texto no renderiza. Se elimina cuando Roboto se incluya como
   # asset del proyecto — ver "Pendientes conocidos" en DEPLOY.md.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://fonts.gstatic.com https://PROJECT.supabase.co wss://PROJECT.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  #
+  # challenges.cloudflare.com aparece tres veces por Turnstile, el captcha de
+  # registro y login: script-src para su API, frame-src porque el widget se
+  # dibuja en un iframe propio, y connect-src para que ese iframe reporte el
+  # resultado. Faltando cualquiera de las tres el captcha nunca produce token
+  # y nadie puede entrar — frame-src es la que se olvida, porque sin declararla
+  # hereda default-src 'self' y bloquea el iframe en silencio.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://fonts.gstatic.com https://challenges.cloudflare.com https://PROJECT.supabase.co wss://PROJECT.supabase.co; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 </IfModule>
 
 # --------------------------------------------------------------------------

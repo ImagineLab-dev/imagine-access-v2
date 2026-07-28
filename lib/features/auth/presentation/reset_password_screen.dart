@@ -8,6 +8,7 @@ import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/custom_input.dart';
 import '../../../core/ui/neon_button.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/platform/captcha.dart';
 import '../../../core/utils/error_handler.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
@@ -72,6 +73,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     try {
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _emailController.text.trim(),
+        captchaToken: await tokenCaptcha(),
       );
       if (!mounted) return;
       setState(() => _step = 1);
