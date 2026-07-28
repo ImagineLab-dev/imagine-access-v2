@@ -285,12 +285,16 @@ class DeviceManagementScreen extends ConsumerWidget {
                           }
                         } catch (e) {
                           if (context.mounted) {
-                            setState(() => isLoading = false);
                             ErrorHandler.showErrorSnackBar(
                               context,
                               l10n.error,
                             );
                           }
+                        } finally {
+                          // Mismo motivo que en la invitación de equipo: el
+                          // botón tiene que liberarse por todos los caminos, no
+                          // solo cuando falla con el contexto montado.
+                          if (ctx.mounted) setState(() => isLoading = false);
                         }
                       },
                 child: isLoading

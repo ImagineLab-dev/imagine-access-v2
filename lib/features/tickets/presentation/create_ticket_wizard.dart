@@ -171,7 +171,6 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             // Nunca e.toString(): vuelca errores técnicos de PostgREST en
             // pantalla, en inglés y sin sentido para el usuario.
@@ -180,7 +179,17 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
             backgroundColor: AppTheme.errorColor));
       }
     } finally {
-      if (mounted) ref.read(loadingProvider.notifier).state = false;
+      // `_isLoading` se libera ACÁ y no dentro del catch.
+      //
+      // Antes solo se liberaba cuando algo fallaba: en el camino de éxito
+      // quedaba en true para siempre. El `finally` reiniciaba `loadingProvider`,
+      // que es el velo global, pero no esta variable — que es la que deshabilita
+      // el botón. Resultado: emitías un ticket, tocabas "Crear Otro", el
+      // formulario se limpiaba... y el botón ya no respondía nunca más.
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ref.read(loadingProvider.notifier).state = false;
+      }
     }
   }
 

@@ -335,7 +335,6 @@ class UserManagementScreen extends ConsumerWidget {
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          setState(() => isLoading = false);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(l10n.error),
@@ -343,6 +342,12 @@ class UserManagementScreen extends ConsumerWidget {
                             ),
                           );
                         }
+                      } finally {
+                        // El botón se libera pase lo que pase. Antes solo se
+                        // liberaba dentro del catch Y con el contexto montado:
+                        // cualquier otro camino dejaba el diálogo con la rueda
+                        // girando y el botón muerto.
+                        if (ctx.mounted) setState(() => isLoading = false);
                       }
                     },
               child: Text(l10n.createUser),

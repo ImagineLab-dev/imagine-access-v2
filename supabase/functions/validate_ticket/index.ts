@@ -211,8 +211,27 @@ serve(async (req) => {
             if (!qr_token) throw new Error("QR Token missing");
 
             // Verify Signature
-            const [payloadB64, signature] = qr_token.split('.');
-            const payloadStr = atob(payloadB64);
+            //
+            // Se recorta el token: un lector puede devolver el texto con un
+            // salto de línea o un espacio al final, y eso desplaza la firma lo
+            // suficiente como para que la comparación falle por longitud. El
+            // QR sería correcto y aun así rechazaría a la persona.
+            const tokenLimpio = String(qr_token).trim();
+            const partes = tokenLimpio.split('.');
+            const payloadB64 = (partes[0] ?? '').trim();
+            const signature = (partes[1] ?? '').trim();
+
+            let payloadStr: string;
+            try {
+                payloadStr = atob(payloadB64);
+            } catch (_e) {
+                console.warn('[qr] base64 ilegible', {
+                    largo: tokenLimpio.length,
+                    partes: partes.length,
+                    inicio: tokenLimpio.slice(0, 24),
+                });
+                throw new Error("Invalid QR Signature");
+            }
             const secret = Deno.env.get('QR_SECRET_KEY')
             if (!secret) {
                 throw new Error('QR_SECRET_KEY is not configured');
@@ -220,6 +239,17 @@ serve(async (req) => {
             const expectedSig = createHmac('sha256', secret).update(payloadStr).digest('hex');
 
             if (!timingSafeEqual(signature, expectedSig)) {
+                // Diagnóstico. Un fallo de firma sin contexto es imposible de
+                // investigar: no se sabe si el lector leyó mal, si el token vino
+                // de otro entorno o si el QR es de otro sistema. No se registra
+                // la firma esperada, que revelaría información sobre el secreto.
+                console.warn('[qr] firma no coincide', {
+                    largo_token: tokenLimpio.length,
+                    partes: partes.length,
+                    largo_firma_recibida: signature.length,
+                    largo_firma_esperada: expectedSig.length,
+                    payload: payloadStr.slice(0, 120),
+                });
                 throw new Error("Invalid QR Signature");
             }
 

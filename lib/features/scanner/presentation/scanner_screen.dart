@@ -99,7 +99,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     // apunta al QR y no pasa nada.
     String? codigo;
     for (final barcode in capture.barcodes) {
-      final valor = barcode.rawValue;
+      // Recortado: algunos lectores devuelven el texto con un salto de línea
+      // al final, y eso hace fallar la comparación de la firma en el servidor.
+      final valor = barcode.rawValue?.trim();
       if (valor != null && valor.isNotEmpty) {
         codigo = valor;
         break; // Solo el primero
