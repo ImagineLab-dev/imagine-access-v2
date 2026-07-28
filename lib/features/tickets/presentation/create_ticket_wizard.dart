@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../events/presentation/event_state.dart';
@@ -466,9 +467,10 @@ class _StepOneType extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 1.15, // Reduced from 1.3
+                          SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: Responsive.columnas(context,
+                                  anchoObjetivo: 240, maximo: 4),
+                              childAspectRatio: 1.15,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16),
                       itemCount: specialTypes.length,
@@ -490,9 +492,10 @@ class _StepOneType extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 1.15, // Reduced from 1.3
+                          SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: Responsive.columnas(context,
+                                  anchoObjetivo: 240, maximo: 4),
+                              childAspectRatio: 1.15,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16),
                       itemCount: standardTypes.length,

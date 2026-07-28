@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -105,10 +104,8 @@ class DashboardScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
-          // Sin tope de ancho, en un monitor las tarjetas se estiran a casi
-          // 1000px con el número en una esquina y la etiqueta en la otra.
-          child: ContenidoCentrado(
-            child: Column(
+          // El tope de ancho lo aplica GlassScaffold para todas las pantallas.
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ROLE-BASED DASHBOARD CONTENT
@@ -159,8 +156,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               const RecentActivityList(),
               const SizedBox(height: 40),
-              ],
-            ),
+            ],
           ),
         ),
       ),

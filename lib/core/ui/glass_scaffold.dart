@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'responsive.dart';
 
 class GlassScaffold extends StatelessWidget {
   final Widget body;
@@ -9,6 +10,14 @@ class GlassScaffold extends StatelessWidget {
   final Widget? drawer;
   final bool resizeToAvoidBottomInset;
 
+  /// Deja el contenido a ancho completo, sin el tope de [Responsive].
+  ///
+  /// Solo para pantallas donde el contenido ES la pantalla —una cámara, un
+  /// mapa—, no una lista o un formulario. En todo lo demás el tope evita que
+  /// en un monitor las tarjetas se estiren a mil píxeles con el contenido
+  /// perdido en el centro.
+  final bool anchoCompleto;
+
   const GlassScaffold({
     super.key,
     required this.body,
@@ -17,6 +26,7 @@ class GlassScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.drawer,
     this.resizeToAvoidBottomInset = true,
+    this.anchoCompleto = false,
   });
 
   @override
@@ -73,7 +83,7 @@ class GlassScaffold extends StatelessWidget {
 
            // Content
           SafeArea(
-            child: body,
+            child: anchoCompleto ? body : ContenidoCentrado(child: body),
           ),
         ],
       ),
