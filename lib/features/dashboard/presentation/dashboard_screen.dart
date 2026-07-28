@@ -239,6 +239,21 @@ class DashboardScreen extends ConsumerWidget {
             onTap: () => context.pop(),
           ),
           if (!isDoor) ...[
+            // Solo para superadmin: administra el conjunto de organizaciones,
+            // no una en particular.
+            if (AppRoles.isSuperadmin(role))
+              ListTile(
+                leading: Icon(Icons.admin_panel_settings_outlined,
+                    color: AppTheme.neonBlue),
+                title: Text(l10n.superAdmin,
+                    style: TextStyle(
+                        color: AppTheme.neonBlue,
+                        fontWeight: FontWeight.bold)),
+                onTap: () {
+                  context.pop();
+                  context.push('/super-admin');
+                },
+              ),
             ListTile(
               leading: Icon(Icons.person_outline,
                   color: isDark ? Colors.white70 : Colors.black87),

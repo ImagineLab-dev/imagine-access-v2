@@ -3021,6 +3021,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create a ticket'**
   String get createFirstTicket;
+
+  /// No description provided for @superAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Super Admin'**
+  String get superAdmin;
+
+  /// No description provided for @tenants.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizations'**
+  String get tenants;
+
+  /// No description provided for @tenantsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every organization in the system'**
+  String get tenantsSubtitle;
+
+  /// No description provided for @searchTenant.
+  ///
+  /// In en, this message translates to:
+  /// **'Search organization'**
+  String get searchTenant;
+
+  /// No description provided for @tenantActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get tenantActive;
+
+  /// No description provided for @tenantSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get tenantSuspended;
+
+  /// No description provided for @tenantSuspend.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspend'**
+  String get tenantSuspend;
+
+  /// No description provided for @tenantReactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get tenantReactivate;
+
+  /// No description provided for @tenantSuspendReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for suspension'**
+  String get tenantSuspendReason;
+
+  /// No description provided for @tenantSuspendWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'The organization loses access until you reactivate it. Door staff will not be able to scan.'**
+  String get tenantSuspendWarning;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @expiresOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires on'**
+  String get expiresOn;
+
+  /// No description provided for @noExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'No expiry'**
+  String get noExpiry;
+
+  /// No description provided for @expiresInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in {days} days'**
+  String expiresInDays(int days);
+
+  /// No description provided for @expiredDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired {days} days ago'**
+  String expiredDaysAgo(int days);
+
+  /// No description provided for @extendSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Change subscription'**
+  String get extendSubscription;
+
+  /// No description provided for @viewAsTenant.
+  ///
+  /// In en, this message translates to:
+  /// **'View as this client'**
+  String get viewAsTenant;
+
+  /// No description provided for @viewAsTenantWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You will see the app with this organization\'s data. It is recorded in the audit log.'**
+  String get viewAsTenantWarning;
+
+  /// No description provided for @auditLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit log'**
+  String get auditLog;
+
+  /// No description provided for @noTenants.
+  ///
+  /// In en, this message translates to:
+  /// **'No organizations yet'**
+  String get noTenants;
+
+  /// No description provided for @tenantUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get tenantUsers;
+
+  /// No description provided for @tenantEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get tenantEvents;
+
+  /// No description provided for @tenantTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets'**
+  String get tenantTickets;
+
+  /// No description provided for @orgSuspendedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization suspended'**
+  String get orgSuspendedTitle;
+
+  /// No description provided for @orgSuspendedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Access is suspended. Contact the system administrator to restore it.'**
+  String get orgSuspendedBody;
 }
 
 class _AppLocalizationsDelegate

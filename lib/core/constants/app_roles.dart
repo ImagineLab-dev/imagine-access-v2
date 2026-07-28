@@ -9,6 +9,10 @@ class AppRoles {
   static const String rrpp = 'rrpp';
   static const String door = 'door';
 
+  /// Nivel POR ENCIMA de las organizaciones. Los otros tres roles viven dentro
+  /// de una; este administra el conjunto.
+  static const String superadmin = 'superadmin';
+
   /// Roles with admin-level access
   static const List<String> adminLevel = [admin];
 
@@ -30,5 +34,7 @@ class AppRoles {
   }
 
   /// Check if a role has admin privileges
-  static bool isAdmin(String? role) => role == admin;
+  static bool isAdmin(String? role) => role == admin || role == superadmin;
+
+  static bool isSuperadmin(String? role) => role == superadmin;
 }

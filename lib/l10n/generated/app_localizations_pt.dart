@@ -1564,4 +1564,89 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get createFirstTicket => 'Criar um ingresso';
+
+  @override
+  String get superAdmin => 'Super Admin';
+
+  @override
+  String get tenants => 'Organizacoes';
+
+  @override
+  String get tenantsSubtitle => 'Todas as organizacoes do sistema';
+
+  @override
+  String get searchTenant => 'Buscar organizacao';
+
+  @override
+  String get tenantActive => 'Ativa';
+
+  @override
+  String get tenantSuspended => 'Suspensa';
+
+  @override
+  String get tenantSuspend => 'Suspender';
+
+  @override
+  String get tenantReactivate => 'Reativar';
+
+  @override
+  String get tenantSuspendReason => 'Motivo da suspensao';
+
+  @override
+  String get tenantSuspendWarning =>
+      'A organizacao perde o acesso ate voce reativar. A equipe de porta nao podera escanear.';
+
+  @override
+  String get subscription => 'Assinatura';
+
+  @override
+  String get plan => 'Plano';
+
+  @override
+  String get expiresOn => 'Vence em';
+
+  @override
+  String get noExpiry => 'Sem vencimento';
+
+  @override
+  String expiresInDays(int days) {
+    return 'Vence em $days dias';
+  }
+
+  @override
+  String expiredDaysAgo(int days) {
+    return 'Venceu ha $days dias';
+  }
+
+  @override
+  String get extendSubscription => 'Alterar assinatura';
+
+  @override
+  String get viewAsTenant => 'Entrar como este cliente';
+
+  @override
+  String get viewAsTenantWarning =>
+      'Voce vera o app com os dados desta organizacao. Fica registrado na auditoria.';
+
+  @override
+  String get auditLog => 'Registro de auditoria';
+
+  @override
+  String get noTenants => 'Ainda nao ha organizacoes';
+
+  @override
+  String get tenantUsers => 'Usuarios';
+
+  @override
+  String get tenantEvents => 'Eventos';
+
+  @override
+  String get tenantTickets => 'Ingressos';
+
+  @override
+  String get orgSuspendedTitle => 'Organizacao suspensa';
+
+  @override
+  String get orgSuspendedBody =>
+      'O acesso esta suspenso. Contate o administrador do sistema para reativar.';
 }

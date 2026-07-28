@@ -1564,4 +1564,89 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get createFirstTicket => 'Crear un ticket';
+
+  @override
+  String get superAdmin => 'Super Admin';
+
+  @override
+  String get tenants => 'Organizaciones';
+
+  @override
+  String get tenantsSubtitle => 'Todas las organizaciones del sistema';
+
+  @override
+  String get searchTenant => 'Buscar organización';
+
+  @override
+  String get tenantActive => 'Activa';
+
+  @override
+  String get tenantSuspended => 'Suspendida';
+
+  @override
+  String get tenantSuspend => 'Suspender';
+
+  @override
+  String get tenantReactivate => 'Reactivar';
+
+  @override
+  String get tenantSuspendReason => 'Motivo de la suspensión';
+
+  @override
+  String get tenantSuspendWarning =>
+      'La organización pierde el acceso al sistema hasta que la reactives. El personal de puerta no va a poder escanear.';
+
+  @override
+  String get subscription => 'Suscripción';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get expiresOn => 'Vence el';
+
+  @override
+  String get noExpiry => 'Sin vencimiento';
+
+  @override
+  String expiresInDays(int days) {
+    return 'Vence en $days días';
+  }
+
+  @override
+  String expiredDaysAgo(int days) {
+    return 'Venció hace $days días';
+  }
+
+  @override
+  String get extendSubscription => 'Cambiar suscripción';
+
+  @override
+  String get viewAsTenant => 'Entrar como este cliente';
+
+  @override
+  String get viewAsTenantWarning =>
+      'Vas a ver la app con los datos de esta organización. Queda registrado en la auditoría.';
+
+  @override
+  String get auditLog => 'Registro de auditoría';
+
+  @override
+  String get noTenants => 'No hay organizaciones todavía';
+
+  @override
+  String get tenantUsers => 'Usuarios';
+
+  @override
+  String get tenantEvents => 'Eventos';
+
+  @override
+  String get tenantTickets => 'Tickets';
+
+  @override
+  String get orgSuspendedTitle => 'Organización suspendida';
+
+  @override
+  String get orgSuspendedBody =>
+      'El acceso está suspendido. Contactá al administrador del sistema para reactivarlo.';
 }

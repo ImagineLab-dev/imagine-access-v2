@@ -698,5 +698,45 @@
   "createFirstEvent": "Criar meu primeiro evento",
   "noTicketsYet": "Ainda nao ha ingressos",
   "noTicketsYetBody": "Quando voce emitir um ingresso ele aparecera aqui, com seu QR e status.",
-  "createFirstTicket": "Criar um ingresso"
+  "createFirstTicket": "Criar um ingresso",
+  "superAdmin": "Super Admin",
+  "tenants": "Organizacoes",
+  "tenantsSubtitle": "Todas as organizacoes do sistema",
+  "searchTenant": "Buscar organizacao",
+  "tenantActive": "Ativa",
+  "tenantSuspended": "Suspensa",
+  "tenantSuspend": "Suspender",
+  "tenantReactivate": "Reativar",
+  "tenantSuspendReason": "Motivo da suspensao",
+  "tenantSuspendWarning": "A organizacao perde o acesso ate voce reativar. A equipe de porta nao podera escanear.",
+  "subscription": "Assinatura",
+  "plan": "Plano",
+  "expiresOn": "Vence em",
+  "noExpiry": "Sem vencimento",
+  "expiresInDays": "Vence em {days} dias",
+  "@expiresInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "expiredDaysAgo": "Venceu ha {days} dias",
+  "@expiredDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "extendSubscription": "Alterar assinatura",
+  "viewAsTenant": "Entrar como este cliente",
+  "viewAsTenantWarning": "Voce vera o app com os dados desta organizacao. Fica registrado na auditoria.",
+  "auditLog": "Registro de auditoria",
+  "noTenants": "Ainda nao ha organizacoes",
+  "tenantUsers": "Usuarios",
+  "tenantEvents": "Eventos",
+  "tenantTickets": "Ingressos",
+  "orgSuspendedTitle": "Organizacao suspensa",
+  "orgSuspendedBody": "O acesso esta suspenso. Contate o administrador do sistema para reativar."
 }

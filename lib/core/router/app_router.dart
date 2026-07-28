@@ -14,6 +14,7 @@ import '../../features/events/presentation/event_selector_screen.dart';
 import '../../features/events/presentation/create_event_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/superadmin/presentation/super_admin_screen.dart';
 import '../../features/settings/presentation/user_management_screen.dart';
 import '../../features/settings/presentation/device_management_screen.dart';
 import '../../features/settings/presentation/event_staff_screen.dart';
@@ -42,6 +43,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Role Guards
       final path = state.matchedLocation;
+
+      // El panel de super-admin es el unico nivel por encima de las
+      // organizaciones. Se bloquea en el router ademas de en la base: las RPC
+      // verifican is_superadmin() del lado del servidor, pero dejar la ruta
+      // accesible mostraria una pantalla rota en vez de un rechazo claro.
+      if (path.startsWith('/super-admin') &&
+          !AppRoles.isSuperadmin(role)) {
+        return '/dashboard';
+      }
 
       // Admin only routes (Sub-settings and Create Event)
       final isAdminRoute = path.startsWith('/settings/users') ||
@@ -155,6 +165,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/event_staff',
         builder: (context, state) => const EventStaffScreen(),
+      ),
+      GoRoute(
+        path: '/super-admin',
+        builder: (context, state) => const SuperAdminScreen(),
       ),
       GoRoute(
         path: '/profile',

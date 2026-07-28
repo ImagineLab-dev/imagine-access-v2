@@ -698,5 +698,45 @@
   "createFirstEvent": "Create my first event",
   "noTicketsYet": "No tickets yet",
   "noTicketsYetBody": "Once you issue a ticket it will show up here, with its QR and status.",
-  "createFirstTicket": "Create a ticket"
+  "createFirstTicket": "Create a ticket",
+  "superAdmin": "Super Admin",
+  "tenants": "Organizations",
+  "tenantsSubtitle": "Every organization in the system",
+  "searchTenant": "Search organization",
+  "tenantActive": "Active",
+  "tenantSuspended": "Suspended",
+  "tenantSuspend": "Suspend",
+  "tenantReactivate": "Reactivate",
+  "tenantSuspendReason": "Reason for suspension",
+  "tenantSuspendWarning": "The organization loses access until you reactivate it. Door staff will not be able to scan.",
+  "subscription": "Subscription",
+  "plan": "Plan",
+  "expiresOn": "Expires on",
+  "noExpiry": "No expiry",
+  "expiresInDays": "Expires in {days} days",
+  "@expiresInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "expiredDaysAgo": "Expired {days} days ago",
+  "@expiredDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "extendSubscription": "Change subscription",
+  "viewAsTenant": "View as this client",
+  "viewAsTenantWarning": "You will see the app with this organization's data. It is recorded in the audit log.",
+  "auditLog": "Audit log",
+  "noTenants": "No organizations yet",
+  "tenantUsers": "Users",
+  "tenantEvents": "Events",
+  "tenantTickets": "Tickets",
+  "orgSuspendedTitle": "Organization suspended",
+  "orgSuspendedBody": "Access is suspended. Contact the system administrator to restore it."
 }

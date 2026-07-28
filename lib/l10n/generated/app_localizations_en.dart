@@ -1554,4 +1554,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createFirstTicket => 'Create a ticket';
+
+  @override
+  String get superAdmin => 'Super Admin';
+
+  @override
+  String get tenants => 'Organizations';
+
+  @override
+  String get tenantsSubtitle => 'Every organization in the system';
+
+  @override
+  String get searchTenant => 'Search organization';
+
+  @override
+  String get tenantActive => 'Active';
+
+  @override
+  String get tenantSuspended => 'Suspended';
+
+  @override
+  String get tenantSuspend => 'Suspend';
+
+  @override
+  String get tenantReactivate => 'Reactivate';
+
+  @override
+  String get tenantSuspendReason => 'Reason for suspension';
+
+  @override
+  String get tenantSuspendWarning =>
+      'The organization loses access until you reactivate it. Door staff will not be able to scan.';
+
+  @override
+  String get subscription => 'Subscription';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get expiresOn => 'Expires on';
+
+  @override
+  String get noExpiry => 'No expiry';
+
+  @override
+  String expiresInDays(int days) {
+    return 'Expires in $days days';
+  }
+
+  @override
+  String expiredDaysAgo(int days) {
+    return 'Expired $days days ago';
+  }
+
+  @override
+  String get extendSubscription => 'Change subscription';
+
+  @override
+  String get viewAsTenant => 'View as this client';
+
+  @override
+  String get viewAsTenantWarning =>
+      'You will see the app with this organization\'s data. It is recorded in the audit log.';
+
+  @override
+  String get auditLog => 'Audit log';
+
+  @override
+  String get noTenants => 'No organizations yet';
+
+  @override
+  String get tenantUsers => 'Users';
+
+  @override
+  String get tenantEvents => 'Events';
+
+  @override
+  String get tenantTickets => 'Tickets';
+
+  @override
+  String get orgSuspendedTitle => 'Organization suspended';
+
+  @override
+  String get orgSuspendedBody =>
+      'Access is suspended. Contact the system administrator to restore it.';
 }
