@@ -271,6 +271,17 @@ class DashboardScreen extends ConsumerWidget {
               },
             ),
             ListTile(
+              leading: Icon(Icons.credit_card_outlined,
+                  color: isDark ? Colors.white70 : Colors.black87),
+              title: Text(l10n.subscription,
+                  style:
+                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              onTap: () {
+                context.pop();
+                context.push('/subscription');
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.event,
                   color: isDark ? Colors.white70 : Colors.black87),
               title: Text(l10n.events,

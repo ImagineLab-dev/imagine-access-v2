@@ -67,8 +67,11 @@
   function alExpirar() {
     // Los tokens caducan a los ~5 minutos. Si el usuario dejó el login abierto
     // sin enviarlo, el que teníamos guardado ya no sirve.
+    //
+    // NO se pide otro acá: reiniciar el widget puede abrir un desafío visible,
+    // y hacerlo por un temporizador significa que le aparece a alguien que está
+    // haciendo cualquier otra cosa. El próximo `token()` lo pedirá.
     tokenDisponible = null;
-    pedirOtro();
   }
 
   function mostrar() {
@@ -122,13 +125,19 @@
      */
     token: function () {
       return new Promise(function (resolve) {
-        // Caso normal: el widget ya resolvió en segundo plano y el token está
-        // esperando. Se consume y se pide el siguiente para la próxima vez.
+        // Caso normal: el widget ya resolvió al cargar la página y el token
+        // está esperando. Se consume y listo.
+        //
+        // NO se pide el siguiente acá. Adelantarse parecía una mejora —tener
+        // uno listo hace más rápido el próximo envío— pero ese reinicio puede
+        // abrir un desafío visible, y como ocurre en segundo plano le aparece
+        // al usuario en un momento cualquiera: después de entrar, ya navegando
+        // el panel. Pedirlo solo cuando hace falta hace que el desafío, si
+        // aparece, aparezca junto al botón que lo provocó.
         if (tokenDisponible) {
           var t = tokenDisponible;
           tokenDisponible = null;
           resolve(t);
-          pedirOtro();
           return;
         }
 
