@@ -19,16 +19,24 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        const { device_id, organization_id } = await req.json()
+        const { device_id, organization_id, pin } = await req.json()
 
-        if (!device_id || !organization_id) {
-            throw new Error("device_id and organization_id are required")
+        // El PIN es OBLIGATORIO.
+        //
+        // Antes alcanzaba con device_id + organization_id, o sea que el id del
+        // dispositivo funcionaba como credencial por sí solo: quien conociera
+        // esos dos UUID podía listar todos los eventos con sus tipos y precios,
+        // y el id de un equipo dado de baja seguía sirviendo aunque le
+        // cambiaran el PIN. Es la misma verificación que ya hacía
+        // device_dashboard; esta función nunca la adoptó.
+        if (!device_id || !organization_id || !pin) {
+            throw new Error("device_id, organization_id and pin are required")
         }
 
         // Validate: device exists, is enabled, and belongs to the given org
         const { data: device, error: devErr } = await supabaseAdmin
             .from('devices')
-            .select('device_id, organization_id, enabled')
+            .select('device_id, organization_id, enabled, pin_hash, pin_salt, pin')
             .eq('device_id', device_id)
             .single()
 
@@ -42,6 +50,23 @@ serve(async (req) => {
 
         if (device.organization_id !== organization_id) {
             throw new Error("Organization mismatch")
+        }
+
+        // Verify PIN — mismo esquema que device_dashboard: sha256("salt:pin"),
+        // con respaldo al PIN plano de los dispositivos antiguos.
+        const pinHash = device.pin_hash
+        const pinSalt = device.pin_salt
+        let pinValid = false
+        if (pinHash && pinSalt) {
+            const encoded = new TextEncoder().encode(`${pinSalt}:${pin}`)
+            const digest = await crypto.subtle.digest('SHA-256', encoded)
+            const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
+            pinValid = hex === pinHash
+        } else {
+            pinValid = device.pin === pin
+        }
+        if (!pinValid) {
+            throw new Error("Invalid credentials")
         }
 
         // Fetch active events for this organization (with ticket_types)

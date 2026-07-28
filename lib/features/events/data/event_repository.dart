@@ -32,7 +32,7 @@ class EventRepository {
   }
 
   Future<List<Map<String, dynamic>>> _getEventsForDevice(
-      String deviceId, String organizationId) async {
+      String deviceId, String organizationId, String? devicePin) async {
     final cacheKey = 'events::device=$deviceId::org=$organizationId';
     final cached = _cacheStore.get<List<Map<String, dynamic>>>(cacheKey);
     if (cached != null && cached.isValidAt(DateTime.now())) {
@@ -42,7 +42,15 @@ class EventRepository {
     try {
       final response = await _client.functions.invoke(
         'device_events',
-        body: {'device_id': deviceId, 'organization_id': organizationId},
+        // El PIN va también acá. Antes bastaba con conocer los dos UUID para
+        // listar todos los eventos con sus tipos y precios: el id del
+        // dispositivo funcionaba como credencial por sí solo, así que el de uno
+        // dado de baja seguía sirviendo aunque le cambiaran el PIN.
+        body: {
+          'device_id': deviceId,
+          'organization_id': organizationId,
+          'pin': devicePin,
+        },
       );
       if (response.status != 200) return [];
       final data = response.data as Map<String, dynamic>;
@@ -57,12 +65,16 @@ class EventRepository {
   }
 
   Future<List<Map<String, dynamic>>> getEvents(
-      {bool includeArchived = false, String? organizationId, String? userRole, String? deviceId}) async {
+      {bool includeArchived = false,
+      String? organizationId,
+      String? userRole,
+      String? deviceId,
+      String? devicePin}) async {
     final currentUserId = _safeCurrentUserId();
 
     // Device session: use Edge Function (no Supabase auth, RLS would block)
     if (currentUserId == null && deviceId != null && organizationId != null) {
-      return _getEventsForDevice(deviceId, organizationId);
+      return _getEventsForDevice(deviceId, organizationId, devicePin);
     }
 
     String? resolvedOrganizationId = organizationId;
@@ -303,5 +315,6 @@ final eventsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
     organizationId: orgId,
     userRole: role,
     deviceId: device?.deviceId,
+    devicePin: device?.pin,
   );
 });
