@@ -3196,18 +3196,6 @@ abstract class AppLocalizations {
   /// **'We use it to charge your subscription. You can change it later.'**
   String get billingCountryHelp;
 
-  /// No description provided for @trialDaysLeft.
-  ///
-  /// In en, this message translates to:
-  /// **'You have {days} days left in your trial'**
-  String trialDaysLeft(int days);
-
-  /// No description provided for @trialEndsToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Your trial ends today'**
-  String get trialEndsToday;
-
   /// No description provided for @subscriptionExpired.
   ///
   /// In en, this message translates to:
@@ -3243,6 +3231,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We couldn\'t generate the payment link. Please try again in a moment.'**
   String get subscriptionLinkFailed;
+
+  /// No description provided for @freeTicketsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free tickets'**
+  String get freeTicketsTitle;
+
+  /// No description provided for @freeTicketsUsedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {total} used'**
+  String freeTicketsUsedOf(int used, int total);
+
+  /// No description provided for @freeTicketsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} free tickets left'**
+  String freeTicketsLeft(int count);
+
+  /// No description provided for @freeTicketsExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'You used your free tickets. Activate the subscription to keep issuing.'**
+  String get freeTicketsExhausted;
+
+  /// No description provided for @freeTicketsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Voiding a ticket does not give the quota back.'**
+  String get freeTicketsNote;
+
+  /// No description provided for @choosePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your plan'**
+  String get choosePlan;
+
+  /// No description provided for @planUnlimitedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited tickets, unlimited events, your whole team.'**
+  String get planUnlimitedNote;
+
+  /// No description provided for @planAnnualSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Save 2 months'**
+  String get planAnnualSaving;
+
+  /// No description provided for @paymentHandledBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment is processed by dLocal. Opens in a new tab.'**
+  String get paymentHandledBy;
+
+  /// No description provided for @statusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription active'**
+  String get statusActive;
+
+  /// No description provided for @statusTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Free plan'**
+  String get statusTrial;
+
+  /// No description provided for @statusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription expired'**
+  String get statusExpired;
+
+  /// No description provided for @statusSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Account suspended'**
+  String get statusSuspended;
+
+  /// No description provided for @statusQuotaExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'No free tickets left'**
+  String get statusQuotaExhausted;
+
+  /// No description provided for @renewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until {date}'**
+  String renewsOn(String date);
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load this information.'**
+  String get errorGeneric;
 }
 
 class _AppLocalizationsDelegate

@@ -1652,14 +1652,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'We use it to charge your subscription. You can change it later.';
 
   @override
-  String trialDaysLeft(int days) {
-    return 'You have $days days left in your trial';
-  }
-
-  @override
-  String get trialEndsToday => 'Your trial ends today';
-
-  @override
   String get subscriptionExpired =>
       'Your subscription expired. You can still view and validate your tickets, but not create new events.';
 
@@ -1679,4 +1671,62 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get subscriptionLinkFailed =>
       'We couldn\'t generate the payment link. Please try again in a moment.';
+
+  @override
+  String get freeTicketsTitle => 'Free tickets';
+
+  @override
+  String freeTicketsUsedOf(int used, int total) {
+    return '$used of $total used';
+  }
+
+  @override
+  String freeTicketsLeft(int count) {
+    return 'You have $count free tickets left';
+  }
+
+  @override
+  String get freeTicketsExhausted =>
+      'You used your free tickets. Activate the subscription to keep issuing.';
+
+  @override
+  String get freeTicketsNote =>
+      'Voiding a ticket does not give the quota back.';
+
+  @override
+  String get choosePlan => 'Choose your plan';
+
+  @override
+  String get planUnlimitedNote =>
+      'Unlimited tickets, unlimited events, your whole team.';
+
+  @override
+  String get planAnnualSaving => 'Save 2 months';
+
+  @override
+  String get paymentHandledBy =>
+      'Payment is processed by dLocal. Opens in a new tab.';
+
+  @override
+  String get statusActive => 'Subscription active';
+
+  @override
+  String get statusTrial => 'Free plan';
+
+  @override
+  String get statusExpired => 'Subscription expired';
+
+  @override
+  String get statusSuspended => 'Account suspended';
+
+  @override
+  String get statusQuotaExhausted => 'No free tickets left';
+
+  @override
+  String renewsOn(String date) {
+    return 'Valid until $date';
+  }
+
+  @override
+  String get errorGeneric => 'We couldn\'t load this information.';
 }

@@ -742,19 +742,26 @@
   "orgSuspendedBody": "El acceso está suspendido. Contactá al administrador del sistema para reactivarlo.",
   "billingCountry": "País de facturación",
   "billingCountryHelp": "Lo usamos para cobrarte la suscripción. Podés cambiarlo después.",
-  "trialDaysLeft": "Te quedan {days} días de prueba",
-  "@trialDaysLeft": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "trialEndsToday": "Tu prueba termina hoy",
   "subscriptionExpired": "Tu suscripción venció. Podés seguir viendo y validando tus tickets, pero no crear eventos nuevos.",
   "organizationSuspended": "Tu cuenta está suspendida. Escribinos para reactivarla.",
   "subscribeNow": "Activar suscripción",
   "planMonthlyPrice": "USD 25 por mes",
   "planAnnualPrice": "USD 250 por año (2 meses bonificados)",
-  "subscriptionLinkFailed": "No pudimos generar el enlace de pago. Intentá de nuevo en un momento."
+  "subscriptionLinkFailed": "No pudimos generar el enlace de pago. Intentá de nuevo en un momento.",
+  "freeTicketsTitle": "Tickets gratuitos",
+  "freeTicketsUsedOf": "{used} de {total} usados",
+  "freeTicketsLeft": "Te quedan {count} tickets gratis",
+  "freeTicketsExhausted": "Usaste tus tickets gratuitos. Activá la suscripción para seguir emitiendo.",
+  "freeTicketsNote": "Anular un ticket no devuelve el cupo.",
+  "choosePlan": "Elegí tu plan",
+  "planUnlimitedNote": "Tickets ilimitados, eventos ilimitados, todo el equipo.",
+  "planAnnualSaving": "Ahorrás 2 meses",
+  "paymentHandledBy": "El pago lo procesa dLocal. Se abre en una pestaña nueva.",
+  "statusActive": "Suscripción activa",
+  "statusTrial": "Plan gratuito",
+  "statusExpired": "Suscripción vencida",
+  "statusSuspended": "Cuenta suspendida",
+  "statusQuotaExhausted": "Sin tickets gratuitos",
+  "renewsOn": "Válida hasta el {date}",
+  "errorGeneric": "No pudimos cargar esta información."
 }

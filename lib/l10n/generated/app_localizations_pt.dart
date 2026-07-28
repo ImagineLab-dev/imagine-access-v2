@@ -1662,14 +1662,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Usamos para cobrar sua assinatura. Você pode alterar depois.';
 
   @override
-  String trialDaysLeft(int days) {
-    return 'Faltam $days dias do seu teste';
-  }
-
-  @override
-  String get trialEndsToday => 'Seu teste termina hoje';
-
-  @override
   String get subscriptionExpired =>
       'Sua assinatura venceu. Você ainda pode ver e validar seus ingressos, mas não criar novos eventos.';
 
@@ -1689,4 +1681,61 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get subscriptionLinkFailed =>
       'Não conseguimos gerar o link de pagamento. Tente novamente em instantes.';
+
+  @override
+  String get freeTicketsTitle => 'Ingressos gratuitos';
+
+  @override
+  String freeTicketsUsedOf(int used, int total) {
+    return '$used de $total usados';
+  }
+
+  @override
+  String freeTicketsLeft(int count) {
+    return 'Faltam $count ingressos gratuitos';
+  }
+
+  @override
+  String get freeTicketsExhausted =>
+      'Você usou seus ingressos gratuitos. Ative a assinatura para continuar emitindo.';
+
+  @override
+  String get freeTicketsNote => 'Anular um ingresso não devolve a cota.';
+
+  @override
+  String get choosePlan => 'Escolha seu plano';
+
+  @override
+  String get planUnlimitedNote =>
+      'Ingressos ilimitados, eventos ilimitados, toda a equipe.';
+
+  @override
+  String get planAnnualSaving => 'Economize 2 meses';
+
+  @override
+  String get paymentHandledBy =>
+      'O pagamento é processado pela dLocal. Abre em uma nova aba.';
+
+  @override
+  String get statusActive => 'Assinatura ativa';
+
+  @override
+  String get statusTrial => 'Plano gratuito';
+
+  @override
+  String get statusExpired => 'Assinatura vencida';
+
+  @override
+  String get statusSuspended => 'Conta suspensa';
+
+  @override
+  String get statusQuotaExhausted => 'Sem ingressos gratuitos';
+
+  @override
+  String renewsOn(String date) {
+    return 'Válida até $date';
+  }
+
+  @override
+  String get errorGeneric => 'Não conseguimos carregar esta informação.';
 }

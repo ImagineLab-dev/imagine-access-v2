@@ -13,6 +13,8 @@ enum NetworkErrorType {
   notFound,
   badRequest,
   captchaFailed,
+  quotaExhausted,
+  organizationInactive,
   unknown;
 
   bool get isRetryable {
@@ -85,6 +87,25 @@ class ErrorHandler {
       );
     }
     
+    // Cortes de facturación. Van primero porque el guard los levanta como
+    // excepción de Postgres y llegan envueltos en un 400 genérico: sin esto el
+    // usuario ve "Datos inválidos" cuando lo que pasa es que tiene que pagar.
+    if (errorString.contains('free_quota_exhausted')) {
+      return const NetworkError(
+        type: NetworkErrorType.quotaExhausted,
+        message: 'freeTicketsExhausted',
+        isRetryable: false,
+      );
+    }
+
+    if (errorString.contains('organization_inactive')) {
+      return const NetworkError(
+        type: NetworkErrorType.organizationInactive,
+        message: 'subscriptionExpired',
+        isRetryable: false,
+      );
+    }
+
     // Captcha rechazado por el servidor.
     //
     // Va ANTES de los códigos HTTP porque GoTrue devuelve estos fallos como
@@ -191,6 +212,10 @@ class ErrorHandler {
         return l10n.errorForbidden;
       case NetworkErrorType.captchaFailed:
         return l10n.errorCaptcha;
+      case NetworkErrorType.quotaExhausted:
+        return l10n.freeTicketsExhausted;
+      case NetworkErrorType.organizationInactive:
+        return l10n.subscriptionExpired;
       case NetworkErrorType.notFound:
         return l10n.errorNotFound;
       case NetworkErrorType.badRequest:

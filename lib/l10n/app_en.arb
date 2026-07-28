@@ -742,19 +742,50 @@
   "orgSuspendedBody": "Access is suspended. Contact the system administrator to restore it.",
   "billingCountry": "Billing country",
   "billingCountryHelp": "We use it to charge your subscription. You can change it later.",
-  "trialDaysLeft": "You have {days} days left in your trial",
-  "trialEndsToday": "Your trial ends today",
   "subscriptionExpired": "Your subscription expired. You can still view and validate your tickets, but not create new events.",
   "organizationSuspended": "Your account is suspended. Contact us to reactivate it.",
   "subscribeNow": "Activate subscription",
   "planMonthlyPrice": "USD 25 per month",
   "planAnnualPrice": "USD 250 per year (2 months free)",
-  "@trialDaysLeft": {
+  "subscriptionLinkFailed": "We couldn't generate the payment link. Please try again in a moment.",
+  "freeTicketsTitle": "Free tickets",
+  "freeTicketsUsedOf": "{used} of {total} used",
+  "freeTicketsLeft": "You have {count} free tickets left",
+  "freeTicketsExhausted": "You used your free tickets. Activate the subscription to keep issuing.",
+  "freeTicketsNote": "Voiding a ticket does not give the quota back.",
+  "choosePlan": "Choose your plan",
+  "planUnlimitedNote": "Unlimited tickets, unlimited events, your whole team.",
+  "planAnnualSaving": "Save 2 months",
+  "paymentHandledBy": "Payment is processed by dLocal. Opens in a new tab.",
+  "statusActive": "Subscription active",
+  "statusTrial": "Free plan",
+  "statusExpired": "Subscription expired",
+  "statusSuspended": "Account suspended",
+  "statusQuotaExhausted": "No free tickets left",
+  "renewsOn": "Valid until {date}",
+  "errorGeneric": "We couldn't load this information.",
+  "@freeTicketsUsedOf": {
     "placeholders": {
-      "days": {
+      "used": {
+        "type": "int"
+      },
+      "total": {
         "type": "int"
       }
     }
   },
-  "subscriptionLinkFailed": "We couldn't generate the payment link. Please try again in a moment."
+  "@freeTicketsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@renewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

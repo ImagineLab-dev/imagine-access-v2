@@ -14,6 +14,7 @@ import '../../features/tickets/presentation/ticket_list_screen.dart';
 import '../../features/events/presentation/event_selector_screen.dart';
 import '../../features/events/presentation/create_event_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/billing/presentation/subscription_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/superadmin/presentation/super_admin_screen.dart';
 import '../../features/settings/presentation/user_management_screen.dart';
@@ -96,6 +97,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final initialTabIndex = mode == AppRoles.door ? 1 : 0;
           return LoginScreen(initialTabIndex: initialTabIndex);
         },
+      ),
+      GoRoute(
+        path: '/subscription',
+        builder: (context, state) => const SubscriptionScreen(),
       ),
       GoRoute(
         path: '/verify-email',

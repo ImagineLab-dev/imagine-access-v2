@@ -1662,14 +1662,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Lo usamos para cobrarte la suscripción. Podés cambiarlo después.';
 
   @override
-  String trialDaysLeft(int days) {
-    return 'Te quedan $days días de prueba';
-  }
-
-  @override
-  String get trialEndsToday => 'Tu prueba termina hoy';
-
-  @override
   String get subscriptionExpired =>
       'Tu suscripción venció. Podés seguir viendo y validando tus tickets, pero no crear eventos nuevos.';
 
@@ -1689,4 +1681,61 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get subscriptionLinkFailed =>
       'No pudimos generar el enlace de pago. Intentá de nuevo en un momento.';
+
+  @override
+  String get freeTicketsTitle => 'Tickets gratuitos';
+
+  @override
+  String freeTicketsUsedOf(int used, int total) {
+    return '$used de $total usados';
+  }
+
+  @override
+  String freeTicketsLeft(int count) {
+    return 'Te quedan $count tickets gratis';
+  }
+
+  @override
+  String get freeTicketsExhausted =>
+      'Usaste tus tickets gratuitos. Activá la suscripción para seguir emitiendo.';
+
+  @override
+  String get freeTicketsNote => 'Anular un ticket no devuelve el cupo.';
+
+  @override
+  String get choosePlan => 'Elegí tu plan';
+
+  @override
+  String get planUnlimitedNote =>
+      'Tickets ilimitados, eventos ilimitados, todo el equipo.';
+
+  @override
+  String get planAnnualSaving => 'Ahorrás 2 meses';
+
+  @override
+  String get paymentHandledBy =>
+      'El pago lo procesa dLocal. Se abre en una pestaña nueva.';
+
+  @override
+  String get statusActive => 'Suscripción activa';
+
+  @override
+  String get statusTrial => 'Plan gratuito';
+
+  @override
+  String get statusExpired => 'Suscripción vencida';
+
+  @override
+  String get statusSuspended => 'Cuenta suspendida';
+
+  @override
+  String get statusQuotaExhausted => 'Sin tickets gratuitos';
+
+  @override
+  String renewsOn(String date) {
+    return 'Válida hasta el $date';
+  }
+
+  @override
+  String get errorGeneric => 'No pudimos cargar esta información.';
 }

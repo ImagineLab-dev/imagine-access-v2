@@ -13,16 +13,20 @@ import '../platform/abrir_url.dart';
 class SubscriptionBanner extends ConsumerWidget {
   const SubscriptionBanner({super.key});
 
-  /// Faltando más de esto, no se avisa nada: recordarle a alguien todos los
-  /// días que le quedan 12 de prueba es ruido, no ayuda.
-  static const _avisarDesdeDias = 5;
+  /// Quedando más que esto, no se avisa nada: recordarle a alguien que todavía
+  /// tiene 14 tickets gratis es ruido, no ayuda.
+  static const _avisarDesdeTickets = 5;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final sub = ref.watch(subscriptionProvider).valueOrNull;
 
-    if (sub == null || sub.sinVencimiento) return const SizedBox.shrink();
+    // Nada que decir: ni vence, ni tiene cupo que se esté agotando.
+    if (sub == null) return const SizedBox.shrink();
+    if (sub.sinVencimiento && sub.freeTicketsLeft == null) {
+      return const SizedBox.shrink();
+    }
 
     final (mensaje, color, icono) = switch (sub) {
       _ when sub.suspendida => (
@@ -35,15 +39,15 @@ class SubscriptionBanner extends ConsumerWidget {
           const Color(0xFFEF4444),
           Icons.error_outline,
         ),
-      _ when sub.enPrueba && (sub.daysLeft ?? 99) <= 0 => (
-          l10n.trialEndsToday,
-          const Color(0xFFF59E0B),
-          Icons.schedule_outlined,
+      _ when sub.cupoAgotado => (
+          l10n.freeTicketsExhausted,
+          const Color(0xFFEF4444),
+          Icons.confirmation_number_outlined,
         ),
-      _ when sub.enPrueba && (sub.daysLeft ?? 99) <= _avisarDesdeDias => (
-          l10n.trialDaysLeft(sub.daysLeft!),
+      _ when (sub.freeTicketsLeft ?? 99) <= _avisarDesdeTickets => (
+          l10n.freeTicketsLeft(sub.freeTicketsLeft!),
           const Color(0xFFF59E0B),
-          Icons.schedule_outlined,
+          Icons.confirmation_number_outlined,
         ),
       _ => (null, Colors.transparent, Icons.info_outline),
     };

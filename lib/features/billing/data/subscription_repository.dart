@@ -13,6 +13,9 @@ class Subscription {
     this.expiresAt,
     this.daysLeft,
     this.suspendedReason,
+    this.freeTicketsUsed = 0,
+    this.freeTicketsLimit,
+    this.freeTicketsLeft,
   });
 
   final String organizationId;
@@ -24,6 +27,20 @@ class Subscription {
   final DateTime? expiresAt;
   final int? daysLeft;
   final String? suspendedReason;
+
+  /// Tickets emitidos contra el cupo gratuito. Solo sube: anular un ticket no
+  /// devuelve el cupo, para que no se pueda reciclar emitiendo y anulando.
+  final int freeTicketsUsed;
+
+  /// Cupo de por vida. `null` = sin cupo, el caso de las organizaciones
+  /// anteriores al cobro.
+  final int? freeTicketsLimit;
+
+  /// Cuántos quedan. `null` cuando no aplica (ya paga, o está exenta).
+  final int? freeTicketsLeft;
+
+  /// Se acabaron los tickets gratis y todavía no paga.
+  bool get cupoAgotado => enPrueba && (freeTicketsLeft ?? 1) <= 0;
 
   bool get enPrueba => plan == 'trial';
   bool get suspendida => status == 'suspended';
@@ -48,6 +65,9 @@ class Subscription {
             : DateTime.tryParse(r['expires_at'] as String)?.toLocal(),
         daysLeft: (r['days_left'] as num?)?.toInt(),
         suspendedReason: r['suspended_reason'] as String?,
+        freeTicketsUsed: (r['free_tickets_used'] as num?)?.toInt() ?? 0,
+        freeTicketsLimit: (r['free_tickets_limit'] as num?)?.toInt(),
+        freeTicketsLeft: (r['free_tickets_left'] as num?)?.toInt(),
       );
 }
 
