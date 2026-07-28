@@ -71,9 +71,6 @@ Deno.serve(async (req) => {
 
     if (!org) return json({ ok: false, mensaje: 'Organización inexistente' }, 404, req)
 
-    // El aviso de pago vuelve con el id de la organización en la URL. Va también
-    // la anon key como parámetro porque Kong exige apikey en toda llamada y
-    // dLocal no manda cabeceras propias; es pública por diseño.
     // SUPABASE_PUBLIC_URL, no SUPABASE_URL: dentro del contenedor esta última
     // vale `http://kong:8000`, que dLocal no puede alcanzar desde afuera.
     const urlPublica = Deno.env.get('SUPABASE_PUBLIC_URL')
@@ -81,10 +78,20 @@ Deno.serve(async (req) => {
       throw new Error('Falta SUPABASE_PUBLIC_URL: sin ella el aviso de pago nunca llega')
     }
 
+    // El aviso de pago vuelve con el id de la organización en la URL.
+    //
+    // SIN apikey. Llevarla hacía 291 caracteres y dLocal rechaza las
+    // notification_url largas con un 500 opaco (code 7000), sin decir cuál es
+    // el campo. Tampoco hace falta: las Edge Functions de esta instalación no
+    // exigen JWT (FUNCTIONS_VERIFY_JWT=false), verificado con un POST sin
+    // credencial que responde 200.
+    //
+    // Que el webhook quede accesible sin credencial es aceptable acá y no un
+    // descuido: no acredita nada por lo que le manden. Lee el aviso como una
+    // señal, consulta la API de dLocal con nuestras claves, y solo extiende el
+    // vencimiento si allá figura una suscripción vigente.
     const notificationUrl =
-      `${urlPublica}/functions/v1/dlocal_webhook` +
-      `?org=${org.id}&plan=${plan}` +
-      `&apikey=${Deno.env.get('SUPABASE_ANON_KEY')}`
+      `${urlPublica}/functions/v1/dlocal_webhook?org=${org.id}&plan=${plan}`
 
     let planDLocal
     if (org.dlocal_plan_id) {
@@ -96,7 +103,12 @@ Deno.serve(async (req) => {
     if (!planDLocal) {
       const precio = PRECIOS[plan as keyof typeof PRECIOS]
       planDLocal = await crearPlan({
-        nombre: `Imagine Access — ${org.name}`,
+        // Guion simple y no raya larga, por precaución: el nombre viaja a un
+        // tercero y después vuelve en sus correos y su checkout. No está
+        // probado que dLocal la rechace —el error de UTF-8 que vi al probarlo
+        // lo generó la consola de Windows, no su API— pero no hay nada que
+        // ganar mandando un carácter decorativo por ese camino.
+        nombre: `Imagine Access - ${org.name}`,
         descripcion: `Suscripción de ${org.name} (${org.id})`,
         monto: precio.monto,
         moneda: 'USD',
