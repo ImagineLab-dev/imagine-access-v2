@@ -470,7 +470,10 @@ class _StepOneType extends ConsumerWidget {
                           SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: Responsive.columnas(context,
                                   anchoObjetivo: 240, maximo: 4),
-                              childAspectRatio: 1.15,
+                              // Ícono, nombre y precio: tres renglones.
+                              childAspectRatio: Responsive.proporcionTarjeta(
+                                  context,
+                                  alturaObjetivo: 150),
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16),
                       itemCount: specialTypes.length,
@@ -495,7 +498,10 @@ class _StepOneType extends ConsumerWidget {
                           SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: Responsive.columnas(context,
                                   anchoObjetivo: 240, maximo: 4),
-                              childAspectRatio: 1.15,
+                              // Ícono, nombre y precio: tres renglones.
+                              childAspectRatio: Responsive.proporcionTarjeta(
+                                  context,
+                                  alturaObjetivo: 150),
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16),
                       itemCount: standardTypes.length,

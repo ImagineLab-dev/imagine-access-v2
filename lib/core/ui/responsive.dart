@@ -60,8 +60,12 @@ class Responsive {
     double alturaObjetivo = 118,
     double separacion = 16,
     double paddingHorizontal = 40,
+    // Tienen que coincidir con los del grid al que se aplica: si no, el ancho
+    // se calcula sobre otra cantidad de columnas y la altura sale mal.
+    double anchoObjetivo = 240,
+    int maximo = 4,
   }) {
-    final n = columnas(context);
+    final n = columnas(context, anchoObjetivo: anchoObjetivo, maximo: maximo);
     final disponible =
         anchoMaximo(context) - paddingHorizontal - separacion * (n - 1);
     final anchoTarjeta = disponible / n;

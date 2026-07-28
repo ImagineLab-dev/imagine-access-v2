@@ -212,7 +212,9 @@ class QuickActions extends StatelessWidget {
                 Responsive.columnas(context, anchoObjetivo: 340, maximo: 3),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1.8,
+            // Un ícono y una etiqueta: 110px de alto alcanzan de sobra.
+            childAspectRatio: Responsive.proporcionTarjeta(context,
+                alturaObjetivo: 110, anchoObjetivo: 340, maximo: 3),
           ),
           itemCount: actions.length,
           itemBuilder: (context, index) {
