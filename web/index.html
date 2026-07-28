@@ -116,19 +116,33 @@
       #app-splash .bar::after { width: 100%; }
     }
 
-    /* Turnstile. Normalmente resuelve solo y nunca se ve: el contenedor está
-       oculto hasta que Cloudflare pide interacción humana. Como Flutter pinta
-       sobre un canvas, el widget tiene que vivir por encima con z-index. */
+    /* Turnstile.
+       Anclado abajo y centrado, no a pantalla completa: la capa que cubría todo
+       tapaba el formulario que el usuario está por completar. Como Flutter
+       pinta sobre un canvas, el widget vive por encima con z-index; no puede ir
+       dentro de la tarjeta de acceso, que es pintura, no DOM.
+       Solo se muestra en las pantallas de acceso — lo pide Dart. */
     #turnstile-container {
       display: none;
       position: fixed;
-      inset: 0;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
       z-index: 10000;
-      place-items: center;
-      background: rgba(11, 15, 22, .72);
     }
 
-    #turnstile-container.visible { display: grid; }
+    #turnstile-container.visible { display: block; }
+
+    /* En pantallas bajas el widget se comería el formulario. Ahí se achica en
+       vez de desaparecer: dejar de mostrarlo justo donde menos espacio hay
+       sería quitar la señal precisamente a quien peor ve la pantalla. */
+    @media (max-height: 620px) {
+      #turnstile-container {
+        bottom: 8px;
+        transform: translateX(-50%) scale(.8);
+        transform-origin: bottom center;
+      }
+    }
   </style>
 </head>
 <body>

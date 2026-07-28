@@ -37,7 +37,17 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   Timer? _timer;
 
   @override
+  void initState() {
+    super.initState();
+    // Recuperar la clave manda un correo, así que también hay que verificar que
+    // del otro lado hay una persona: sin eso alguien automatiza el envío de
+    // correos a direcciones ajenas desde nuestro dominio.
+    mostrarCaptcha(true);
+  }
+
+  @override
   void dispose() {
+    mostrarCaptcha(false);
     _timer?.cancel();
     _emailController.dispose();
     _otpController.dispose();

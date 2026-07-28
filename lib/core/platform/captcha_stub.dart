@@ -5,3 +5,5 @@
 /// a la pantalla de login deja de compilar y desaparece de la corrida — que es
 /// peor que no tenerla, porque nadie se entera.
 Future<String?> tokenCaptcha() async => null;
+
+void mostrarCaptcha(bool visible) {}

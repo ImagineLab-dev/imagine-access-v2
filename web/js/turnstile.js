@@ -5,9 +5,13 @@
  * del árbol de widgets sin platform views. El widget se monta en un contenedor
  * HTML por encima del canvas y Dart solo le pide el token.
  *
- * Modo `interaction-only`: en la mayoría de las visitas Turnstile resuelve solo
- * y nunca se ve nada. El contenedor únicamente aparece cuando Cloudflare decide
- * que hace falta interacción humana.
+ * El widget se ve. Empezó siendo `interaction-only` —resuelve solo y nunca se
+ * muestra— pero entonces nadie sabe que hay una verificación en curso, y en una
+ * pantalla de acceso esa señal vale más que los pocos píxeles que ocupa.
+ *
+ * Quién lo muestra: las pantallas de acceso, vía `visible(true|false)`. Este
+ * archivo no puede decidirlo solo, porque Flutter dibuja todo en un canvas y no
+ * hay DOM que inspeccionar para saber en qué pantalla está la app.
  *
  * Contrato con Dart: `window.imagineCaptcha.token()` devuelve una Promise que
  * resuelve un string, o `null` si el captcha no está disponible. Nunca rechaza
@@ -74,16 +78,6 @@
     tokenDisponible = null;
   }
 
-  function mostrar() {
-    var c = contenedor();
-    if (c) c.classList.add('visible');
-  }
-
-  function ocultar() {
-    var c = contenedor();
-    if (c) c.classList.remove('visible');
-  }
-
   /** Reinicia el widget para que produzca un token nuevo. */
   function pedirOtro() {
     if (!apiLista || widgetId === null) return;
@@ -100,12 +94,14 @@
     try {
       widgetId = window.turnstile.render(c, {
         sitekey: SITE_KEY,
-        appearance: 'interaction-only',
+        // 'always' y no 'interaction-only': el modo invisible resuelve solo y
+        // nunca se ve, pero entonces nadie sabe que hay una verificación en
+        // curso. Mostrarlo cuesta un poco de espacio y devuelve la señal de
+        // que el acceso está protegido.
+        appearance: 'always',
         callback: alResolver,
         'error-callback': alFallar,
         'expired-callback': alExpirar,
-        'before-interactive-callback': mostrar,
-        'after-interactive-callback': ocultar,
       });
       apiLista = true;
     } catch (e) {
@@ -119,6 +115,21 @@
   window.imagineTurnstileListo = montar;
 
   window.imagineCaptcha = {
+    /**
+     * Muestra u oculta el widget.
+     *
+     * Lo gobierna Dart y no este archivo: JS no sabe en qué pantalla está la
+     * app —Flutter dibuja todo en un canvas, no hay DOM que inspeccionar— así
+     * que son las pantallas de acceso las que lo piden al montarse y lo sacan
+     * al desmontarse. Si no, quedaría flotando sobre el panel.
+     */
+    visible: function (mostrarlo) {
+      var c = contenedor();
+      if (!c) return;
+      if (mostrarlo) c.classList.add('visible');
+      else c.classList.remove('visible');
+    },
+
     /**
      * Token de un solo uso para adjuntar a la próxima llamada de auth.
      * Resuelve `null` si el captcha no está disponible.

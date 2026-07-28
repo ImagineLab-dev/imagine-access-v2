@@ -9,6 +9,7 @@ import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/neon_button.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/platform/captcha.dart';
 import '../../../core/utils/error_handler.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
@@ -45,10 +46,13 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   void initState() {
     super.initState();
     _startResendTimer();
+    // Acá se reenvían códigos por correo, así que el captcha también aplica.
+    mostrarCaptcha(true);
   }
 
   @override
   void dispose() {
+    mostrarCaptcha(false);
     _timer?.cancel();
     _otpController.dispose();
     super.dispose();

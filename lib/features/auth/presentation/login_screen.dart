@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_controller.dart';
 import '../../../core/billing/paises_dlocal.dart';
+import '../../../core/platform/captcha.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/custom_input.dart';
@@ -69,10 +70,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         setState(() {}); // Rebuild to switch tab content
       }
     });
+    // El captcha se muestra solo acá. JS no puede saber en qué pantalla está la
+    // app —Flutter dibuja sobre un canvas— así que lo gobierna la pantalla.
+    mostrarCaptcha(true);
   }
 
   @override
   void dispose() {
+    mostrarCaptcha(false);
     _tabController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
