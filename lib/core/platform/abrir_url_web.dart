@@ -22,11 +22,25 @@ class PestanaReservada {
   /// abrir al lado, pero es infinitamente mejor que un botón que no responde.
   void navegarA(String url) {
     final v = _ventana;
-    if (v != null) {
-      v.setProperty('location'.toJS, url.toJS);
-    } else {
+    if (v == null) {
       globalContext.setProperty('location'.toJS, url.toJS);
+      return;
     }
+
+    // `opener = null` ANTES de navegar, no `noopener` al abrir.
+    //
+    // Las dos cosas protegen igual —le cortan a la página destino el acceso a
+    // la ventana que la abrió— pero `noopener` hace que `window.open` devuelva
+    // null por especificación, y sin ese control no se puede llevar la pestaña
+    // reservada a ninguna parte. Acá todavía está en about:blank y es del mismo
+    // origen, así que se le puede escribir; después de navegar ya no.
+    try {
+      v.setProperty('opener'.toJS, null);
+    } catch (_) {
+      // Si el navegador no lo permite, se sigue igual: perder el corte del
+      // opener es un riesgo menor que dejar al usuario sin poder pagar.
+    }
+    v.setProperty('location'.toJS, url.toJS);
   }
 
   /// Cierra la pestaña reservada. Se usa cuando la operación falló y quedaría
@@ -42,8 +56,10 @@ class PestanaReservada {
 
 PestanaReservada reservarPestana() {
   try {
+    // Sin `noopener`: haría que esto devuelva null y la reserva no serviría de
+    // nada. El corte se hace en `navegarA`, con `opener = null`.
     final v = globalContext.callMethod<JSObject?>(
-        'open'.toJS, ''.toJS, '_blank'.toJS, 'noopener,noreferrer'.toJS);
+        'open'.toJS, ''.toJS, '_blank'.toJS);
     return PestanaReservada._(v);
   } catch (_) {
     return PestanaReservada._(null);
