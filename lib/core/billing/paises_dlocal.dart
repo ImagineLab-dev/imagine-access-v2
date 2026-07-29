@@ -17,6 +17,7 @@ class PaisDLocal {
 }
 
 const paisesDLocal = <PaisDLocal>[
+  // América Latina, que es el mercado del producto.
   PaisDLocal('PY', 'Paraguay'),
   PaisDLocal('AR', 'Argentina'),
   PaisDLocal('UY', 'Uruguay'),
@@ -30,8 +31,18 @@ const paisesDLocal = <PaisDLocal>[
   PaisDLocal('DO', 'República Dominicana'),
   PaisDLocal('CR', 'Costa Rica'),
   PaisDLocal('GT', 'Guatemala'),
-  PaisDLocal('SV', 'El Salvador'),
   PaisDLocal('MX', 'México'),
+  // El resto de las plazas. Van abajo porque son improbables para este
+  // producto, pero excluirlas dejaría afuera a alguien que sí puede pagar.
+  PaisDLocal('US', 'Estados Unidos'),
+  PaisDLocal('ES', 'España'),
+  PaisDLocal('NG', 'Nigeria'),
+  PaisDLocal('KE', 'Kenia'),
+  PaisDLocal('IN', 'India'),
+  PaisDLocal('ID', 'Indonesia'),
+  PaisDLocal('MY', 'Malasia'),
+  PaisDLocal('PH', 'Filipinas'),
+  PaisDLocal('VN', 'Vietnam'),
 ];
 
 /// Zona horaria exacta → país, para los casos de una sola zona.
@@ -50,7 +61,6 @@ const _porZona = <String, String>{
   'America/Santo_Domingo': 'DO',
   'America/Costa_Rica': 'CR',
   'America/Guatemala': 'GT',
-  'America/El_Salvador': 'SV',
 };
 
 /// Prefijos para los países con muchas zonas. Argentina, Brasil y México tienen
@@ -105,11 +115,23 @@ String? paisSugerido() {
   final zona = zonaHorariaDelDispositivo();
   if (zona == null || zona.isEmpty) return null;
 
-  final exacto = _porZona[zona];
-  if (exacto != null) return exacto;
-
-  for (final entrada in _porPrefijo.entries) {
-    if (zona.startsWith(entrada.key)) return entrada.value;
+  String? codigo = _porZona[zona];
+  if (codigo == null) {
+    for (final entrada in _porPrefijo.entries) {
+      if (zona.startsWith(entrada.key)) {
+        codigo = entrada.value;
+        break;
+      }
+    }
   }
-  return null;
+  if (codigo == null) return null;
+
+  // La sugerencia SIEMPRE se valida contra la lista.
+  //
+  // Un DropdownButton cuyo valor no está entre sus opciones lanza excepción:
+  // la pantalla de registro quedaría rota para quien viva en esa zona horaria,
+  // y solo para esa gente. Pasó de verdad — El Salvador estaba en el mapa
+  // después de que dLocal dejara de aceptarlo.
+  final existe = paisesDLocal.any((p) => p.codigo == codigo);
+  return existe ? codigo : null;
 }

@@ -42,7 +42,8 @@ serve(async (req) => {
         // cliente no sabe interpretar. Un valor desconocido se descarta en vez
         // de abortar el alta — quedarse sin cuenta por un país mal mandado es
         // peor que quedarse sin país, que el admin puede corregir después.
-        const PAISES_DLOCAL = ['PY','AR','UY','BR','CL','BO','CO','PE','EC','PA','DO','CR','GT','SV','MX']
+        const PAISES_DLOCAL = ['PY','AR','UY','BR','CL','BO','CO','PE','EC','PA','DO','CR','GT','MX',
+            'US','ES','NG','KE','IN','ID','MY','PH','VN']
         const paisFacturacion = (typeof country === 'string' && PAISES_DLOCAL.includes(country))
             ? country
             : null
