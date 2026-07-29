@@ -67,7 +67,11 @@ class ScannerRepository {
               PendingOperation(
                 id: requestId,
                 type: 'validate_ticket',
-                payload: payload,
+                // Sin la sesión: se guarda en el almacenamiento del
+                // navegador y de todos modos vencería antes de sincronizar.
+                // `_cuerpoConSesionActual` adjunta una vigente al reintentar.
+                payload: Map<String, dynamic>.from(payload)
+                  ..remove('_auth_token'),
                 createdAt: DateTime.now(),
               ),
             );
@@ -124,7 +128,11 @@ class ScannerRepository {
               PendingOperation(
                 id: requestId,
                 type: 'validate_ticket',
-                payload: payload,
+                // Sin la sesión: se guarda en el almacenamiento del
+                // navegador y de todos modos vencería antes de sincronizar.
+                // `_cuerpoConSesionActual` adjunta una vigente al reintentar.
+                payload: Map<String, dynamic>.from(payload)
+                  ..remove('_auth_token'),
                 createdAt: DateTime.now(),
               ),
             );

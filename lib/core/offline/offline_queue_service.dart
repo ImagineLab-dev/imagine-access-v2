@@ -143,20 +143,47 @@ class OfflineQueueService {
     );
   }
 
+  /// Cuerpo de la operación con la sesión ACTUAL, no la que tenía al encolarse.
+  ///
+  /// Los JWT vencen en aproximadamente una hora. Una validación hecha sin
+  /// conexión a las dos de la mañana y sincronizada a las cinco llegaba con un
+  /// token muerto: el servidor respondía 401, la cola lo contaba como fallo, y
+  /// tras unos reintentos la descartaba EN SILENCIO. La persona ya había
+  /// entrado, no quedaba registro, y el ticket seguía figurando como válido
+  /// para que otro lo usara.
+  ///
+  /// Las sesiones de puerta no tienen este problema —se identifican con
+  /// device_id y PIN, que no vencen— pero las de admin y RRPP sí.
+  Map<String, dynamic> _cuerpoConSesionActual(
+      SupabaseClient client, PendingOperation op) {
+    final cuerpo = Map<String, dynamic>.from(op.payload);
+    final token = client.auth.currentSession?.accessToken;
+    if (token != null) {
+      cuerpo['_auth_token'] = token;
+    } else {
+      // Sin sesión vigente se manda sin token: si la operación lleva
+      // credenciales de dispositivo, el servidor la acepta igual.
+      cuerpo.remove('_auth_token');
+    }
+    return cuerpo;
+  }
+
   Future<bool> _executeWithSupabase(
     SupabaseClient client,
     PendingOperation op,
   ) async {
+    final cuerpo = _cuerpoConSesionActual(client, op);
+
     switch (op.type) {
       case 'create_ticket':
         final createTicketResponse =
-            await client.functions.invoke('create_ticket', body: op.payload);
+            await client.functions.invoke('create_ticket', body: cuerpo);
         return createTicketResponse.status == 200 ||
             createTicketResponse.status == 201;
 
       case 'validate_ticket':
         final validateResponse =
-            await client.functions.invoke('validate_ticket', body: op.payload);
+            await client.functions.invoke('validate_ticket', body: cuerpo);
         return validateResponse.status == 200 || validateResponse.status == 201;
 
       default:
