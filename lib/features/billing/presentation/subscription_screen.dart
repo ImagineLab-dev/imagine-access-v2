@@ -13,11 +13,24 @@ import '../../../core/platform/meta.dart';
 /// Existe como pantalla propia y no solo como aviso: el aviso aparece cuando
 /// algo anda mal, así que quien quiere pagar antes de que se le acabe el cupo
 /// —o solo quiere ver cuánto le queda— no tenía a dónde ir.
-class SubscriptionScreen extends ConsumerWidget {
+class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SubscriptionScreen> createState() => _SubscriptionScreenState();
+}
+
+class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Ver los planes es el paso previo a contratar. Se manda una sola vez al
+    // abrir la pantalla, no en cada reconstrucción.
+    eventoMeta('ViewContent', valor: 25, moneda: 'USD');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final estado = ref.watch(subscriptionProvider);
 

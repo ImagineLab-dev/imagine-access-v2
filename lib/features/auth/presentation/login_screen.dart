@@ -17,6 +17,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/error_handler.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../../../core/platform/meta.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final int initialTabIndex;
@@ -132,6 +133,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               _orgController.text.trim(),
               country: _pais,
             );
+        // Alta de cuenta. Es el evento del que más volumen vas a tener, y con
+        // pocas compras al mes es el único con el que Meta puede aprender algo.
+        eventoMeta('CompleteRegistration');
+
         // Check if email verification is required (no session = OTP sent)
         final session = Supabase.instance.client.auth.currentSession;
         if (session == null && mounted) {

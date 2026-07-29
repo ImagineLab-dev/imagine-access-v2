@@ -102,12 +102,27 @@ Deno.serve(async (req) => {
     //
     // El event_id combina organización y vencimiento, así que un reintento del
     // aviso que caiga en la idempotencia no genera una segunda conversión.
+    // Purchase lleva el importe: es el evento por el que se optimizan las
+    // campañas y el que alimenta el retorno que reporta Meta.
     await enviarEventoMeta({
       nombre: 'Purchase',
       eventId: `purchase-${org.id}-${hasta}`,
       email: org.contact_email,
       valor: vigente.amount ?? null,
       moneda: vigente.currency ?? 'USD',
+      urlOrigen: 'https://imaginecloud.digital/#/subscription',
+    })
+
+    // Subscribe va SIN importe, a propósito.
+    //
+    // Es el evento semánticamente correcto para un negocio de suscripción y
+    // sirve para construir públicos, pero si llevara valor sumaría los mismos
+    // 25 dólares dos veces y el retorno que ves en el panel saldría al doble.
+    // El dinero lo reporta Purchase; este es solo la señal.
+    await enviarEventoMeta({
+      nombre: 'Subscribe',
+      eventId: `subscribe-${org.id}-${hasta}`,
+      email: org.contact_email,
       urlOrigen: 'https://imaginecloud.digital/#/subscription',
     })
 
