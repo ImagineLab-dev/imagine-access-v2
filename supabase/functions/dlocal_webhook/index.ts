@@ -17,6 +17,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { listarSuscripciones } from '../_shared/dlocal.ts'
+import { enviarEventoMeta } from '../_shared/meta_capi.ts'
 
 const ESTADOS_VIGENTES = ['ACTIVE', 'ACTIVATED', 'PAID', 'SUCCESS', 'COMPLETED']
 
@@ -41,7 +42,10 @@ Deno.serve(async (req) => {
 
     const { data: org } = await admin
       .from('organizations')
-      .select('id, dlocal_plan_id')
+      // contact_email se trae para Meta: el correo hasheado es lo que le
+      // permite emparejar la compra con la persona que vio el anuncio. Sin
+      // ningún identificador, la conversión llega pero atribuye mucho peor.
+      .select('id, dlocal_plan_id, contact_email')
       .eq('id', organizationId)
       .maybeSingle()
 
@@ -86,6 +90,26 @@ Deno.serve(async (req) => {
     })
 
     if (error) throw error
+
+    // Conversión a Meta.
+    //
+    // Va acá y no en el navegador porque el pago ocurre en el dominio de
+    // dLocal: el pixel del sitio nunca ve esa pantalla. Este webhook es el
+    // único punto del sistema que sabe con certeza que el cobro se acreditó.
+    //
+    // Se manda DESPUÉS de acreditar y sin await bloqueante sobre el resultado:
+    // la suscripción del cliente no puede depender de que Meta conteste.
+    //
+    // El event_id combina organización y vencimiento, así que un reintento del
+    // aviso que caiga en la idempotencia no genera una segunda conversión.
+    await enviarEventoMeta({
+      nombre: 'Purchase',
+      eventId: `purchase-${org.id}-${hasta}`,
+      email: org.contact_email,
+      valor: vigente.amount ?? null,
+      moneda: vigente.currency ?? 'USD',
+      urlOrigen: 'https://imaginecloud.digital/#/subscription',
+    })
 
     console.log('Suscripción extendida', { organizationId: org.id, hasta })
     return json({ ok: true, expires_at: hasta }, 200)

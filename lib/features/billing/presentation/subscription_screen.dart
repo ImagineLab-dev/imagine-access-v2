@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../data/subscription_repository.dart';
+import '../../../core/platform/meta.dart';
 
 /// Estado de la cuenta y contratación.
 ///
@@ -166,6 +167,12 @@ class _PlanesState extends State<_Planes> {
     // primero el enlace al servidor y abrir después hace que el navegador la
     // bloquee sin aviso, y el botón parece no funcionar.
     final pestana = reservarPestana();
+
+    // InitiateCheckout se manda desde acá, que es donde el usuario hace clic.
+    // La compra en sí la reporta el servidor cuando dLocal confirma: el pago
+    // sucede en su dominio y este código ya no corre ahí.
+    eventoMeta('InitiateCheckout',
+        valor: plan == 'annual' ? 250 : 25, moneda: 'USD');
 
     setState(() => _cargando = plan);
     try {
