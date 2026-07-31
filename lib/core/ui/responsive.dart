@@ -55,9 +55,13 @@ class Responsive {
   /// tarjeta y se deriva la proporción que deja la altura en [alturaObjetivo].
   /// El contenido es el mismo en cualquier pantalla, así que la altura no
   /// tiene por qué cambiar — solo cuántas entran por fila.
+  /// [alturaObjetivo] bajó de 118 a 74 cuando `MetricCard` pasó de apilar el
+  /// ícono arriba del número a ponerlo al costado: el contenido dejó de
+  /// necesitar dos "pisos". Nueve métricas que antes ocupaban unas dos
+  /// pantallas ahora entran en poco más de una.
   static double proporcionTarjeta(
     BuildContext context, {
-    double alturaObjetivo = 118,
+    double alturaObjetivo = 74,
     double separacion = 16,
     double paddingHorizontal = 40,
     // Tienen que coincidir con los del grid al que se aplica: si no, el ancho

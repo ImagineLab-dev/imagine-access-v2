@@ -27,36 +27,53 @@ class MetricCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Ícono al costado, no arriba.
+    //
+    // Antes era una Column con `spaceBetween`: el ícono se iba al borde de
+    // arriba, el número al de abajo, y entre los dos quedaba un hueco vacío que
+    // era la mitad de la tarjeta. Con nueve métricas eso son varias pantallas
+    // de desplazamiento para leer nueve números. En fila, el mismo contenido
+    // entra en poco más de la mitad del alto y la etiqueta gana el ancho que
+    // antes le robaba el ícono, así que "INGRESO INVITADOS" ya no se corta.
     return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 18),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                title,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: isDark ? Colors.white60 : Colors.black54,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontSize: 9.5,
+                    height: 1.15,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

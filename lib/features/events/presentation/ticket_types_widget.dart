@@ -130,10 +130,28 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
             Text(l10n.ticketTypes,
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            IconButton(
+            // Con texto, no solo el icono.
+            //
+            // Antes era un IconButton con `tooltip: addType`, y un tooltip no
+            // se muestra nunca al tocar en un teléfono: se necesita el puntero
+            // encima. El resultado era un `+` suelto al lado de un título, sin
+            // ninguna pista de que servía para agregar un tipo de entrada.
+            TextButton.icon(
               onPressed: _addType,
-              icon: const Icon(Icons.add_circle, color: AppTheme.neonBlue),
-              tooltip: l10n.addType,
+              icon: const Icon(Icons.add_circle, size: 20),
+              label: Text(l10n.addType),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.neonBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                // 44 px de alto mínimo: es el objetivo táctil por debajo del
+                // cual se falla el toque con el teléfono en una mano.
+                minimumSize: const Size(0, 44),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  side: BorderSide(color: AppTheme.neonBlue.withValues(alpha: .45)),
+                ),
+              ),
             )
           ],
         ),

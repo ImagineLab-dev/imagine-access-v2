@@ -8,6 +8,7 @@ import '../../../../core/utils/currency_helper.dart';
 import '../../../events/presentation/event_state.dart';
 import '../../../settings/data/settings_repository.dart';
 import '../../data/event_report_service.dart';
+import '../../../../core/ui/glass_card.dart';
 import 'dashboard_components.dart';
 
 class AdminDashboardView extends ConsumerWidget {
@@ -52,14 +53,8 @@ class AdminDashboardView extends ConsumerWidget {
               color: AppTheme.accentPurple,
               delay: 200,
             ),
-            MetricCard(
-              title: l10n.sales,
-              value: CurrencyHelper.format(
-                  (metrics['revenue'] as num? ?? 0).toDouble(), defaultCurrency),
-              icon: CurrencyHelper.getIcon(defaultCurrency),
-              color: AppTheme.accentYellow,
-              delay: 300,
-            ),
+            // Ventas NO va acá: se dibuja a ancho completo debajo de la grilla.
+            // Ver el comentario de `_TarjetaVentas` más abajo.
             MetricCard(
               title: "${l10n.staff} (IN/TOT)",
               value:
@@ -103,6 +98,25 @@ class AdminDashboardView extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 16),
+
+        // Ventas, de borde a borde.
+        //
+        // Estaba dentro de la grilla y eran NUEVE tarjetas en dos columnas: la
+        // última fila quedaba con una sola y el bloque entero se veía torcido.
+        // Sacándola quedan ocho, que son cuatro filas de dos exactas.
+        //
+        // Y es el lugar que le corresponde por jerarquía: de los nueve números
+        // es el único que es dinero. A ancho completo se lee de un vistazo sin
+        // competir con los conteos, y queda pegada al botón de Estadísticas, que
+        // es a donde va quien está mirando la plata.
+        _TarjetaVentas(
+          monto: CurrencyHelper.format(
+              (metrics['revenue'] as num? ?? 0).toDouble(), defaultCurrency),
+          icono: CurrencyHelper.getIcon(defaultCurrency),
+          titulo: l10n.sales,
+        ),
+        const SizedBox(height: 16),
+
         GestureDetector(
           onTap: () {
             final selectedEvent = ref.read(selectedEventProvider);
@@ -172,6 +186,87 @@ class AdminDashboardView extends ConsumerWidget {
     }
 
     return true;
+  }
+}
+
+/// Tarjeta de ventas, de borde a borde.
+///
+/// No usa `MetricCard` porque no cumple la misma función. Las otras ocho son
+/// conteos que se comparan entre sí, y por eso conviene que sean todas iguales y
+/// del mismo tamaño. Esta es la única cifra de dinero: se lee sola, no se
+/// compara con nada, y tiene que destacarse.
+///
+/// El monto va a la DERECHA y el rótulo a la izquierda, alineados en la misma
+/// línea. Con el número al final del renglón, la coma decimal cae siempre en el
+/// mismo lugar aunque cambie el largo de la cifra, y el ojo no tiene que
+/// recorrer el ancho de la pantalla para unir la etiqueta con su valor.
+class _TarjetaVentas extends StatelessWidget {
+  const _TarjetaVentas({
+    required this.monto,
+    required this.icono,
+    required this.titulo,
+  });
+
+  final String monto;
+  final IconData icono;
+  final String titulo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GlassCard(
+      // Un poco mas alta que las de la grilla (74 px) porque el numero es mas
+      // grande, pero sin llegar al doble: sigue siendo una linea de contenido.
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppTheme.accentYellow.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icono, color: AppTheme.accentYellow, size: 21),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Text(
+              titulo.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.9,
+                color: isDark ? Colors.white60 : Colors.black54,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // FittedBox para que una cifra larga se encoja en vez de desbordar:
+          // "Gs 12.500.000" ocupa mas del doble que "Gs 0".
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                monto,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  height: 1,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
