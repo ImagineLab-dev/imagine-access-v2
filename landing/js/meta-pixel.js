@@ -53,8 +53,84 @@
   }(window, document, 'script',
     'https://connect.facebook.net/en_US/fbevents.js');
 
+  // ---------------------------------------------------------------------------
+  // Doble envío: navegador + servidor, con el MISMO identificador
+  // ---------------------------------------------------------------------------
+  // El píxel del navegador se pierde cuando algo lo bloquea. Medido en la
+  // campaña del 29/07/2026: 70 clics al enlace, 24 vistas de landing. Dos de
+  // cada tres llegadas no llegaban, casi todas de iOS.
+  //
+  // Cada evento sale por los dos caminos con el mismo `event_id`. Meta los une
+  // y cuenta UNO. Si cada lado generara el suyo contaría DOS, que es peor que
+  // perder eventos: inflaría las conversiones y el optimizador de la campaña
+  // trabajaría sobre números falsos. Por eso el identificador se genera acá,
+  // una sola vez, y se le pasa a los dos.
+
+  var ECO = 'https://api.imaginecloud.digital/functions/v1/meta_evento';
+
+  function id() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    // Navegadores viejos: alcanza con que no se repita entre visitantes.
+    return 'e-' + Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2, 12);
+  }
+
+  function cookie(nombre) {
+    var m = document.cookie.match('(^|;)\\s*' + nombre + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : null;
+  }
+
+  /* De qué clic de anuncio viene esta visita.
+   *
+   * Es el dato más valioso del envío por servidor: sin él la conversión llega
+   * anónima y Meta no la puede atribuir a ninguna campaña.
+   *
+   * Se lee la cookie `_fbc`, pero en la PRIMERA visita todavía no existe —el
+   * píxel la escribe después de cargar— así que se arma a mano desde `fbclid`
+   * de la URL, que es justamente el caso que importa: alguien que acaba de
+   * llegar desde el anuncio. Formato de Meta: fb.<subdominio>.<ms>.<fbclid>,
+   * y el 1 corresponde a un dominio de dos partes como el nuestro. */
+  function clicDeAnuncio() {
+    var c = cookie('_fbc');
+    if (c) return c;
+    try {
+      var fbclid = new URLSearchParams(location.search).get('fbclid');
+      if (fbclid) return 'fb.1.' + Date.now() + '.' + fbclid;
+    } catch (_) { /* URLSearchParams no soportado: se va sin fbc */ }
+    return null;
+  }
+
+  function alServidor(nombre, eventId, datos) {
+    try {
+      fetch(ECO, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Sin esto el navegador CANCELA la petición al salir de la página, y
+        // justamente el evento que más importa —el clic al botón— se dispara
+        // mientras se está yendo.
+        keepalive: true,
+        body: JSON.stringify({
+          nombre: nombre,
+          eventId: eventId,
+          urlOrigen: location.href,
+          fbp: cookie('_fbp'),
+          fbc: clicDeAnuncio(),
+          momento: Math.floor(Date.now() / 1000),
+          datos: datos || null
+        })
+      }).catch(function () { /* medir no puede romper la página */ });
+    } catch (_) { /* idem */ }
+  }
+
+  /** Manda el evento por los dos caminos. */
+  function evento(tipo, nombre, datos) {
+    var eventId = id();
+    fbq(tipo, nombre, datos || {}, { eventID: eventId });
+    alServidor(nombre, eventId, datos);
+  }
+
   fbq('init', PIXEL_ID);
-  fbq('track', 'PageView');
+  evento('track', 'PageView');
 
   // ---------------------------------------------------------------------------
   // Clic en cualquier botón que lleve a la app
@@ -75,7 +151,7 @@
     if (a.getAttribute('href').indexOf('imaginecloud.digital') === -1) return;
 
     var seccion = a.closest('section');
-    fbq('trackCustom', 'ClicProbarGratis', {
+    evento('trackCustom', 'ClicProbarGratis', {
       donde: a.closest('header') ? 'navegacion'
            : seccion && seccion.id ? seccion.id
            : 'hero',
