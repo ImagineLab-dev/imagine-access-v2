@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../auth/presentation/auth_controller.dart';
+import '../../../core/utils/tiempo_limite.dart';
 
 /// Datos del perfil del usuario autenticado.
 class UserProfile {
@@ -247,6 +248,45 @@ class ProfileRepository {
         return 'image/jpeg';
     }
   }
+
+  /// Qué pasaría si esta persona se da de baja, sin borrar nada.
+  ///
+  /// Se le pregunta al servidor en vez de deducirlo acá: si es dueña de la
+  /// organización, la baja destruye datos de terceros, y el diálogo tiene que
+  /// mostrar los números REALES. Además evita tener la regla de "quién es dueño"
+  /// escrita en dos lugares que pueden separarse con el tiempo.
+  Future<Map<String, dynamic>> vistaPreviaDeBaja() async {
+    final res = await _client.functions
+        .invoke('eliminar_cuenta', body: {'preview': true})
+        .conLimite(TiempoLimite.normal, 'eliminar_cuenta:preview');
+
+    final datos = Map<String, dynamic>.from(res.data as Map);
+    if (datos['ok'] != true) {
+      throw Exception(datos['mensaje'] ?? 'No se pudo consultar el estado de la cuenta');
+    }
+    return datos;
+  }
+
+  /// Baja definitiva.
+  ///
+  /// [confirmacion] es el nombre de la organización y solo hace falta para el
+  /// dueño. El servidor lo vuelve a exigir: que el diálogo lo haya pedido no es
+  /// garantía de nada, porque cualquiera puede llamar la función directo.
+  ///
+  /// Tiempo límite largo: antes de borrar, el servidor corta el cobro en dLocal,
+  /// que implica varias llamadas a un tercero.
+  Future<Map<String, dynamic>> eliminarMiCuenta({String? confirmacion}) async {
+    final res = await _client.functions
+        .invoke('eliminar_cuenta', body: {'confirmacion': confirmacion})
+        .conLimite(TiempoLimite.conCorreo, 'eliminar_cuenta');
+
+    final datos = Map<String, dynamic>.from(res.data as Map);
+    if (datos['ok'] != true) {
+      throw Exception(datos['mensaje'] ?? 'No se pudo eliminar la cuenta');
+    }
+    return datos;
+  }
+
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {

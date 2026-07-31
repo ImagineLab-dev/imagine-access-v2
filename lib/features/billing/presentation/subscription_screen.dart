@@ -5,6 +5,7 @@ import '../../../core/platform/abrir_url.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/glass_scaffold.dart';
+import '../../../core/utils/error_handler.dart';
 import '../data/subscription_repository.dart';
 import '../../../core/platform/meta.dart';
 
@@ -54,6 +55,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   const SizedBox(height: 16),
                 ],
                 _Planes(sub: sub, l10n: l10n, ref: ref),
+
+                // Solo con suscripción paga y vigente. No se ofrece dar de baja
+                // algo que no existe, ni se repite el botón a quien ya lo usó.
+                if (!sub.enPrueba && !sub.cancelada && sub.expiresAt != null) ...[
+                  const SizedBox(height: 24),
+                  _BajaDeSuscripcion(sub: sub, l10n: l10n, ref: ref),
+                ],
               ],
             ),
           );
@@ -76,6 +84,10 @@ class _Estado extends StatelessWidget {
       _ when sub.vencida => (l10n.statusExpired, const Color(0xFFEF4444)),
       _ when sub.cupoAgotado => (l10n.statusQuotaExhausted, const Color(0xFFEF4444)),
       _ when sub.enPrueba => (l10n.statusTrial, const Color(0xFFF59E0B)),
+      // Antes de "activa": una suscripción dada de baja SIGUE vigente hasta el
+      // vencimiento, así que el estado verde sería cierto y engañoso a la vez.
+      // Lo que la persona necesita saber es que no se renueva.
+      _ when sub.cancelada => (l10n.subscriptionCancelled, const Color(0xFFF59E0B)),
       _ => (l10n.statusActive, const Color(0xFF22C55E)),
     };
 
@@ -97,8 +109,14 @@ class _Estado extends StatelessWidget {
           ),
           if (sub.expiresAt != null) ...[
             const SizedBox(height: 12),
-            Text(l10n.renewsOn(_fecha(sub.expiresAt!)),
-                style: Theme.of(context).textTheme.bodySmall),
+            // "Se renueva el X" es falso si ya pidió la baja. Mismo dato, otra
+            // frase, porque significa lo contrario.
+            Text(
+              sub.cancelada
+                  ? l10n.subscriptionCancelledUntil(_fecha(sub.expiresAt!))
+                  : l10n.renewsOn(_fecha(sub.expiresAt!)),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
           if (sub.suspendedReason != null) ...[
             const SizedBox(height: 12),
@@ -306,6 +324,109 @@ class _OpcionPlan extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Baja del cobro recurrente.
+///
+/// Va al final de la pantalla y sin destacarse: es una salida, no una acción que
+/// haya que empujar. Pero está a la vista y en la pantalla donde uno la busca —
+/// esconderla obliga a la persona a llamar al banco a desconocer el cargo, que
+/// es la misma baja pero con un contracargo y una relación rota.
+class _BajaDeSuscripcion extends StatefulWidget {
+  const _BajaDeSuscripcion({
+    required this.sub,
+    required this.l10n,
+    required this.ref,
+  });
+
+  final Subscription sub;
+  final AppLocalizations l10n;
+  final WidgetRef ref;
+
+  @override
+  State<_BajaDeSuscripcion> createState() => _BajaDeSuscripcionState();
+}
+
+class _BajaDeSuscripcionState extends State<_BajaDeSuscripcion> {
+  bool _enviando = false;
+
+  String get _hasta => _Estado._fecha(widget.sub.expiresAt!);
+
+  Future<void> _confirmar() async {
+    final l10n = widget.l10n;
+
+    final acepta = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.cancelSubscriptionConfirm),
+        content: Text(l10n.cancelSubscriptionConfirmBody(_hasta)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.cancelSubscriptionAction,
+                style: const TextStyle(color: Color(0xFFEF4444))),
+          ),
+        ],
+      ),
+    );
+
+    if (acepta != true || !mounted) return;
+
+    setState(() => _enviando = true);
+    final mensajero = ScaffoldMessenger.of(context);
+    try {
+      final hasta = await widget.ref
+          .read(subscriptionRepositoryProvider)
+          .cancelar();
+
+      widget.ref.invalidate(subscriptionProvider);
+      if (!mounted) return;
+      mensajero.showSnackBar(SnackBar(
+        content: Text(l10n.cancelSubscriptionDone(
+            hasta == null ? _hasta : _Estado._fecha(hasta))),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      // El mensaje del servidor se muestra tal cual: distingue "no pudimos
+      // cortar el cobro, tu suscripción sigue activa" de un fallo genérico, y
+      // esa diferencia es justo la que la persona necesita.
+      ErrorHandler.showErrorSnackBar(context, e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _enviando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.cancelSubscriptionExplain(_hasta),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 10),
+        TextButton(
+          onPressed: _enviando ? null : _confirmar,
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFFEF4444),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
+          child: _enviando
+              ? const SizedBox(
+                  width: 16, height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(l10n.cancelSubscription),
+        ),
+      ],
     );
   }
 }

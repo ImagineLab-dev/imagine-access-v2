@@ -12,6 +12,7 @@ class Subscription {
     required this.isActive,
     this.country,
     this.expiresAt,
+    this.cancelledAt,
     this.daysLeft,
     this.suspendedReason,
     this.freeTicketsUsed = 0,
@@ -26,6 +27,9 @@ class Subscription {
   final bool isActive;
   final String? country;
   final DateTime? expiresAt;
+
+  /// Cuándo pidió la baja del cobro. Nulo = la suscripción sigue corriendo.
+  final DateTime? cancelledAt;
   final int? daysLeft;
   final String? suspendedReason;
 
@@ -50,6 +54,11 @@ class Subscription {
   /// desde el panel de super-admin. El mensaje al usuario cambia según cuál sea.
   bool get vencida => !isActive && !suspendida;
 
+  /// Pidió la baja: el cobro no se renueva, pero el acceso sigue hasta
+  /// [expiresAt], que es hasta donde está pagado. Cancelar detiene la
+  /// renovación, no el servicio.
+  bool get cancelada => cancelledAt != null;
+
   /// Sin fecha de vencimiento = acceso indefinido. Es el caso de las
   /// organizaciones anteriores a la facturación: no se les corta nada.
   bool get sinVencimiento => expiresAt == null;
@@ -64,6 +73,9 @@ class Subscription {
         expiresAt: r['expires_at'] == null
             ? null
             : DateTime.tryParse(r['expires_at'] as String)?.toLocal(),
+        cancelledAt: r['cancelled_at'] == null
+            ? null
+            : DateTime.tryParse(r['cancelled_at'] as String)?.toLocal(),
         daysLeft: (r['days_left'] as num?)?.toInt(),
         suspendedReason: r['suspended_reason'] as String?,
         freeTicketsUsed: (r['free_tickets_used'] as num?)?.toInt() ?? 0,
@@ -102,6 +114,24 @@ class SubscriptionRepository {
       throw Exception(datos['mensaje'] ?? 'No se pudo generar el enlace de pago');
     }
     return datos['url'] as String;
+  }
+
+  /// Da de baja el cobro recurrente.
+  ///
+  /// Devuelve hasta cuándo sigue el acceso. La función del servidor corta el
+  /// cobro en dLocal ANTES de marcarlo, así que si esto responde bien, el
+  /// débito ya está detenido de verdad: no es una marca optimista.
+  Future<DateTime?> cancelar() async {
+    final res = await _client.functions
+        .invoke('cancelar_suscripcion')
+        .conLimite(TiempoLimite.conCorreo, 'cancelar_suscripcion');
+
+    final datos = Map<String, dynamic>.from(res.data as Map);
+    if (datos['ok'] != true) {
+      throw Exception(datos['mensaje'] ?? 'No se pudo dar de baja la suscripción');
+    }
+    final hasta = datos['acceso_hasta'] as String?;
+    return hasta == null ? null : DateTime.tryParse(hasta)?.toLocal();
   }
 }
 

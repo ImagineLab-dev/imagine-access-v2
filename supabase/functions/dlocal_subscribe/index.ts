@@ -8,6 +8,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
 import { crearPlan, obtenerPlan } from '../_shared/dlocal.ts'
+import { esAdmin } from '../_shared/roles.ts'
 
 const PRECIOS = {
   monthly: { monto: 25, frecuencia: 'MONTHLY' as const },
@@ -59,13 +60,16 @@ Deno.serve(async (req) => {
     }
     // Solo un admin contrata: un RRPP no debería poder generar cobros a nombre
     // de la organización.
-    if (perfil.role !== 'admin' && perfil.role !== 'superadmin') {
+    // Era la única función que contemplaba al super-admin, con la condición
+    // escrita a mano. Pasa por el predicado compartido igual que las otras
+    // ocho: una sola definición de "quién administra".
+    if (!esAdmin(perfil.role)) {
       return json({ ok: false, mensaje: 'Solo un administrador puede contratar' }, 403, req)
     }
 
     const { data: org } = await admin
       .from('organizations')
-      .select('id, name, country, dlocal_plan_id, dlocal_plan_token')
+      .select('id, name, country, dlocal_plan_id, dlocal_plan_token, dlocal_plans')
       .eq('id', perfil.organization_id)
       .single()
 
@@ -95,17 +99,49 @@ Deno.serve(async (req) => {
 
     const precio = PRECIOS[plan as keyof typeof PRECIOS]
 
-    let planDLocal
-    if (org.dlocal_plan_id) {
-      // Reutilizar. Si el plan se borró del panel, se crea otro en vez de
-      // devolver un enlace muerto.
-      planDLocal = await obtenerPlan(org.dlocal_plan_id).catch(() => null)
+    // Un plan guardado POR frecuencia.
+    //
+    // Antes se guardaba uno solo en `dlocal_plan_id`, y como hay dos planes
+    // —mensual y anual— alternar entre ellos descartaba el guardado por no
+    // coincidir la frecuencia y creaba otro. Cada clic en el otro plan era un
+    // plan nuevo en dLocal: en la cuenta real quedaron siete "Imagine Access -
+    // SONICO" alternando 25 y 250, que es la huella exacta del bug.
+    //
+    // Lo caro no era el desorden: el webhook consulta el plan guardado, así que
+    // un enlace de pago viejo apuntaba a un plan que ya nadie miraba. Quien lo
+    // completara pagaba sin que se le activara nada.
+    const planes = (org.dlocal_plans ?? {}) as Record<string, { id?: number; token?: string }>
+    const guardado = planes[plan]
 
-      // Y si el plan guardado no es del tipo que se está pidiendo, tampoco
-      // sirve. Sin esta comprobación, alguien que primero mira el mensual y
-      // después elige el anual recibía el enlace del MENSUAL: el checkout le
-      // cobraba USD 25 al mes habiendo elegido USD 250 al año.
+    let planDLocal
+    if (guardado?.id) {
+      // Se confirma contra dLocal: si el plan se borró del panel, hay que crear
+      // otro en vez de devolver un enlace muerto.
+      planDLocal = await obtenerPlan(guardado.id).catch(() => null)
+
+      // Y se vuelve a comprobar la frecuencia. Es defensa en profundidad: la
+      // clave del jsonb ya dice cuál es, pero si alguna vez se guardara mal, el
+      // síntoma sería cobrarle USD 25 al mes a quien eligió USD 250 al año.
       if (planDLocal && planDLocal.frequency_type !== precio.frecuencia) {
+        planDLocal = null
+      }
+
+      // Un plan DESACTIVADO no sirve, aunque exista y sea de la frecuencia
+      // correcta. Cancelar la suscripción desactiva los planes a propósito —para
+      // que un enlace viejo no pueda volver a cobrar—, así que sin esta
+      // comprobación quien se da de baja y después quiere volver recibe el
+      // enlace de un plan muerto: el checkout abre y no deja pagar. Se crea uno
+      // nuevo, que es lo correcto para una suscripción nueva.
+      if (planDLocal && planDLocal.active === false) {
+        planDLocal = null
+      }
+    } else if (org.dlocal_plan_id) {
+      // Organizaciones anteriores a `dlocal_plans`: se intenta reutilizar el
+      // plan viejo si resulta ser de esta frecuencia, y así no se crea uno más
+      // al pie del cambio.
+      planDLocal = await obtenerPlan(org.dlocal_plan_id).catch(() => null)
+      if (planDLocal &&
+          (planDLocal.frequency_type !== precio.frecuencia || planDLocal.active === false)) {
         planDLocal = null
       }
     }
@@ -126,9 +162,28 @@ Deno.serve(async (req) => {
         notificationUrl,
       })
 
+      // Se guarda BAJO SU FRECUENCIA, sin pisar el plan de la otra. Eso es lo
+      // que impide que alternar de plan siga creando uno nuevo cada vez, y lo
+      // que le permite al webhook encontrar la suscripción de un enlace viejo.
+      //
+      // `dlocal_plan_id` y `dlocal_plan_token` se siguen actualizando al último
+      // usado porque el panel de super-admin los muestra.
       await admin.from('organizations').update({
         dlocal_plan_id: planDLocal.id,
         dlocal_plan_token: planDLocal.plan_token,
+        dlocal_plans: {
+          ...planes,
+          [plan]: { id: planDLocal.id, token: planDLocal.plan_token },
+        },
+      }).eq('id', org.id)
+    } else if (!guardado?.id) {
+      // Se reutilizó el plan heredado de antes de `dlocal_plans`: se registra
+      // bajo su frecuencia para que la próxima vez ya salga por el camino nuevo.
+      await admin.from('organizations').update({
+        dlocal_plans: {
+          ...planes,
+          [plan]: { id: planDLocal.id, token: planDLocal.plan_token },
+        },
       }).eq('id', org.id)
     }
 

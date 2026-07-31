@@ -16,7 +16,7 @@
 // real, así que depender de su forma sería construir sobre una suposición.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { listarSuscripciones } from '../_shared/dlocal.ts'
+import { listarSuscripciones, planesDeLaOrganizacion } from '../_shared/dlocal.ts'
 import { enviarEventoMeta } from '../_shared/meta_capi.ts'
 
 const ESTADOS_VIGENTES = ['ACTIVE', 'ACTIVATED', 'PAID', 'SUCCESS', 'COMPLETED']
@@ -45,11 +45,38 @@ Deno.serve(async (req) => {
       // contact_email se trae para Meta: el correo hasheado es lo que le
       // permite emparejar la compra con la persona que vio el anuncio. Sin
       // ningún identificador, la conversión llega pero atribuye mucho peor.
-      .select('id, dlocal_plan_id, contact_email')
+      .select('id, dlocal_plan_id, dlocal_plans, contact_email')
       .eq('id', organizationId)
       .maybeSingle()
 
-    if (!org?.dlocal_plan_id) {
+    if (!org) {
+      // Se responde 200: un 4xx haría que dLocal reintente para siempre un
+      // aviso de una organización que no existe.
+      console.warn('Aviso para una organización inexistente', organizationId)
+      return json({ ok: true, mensaje: 'Organización inexistente, ignorado' }, 200)
+    }
+
+    // Qué planes hay que consultar.
+    //
+    // Antes se consultaba SOLO `org.dlocal_plan_id`, el último usado. Y como
+    // alternar entre mensual y anual sobreescribía ese campo, un enlace de pago
+    // apuntaba a un plan que ya nadie miraba: quien lo completara pagaba y el
+    // aviso se registraba como `payment_rejected`. Cliente cobrado, suscripción
+    // sin activar, y en el registro figuraba como rechazo.
+    //
+    // Ahora se consulta el plan de la frecuencia que avisa la propia
+    // notificación (`?plan=`), y si no está, los demás guardados y el heredado.
+    // Consultar de más no tiene costo: solo se acredita si dLocal confirma una
+    // suscripción vigente, y `apply_subscription_payment` corta los duplicados.
+    const planes = (org?.dlocal_plans ?? {}) as Record<string, { id?: number }>
+    const candidatos = [
+      planes[plan]?.id,
+      ...Object.values(planes).map((p) => p?.id),
+      org?.dlocal_plan_id,
+    ].filter((id): id is number => typeof id === 'number')
+    const aConsultar = [...new Set(candidatos)]
+
+    if (aConsultar.length === 0) {
       // Se responde 200 igual: un 4xx haría que dLocal reintente para siempre
       // un aviso que nunca va a poder procesarse.
       console.warn('Aviso para una organización sin plan de dLocal', organizationId)
@@ -57,35 +84,89 @@ Deno.serve(async (req) => {
     }
 
     // La verificación. Todo lo anterior es contexto; esto es la prueba.
-    const suscripciones = await listarSuscripciones(org.dlocal_plan_id)
-    const vigente = (suscripciones?.data ?? []).find((s: any) => {
-      const estado = String(s?.status ?? s?.state ?? '').toUpperCase()
-      return ESTADOS_VIGENTES.includes(estado)
-    })
+    //
+    // Las consultas van EN PARALELO. En serie tardaban entre 9 y 11 segundos
+    // medidos contra la cuenta real, porque con los planes duplicados hay once
+    // que revisar. Un webhook que tarda diez segundos es un webhook que la
+    // pasarela corta por tiempo y reintenta, y cada reintento vuelve a tardar
+    // diez: se realimenta. Son consultas independientes entre sí, así que no hay
+    // ninguna razón para encadenarlas.
+    async function buscarVigente(ids: number[]): Promise<[any, number | null]> {
+      if (ids.length === 0) return [null, null]
+
+      const resultados = await Promise.all(
+        ids.map(async (planId) => {
+          const suscripciones = await listarSuscripciones(planId).catch(() => null)
+          const encontrada = (suscripciones?.data ?? []).find((s: any) => {
+            const estado = String(s?.status ?? s?.state ?? '').toUpperCase()
+            return ESTADOS_VIGENTES.includes(estado)
+          })
+          return encontrada ? ([encontrada, planId] as [any, number]) : null
+        }),
+      )
+
+      // Se respeta el orden de `ids`: el primero es el plan de la frecuencia que
+      // avisó la notificación, que es el candidato más probable.
+      return resultados.find((r) => r !== null) ?? [null, null]
+    }
+
+    let [vigente, planUsado] = await buscarVigente(aConsultar)
+
+    // Respaldo: si los planes guardados no dieron nada, se buscan en la cuenta
+    // de dLocal TODOS los planes de esta organización y se revisan también.
+    //
+    // Es lo que rescata un pago hecho con un enlace viejo. El bug de duplicación
+    // dejó varios planes vivos para la misma organización, y cualquiera de esos
+    // enlaces sigue siendo cobrable: sin este barrido, quien completara uno
+    // pagaría y el aviso quedaría anotado como rechazo.
+    //
+    // El emparejamiento es por el UUID de la organización, que `crearPlan`
+    // escribe en la descripción. Por nombre habría sido un error: hay un plan
+    // llamado "Imagine Access" en la cuenta que NO es de esta organización.
+    if (!vigente) {
+      const historicos = await planesDeLaOrganizacion(org.id).catch(() => [])
+      const faltantes = historicos.filter((id) => !aConsultar.includes(id))
+
+      if (faltantes.length > 0) {
+        const [hallada, planHallado] = await buscarVigente(faltantes)
+        if (hallada) {
+          vigente = hallada
+          planUsado = planHallado
+          console.log('Suscripción hallada en un plan histórico', planHallado)
+        }
+        aConsultar.push(...faltantes)
+      }
+    }
 
     if (!vigente) {
       await admin.from('subscription_events').insert({
-        organization_id: org.id,
+        organization_id: org!.id,
         event: 'payment_rejected',
-        dlocal_plan_id: org.dlocal_plan_id,
-        payload: cuerpo,
+        dlocal_plan_id: aConsultar[0],
+        // Se deja constancia de DÓNDE se buscó. Sin esto, un rechazo no permite
+        // distinguir "el pago no se completó" de "buscamos en el plan que no
+        // era", que fue justamente el problema anterior.
+        payload: { aviso: cuerpo, planes_consultados: aConsultar },
       })
-      console.warn('Aviso sin suscripción vigente en dLocal', org.dlocal_plan_id)
+      console.warn('Aviso sin suscripción vigente en dLocal', aConsultar)
       return json({ ok: true, mensaje: 'Sin suscripción vigente' }, 200)
     }
 
+    // Se registra el plan DONDE SE ENCONTRÓ la suscripción, no el último que la
+    // organización tenga guardado. Con varios planes vivos por el bug anterior,
+    // anotar el equivocado dejaría un cobro imposible de rastrear en dLocal.
     const { data: hasta, error } = await admin.rpc('apply_subscription_payment', {
-      p_organization_id: org.id,
+      p_organization_id: org!.id,
       p_plan: plan === 'annual' ? 'annual' : 'monthly',
       p_amount: vigente.amount ?? null,
       p_currency: vigente.currency ?? 'USD',
-      p_dlocal_plan_id: org.dlocal_plan_id,
+      p_dlocal_plan_id: planUsado,
       p_payload: cuerpo,
       // Identifica ESTE cobro. Mientras dLocal no emita uno nuevo, cualquier
       // reintento del aviso cae en el corte de idempotencia y no suma otro mes.
       p_reference: String(
         vigente.id ?? vigente.subscription_id ?? vigente.token ??
-        `${org.dlocal_plan_id}:${vigente.next_payment_date ?? vigente.created_at ?? ''}`,
+        `${planUsado}:${vigente.next_payment_date ?? vigente.created_at ?? ''}`,
       ),
     })
 
