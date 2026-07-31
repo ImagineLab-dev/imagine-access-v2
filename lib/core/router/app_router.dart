@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_roles.dart';
@@ -26,14 +27,70 @@ import '../../features/dashboard/presentation/stats_screen.dart';
 import '../../features/tickets/presentation/ticket_deep_link_screen.dart';
 import '../../features/events/presentation/event_deep_link_screen.dart';
 
+/// Dónde aterriza alguien recién autenticado.
+///
+/// Existe como función y no repetido en dos lados porque antes lo estaba, y las
+/// dos copias no coincidían: el router mandaba al panel de super-admin cuando se
+/// entraba por ese subdominio, pero `login_screen.dart` hacía
+/// `context.go('/dashboard')` a secas justo después de autenticar y pisaba la
+/// decisión. El comentario del router decía "se aterriza en el panel" y no era
+/// cierto — el super-admin entraba por su subdominio y caía en el panel de su
+/// organización, sin ninguna señal de que existía otro lugar.
+///
+/// Quien no sea super-admin, o entre por el dominio principal, va al panel de
+/// control como siempre.
+String rutaTrasIngresar(String? role) =>
+    esHostSuperAdmin && AppRoles.isSuperadmin(role) ? '/super-admin' : '/dashboard';
+
+/// Le avisa al router que el estado de sesión cambió, para que vuelva a
+/// evaluar las redirecciones.
+///
+/// Es la pieza que permite que el router se construya UNA vez. Sin esto había
+/// que reconstruirlo entero para que las redirecciones vieran la sesión nueva,
+/// y reconstruirlo es justamente el problema: ver más abajo.
+class _CambioDeSesion extends ChangeNotifier {
+  _CambioDeSesion(Ref ref) {
+    // El rol se deriva de los otros dos, pero se escucha igual: cambia solo
+    // cuando `ensure_profile` sincroniza los metadatos, que es después de que
+    // la sesión ya está puesta.
+    ref.listen(userProvider, (_, _) => notifyListeners());
+    ref.listen(userRoleProvider, (_, _) => notifyListeners());
+    ref.listen(deviceProvider, (_, _) => notifyListeners());
+  }
+}
+
+/// El router, construido una sola vez para toda la vida de la app.
+///
+/// Antes este proveedor hacía `ref.watch` de la sesión, el rol y el
+/// dispositivo, y devolvía un `GoRouter` NUEVO con cada cambio. Como
+/// `MaterialApp.router` lo consume con `ref.watch`, Flutter veía otro
+/// `routerConfig`, desmontaba el navegador y lo volvía a montar desde
+/// `initialLocation: '/welcome'`.
+///
+/// Eso se veía como la pantalla de inicio cargando varias veces al entrar, y
+/// no era una sola: `loginEmail` guarda la sesión al autenticar y otra vez
+/// después de refrescarla para leer el rol ya sincronizado, así que un login
+/// normal rearmaba la navegación dos veces —aparecía la pantalla de bienvenida
+/// entre medio de cada una— antes de aterrizar donde correspondía.
+///
+/// Ahora el router es el mismo objeto siempre y las redirecciones leen el
+/// estado en el momento de correr, con `ref.read`. Lo que cambia es solo hacia
+/// dónde redirige, que es lo que tenía que cambiar desde el principio.
 final routerProvider = Provider<GoRouter>((ref) {
-  final user = ref.watch(userProvider);
-  final role = ref.watch(userRoleProvider);
-  final deviceSession = ref.watch(deviceProvider);
+  final cambioDeSesion = _CambioDeSesion(ref);
+  ref.onDispose(cambioDeSesion.dispose);
 
   return GoRouter(
     initialLocation: '/welcome',
+    refreshListenable: cambioDeSesion,
     redirect: (context, state) {
+      // Con `ref.read` y no capturado afuera: si se leyera al construir, el
+      // router quedaría decidiendo para siempre con la sesión que había en el
+      // arranque, que es ninguna.
+      final user = ref.read(userProvider);
+      final role = ref.read(userRoleProvider);
+      final deviceSession = ref.read(deviceProvider);
+
       final isPublicEntry = state.matchedLocation == '/login' ||
           state.matchedLocation == '/welcome' ||
           state.matchedLocation == '/verify-email' ||
@@ -45,9 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Entrando por super-admin.imaginecloud.digital se aterriza en el
         // panel en vez del dashboard. Es comodidad, no seguridad: sin el rol
         // el guard de más abajo lo manda igual al dashboard.
-        return esHostSuperAdmin && AppRoles.isSuperadmin(role)
-            ? '/super-admin'
-            : '/dashboard';
+        return rutaTrasIngresar(role);
       }
 
       // Role Guards

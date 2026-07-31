@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/router/app_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_controller.dart';
@@ -155,7 +156,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             );
       }
       _loginAttempts = 0; // Reset on success
-      if (mounted) context.go('/dashboard');
+      // El destino lo decide `rutaTrasIngresar`, no esta pantalla. Antes acá
+      // había un '/dashboard' fijo que pisaba la redirección del router y hacía
+      // imposible aterrizar en el panel de super-admin.
+      if (mounted) {
+        context.go(rutaTrasIngresar(ref.read(userRoleProvider)));
+      }
     } catch (e) {
       _registerFailedAttempt();
       if (mounted) {

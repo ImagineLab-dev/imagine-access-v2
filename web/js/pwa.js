@@ -119,8 +119,31 @@
     },
   };
 
+  // ¿Había un service worker a cargo cuando esta página cargó?
+  //
+  // Se mira ACÁ, al evaluar el script, y no dentro del listener: para cuando
+  // `controllerchange` dispara, `controller` ya apunta al nuevo y la respuesta
+  // sería siempre "sí".
+  var habiaControlador = !!navigator.serviceWorker.controller;
+
   var refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', function () {
+    // PRIMERA VISITA: no había controlador. El service worker se instala, se
+    // activa y hace `clients.claim()`, que toma el control de esta página —y eso
+    // dispara `controllerchange` aunque no haya ninguna versión nueva que
+    // aplicar—. Recargar acá es recargar sobre una página que ya está bien.
+    //
+    // El costo era real y medible: un visitante nuevo pedía el documento cuatro
+    // veces y descargaba `main.dart.js` DOS veces, 5,2 MB cada una. En un
+    // teléfono con 4G en la calle son varios segundos extra y el doble de datos,
+    // con la pantalla recargándose encima. Para alguien que llega desde un
+    // anuncio, eso se lee como que la app se rompió.
+    //
+    // Solo se recarga cuando de verdad cambió el worker que estaba a cargo, que
+    // es el caso para el que se escribió esto: aplicar una actualización que la
+    // persona ya aceptó.
+    if (!habiaControlador) return;
+
     if (refreshing) return;   // guard: Chrome puede disparar esto más de una vez
     refreshing = true;
     window.location.reload();
@@ -130,11 +153,37 @@
     navigator.serviceWorker.register('sw.js').then(function (registration) {
       registroActual = registration;
       watchForUpdate(registration);
+
       // Chequeo horario: un dispositivo de puerta puede quedar abierto todo un
       // evento sin recargar nunca.
       setInterval(function () {
         registration.update().catch(function () {});
       }, 60 * 60 * 1000);
+
+      // Y uno cada vez que la app vuelve al frente.
+      //
+      // El temporizador de arriba solo corre mientras la pestaña está viva. En
+      // una PWA instalada en iPhone el sistema SUSPENDE la app al salir, así que
+      // ese intervalo en la práctica no llega nunca a dispararse: se desplegaba
+      // una versión nueva y el teléfono seguía con la vieja indefinidamente,
+      // porque los estáticos se sirven caché-primero y el service worker viejo
+      // sigue a cargo hasta que se activa el nuevo.
+      //
+      // Volver al frente es el momento natural para preguntar: la persona acaba
+      // de abrir la app, no está en medio de nada. El aviso sigue pidiendo
+      // permiso —no se recarga nada sin que lo acepte—, así que un dispositivo
+      // de puerta no se ve interrumpido por esto.
+      //
+      // Se limita a una consulta cada dos minutos para que alternar entre apps
+      // no dispare una por cada cambio de foco.
+      var ultimaConsulta = 0;
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState !== 'visible') return;
+        var ahora = Date.now();
+        if (ahora - ultimaConsulta < 2 * 60 * 1000) return;
+        ultimaConsulta = ahora;
+        registration.update().catch(function () {});
+      });
     }).catch(function (err) {
       console.error('No se pudo registrar el service worker:', err);
     });
