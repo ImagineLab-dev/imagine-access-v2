@@ -1743,4 +1743,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ticketBelongsTo => 'THIS TICKET IS FOR:';
+
+  @override
+  String get cancelSubscription => 'Cancel subscription';
+
+  @override
+  String cancelSubscriptionExplain(String fecha) {
+    return 'We stop charging you. You keep access until $fecha, which is what you already paid for.';
+  }
+
+  @override
+  String get cancelSubscriptionConfirm => 'Cancel billing?';
+
+  @override
+  String cancelSubscriptionConfirmBody(String fecha) {
+    return 'You won\'t be charged again. Everything keeps working until $fecha, then the account moves to the free plan. You can subscribe again any time.';
+  }
+
+  @override
+  String get cancelSubscriptionAction => 'Yes, cancel';
+
+  @override
+  String cancelSubscriptionDone(String fecha) {
+    return 'Subscription cancelled. You have access until $fecha.';
+  }
+
+  @override
+  String get subscriptionCancelled => 'Subscription cancelled';
+
+  @override
+  String subscriptionCancelledUntil(String fecha) {
+    return 'Access until $fecha. It will not renew.';
+  }
+
+  @override
+  String get resubscribe => 'Subscribe again';
+
+  @override
+  String get deleteAccount => 'Delete my account';
+
+  @override
+  String get deleteAccountHint => 'Deletes your account. This cannot be undone';
+
+  @override
+  String get deleteAccountTitle => 'Delete account';
+
+  @override
+  String get deleteAccountMember =>
+      'Your account and access are deleted. The organization and its data stay as they are.';
+
+  @override
+  String deleteAccountOwner(String org) {
+    return 'You own $org. The ENTIRE organization is deleted and cannot be recovered:';
+  }
+
+  @override
+  String deleteAccountOwnerItems(
+    String eventos,
+    String tickets,
+    String escaneos,
+    String miembros,
+  ) {
+    return '$eventos events · $tickets tickets · $escaneos scans · $miembros team accounts';
+  }
+
+  @override
+  String deleteAccountTypeName(String org) {
+    return 'Type $org to confirm';
+  }
+
+  @override
+  String get deleteAccountAction => 'Delete permanently';
+
+  @override
+  String get deleteAccountDone => 'Account deleted.';
+
+  @override
+  String get deleteAccountNameMismatch => 'The name doesn\'t match.';
+
+  @override
+  String get deleteAccountSuperadmin =>
+      'A super-admin account can\'t be deleted from here. Move the role to another account first.';
 }

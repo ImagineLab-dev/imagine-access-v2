@@ -1752,4 +1752,85 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get ticketBelongsTo => 'ESTE INGRESSO É PARA:';
+
+  @override
+  String get cancelSubscription => 'Cancelar assinatura';
+
+  @override
+  String cancelSubscriptionExplain(String fecha) {
+    return 'Paramos de cobrar. Você mantém o acesso até $fecha, que é o que já foi pago.';
+  }
+
+  @override
+  String get cancelSubscriptionConfirm => 'Cancelar a cobrança?';
+
+  @override
+  String cancelSubscriptionConfirmBody(String fecha) {
+    return 'Você não será cobrado de novo. Tudo continua funcionando até $fecha, depois a conta passa para o plano gratuito. Pode assinar de novo quando quiser.';
+  }
+
+  @override
+  String get cancelSubscriptionAction => 'Sim, cancelar';
+
+  @override
+  String cancelSubscriptionDone(String fecha) {
+    return 'Assinatura cancelada. Você tem acesso até $fecha.';
+  }
+
+  @override
+  String get subscriptionCancelled => 'Assinatura cancelada';
+
+  @override
+  String subscriptionCancelledUntil(String fecha) {
+    return 'Acesso até $fecha. Não será renovada.';
+  }
+
+  @override
+  String get resubscribe => 'Assinar novamente';
+
+  @override
+  String get deleteAccount => 'Excluir minha conta';
+
+  @override
+  String get deleteAccountHint => 'Exclui sua conta. Não pode ser desfeito';
+
+  @override
+  String get deleteAccountTitle => 'Excluir conta';
+
+  @override
+  String get deleteAccountMember =>
+      'Sua conta e seu acesso são excluídos. A organização e seus dados continuam como estão.';
+
+  @override
+  String deleteAccountOwner(String org) {
+    return 'Você é o dono de $org. A organização INTEIRA é excluída e não há como recuperar:';
+  }
+
+  @override
+  String deleteAccountOwnerItems(
+    String eventos,
+    String tickets,
+    String escaneos,
+    String miembros,
+  ) {
+    return '$eventos eventos · $tickets ingressos · $escaneos leituras · $miembros contas da equipe';
+  }
+
+  @override
+  String deleteAccountTypeName(String org) {
+    return 'Digite $org para confirmar';
+  }
+
+  @override
+  String get deleteAccountAction => 'Excluir definitivamente';
+
+  @override
+  String get deleteAccountDone => 'Conta excluída.';
+
+  @override
+  String get deleteAccountNameMismatch => 'O nome não confere.';
+
+  @override
+  String get deleteAccountSuperadmin =>
+      'Uma conta de super-admin não pode ser excluída aqui. Passe o papel para outra conta primeiro.';
 }

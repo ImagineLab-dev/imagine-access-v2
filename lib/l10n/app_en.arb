@@ -791,5 +791,83 @@
   "updateAvailable": "A new version is available. Tap \"Update\" below.",
   "upToDate": "Data reloaded. You're on the latest version.",
   "wrongEvent": "WRONG EVENT",
-  "ticketBelongsTo": "THIS TICKET IS FOR:"
+  "ticketBelongsTo": "THIS TICKET IS FOR:",
+  "cancelSubscription": "Cancel subscription",
+  "cancelSubscriptionExplain": "We stop charging you. You keep access until {fecha}, which is what you already paid for.",
+  "@cancelSubscriptionExplain": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionConfirm": "Cancel billing?",
+  "cancelSubscriptionConfirmBody": "You won't be charged again. Everything keeps working until {fecha}, then the account moves to the free plan. You can subscribe again any time.",
+  "@cancelSubscriptionConfirmBody": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionAction": "Yes, cancel",
+  "cancelSubscriptionDone": "Subscription cancelled. You have access until {fecha}.",
+  "@cancelSubscriptionDone": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionCancelled": "Subscription cancelled",
+  "subscriptionCancelledUntil": "Access until {fecha}. It will not renew.",
+  "@subscriptionCancelledUntil": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "resubscribe": "Subscribe again",
+  "deleteAccount": "Delete my account",
+  "deleteAccountHint": "Deletes your account. This cannot be undone",
+  "deleteAccountTitle": "Delete account",
+  "deleteAccountMember": "Your account and access are deleted. The organization and its data stay as they are.",
+  "deleteAccountOwner": "You own {org}. The ENTIRE organization is deleted and cannot be recovered:",
+  "@deleteAccountOwner": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountOwnerItems": "{eventos} events · {tickets} tickets · {escaneos} scans · {miembros} team accounts",
+  "@deleteAccountOwnerItems": {
+    "placeholders": {
+      "eventos": {
+        "type": "String"
+      },
+      "tickets": {
+        "type": "String"
+      },
+      "escaneos": {
+        "type": "String"
+      },
+      "miembros": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountTypeName": "Type {org} to confirm",
+  "@deleteAccountTypeName": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountAction": "Delete permanently",
+  "deleteAccountDone": "Account deleted.",
+  "deleteAccountNameMismatch": "The name doesn't match.",
+  "deleteAccountSuperadmin": "A super-admin account can't be deleted from here. Move the role to another account first."
 }

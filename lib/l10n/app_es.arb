@@ -767,5 +767,83 @@
   "updateAvailable": "Hay una versión nueva. Tocá \"Actualizar\" abajo.",
   "upToDate": "Datos recargados. Ya tenés la última versión.",
   "wrongEvent": "OTRO EVENTO",
-  "ticketBelongsTo": "ESTE TICKET ES PARA:"
+  "ticketBelongsTo": "ESTE TICKET ES PARA:",
+  "cancelSubscription": "Dar de baja la suscripción",
+  "cancelSubscriptionExplain": "Dejamos de cobrarte. Conservás el acceso hasta el {fecha}, que es hasta donde está pagado.",
+  "@cancelSubscriptionExplain": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionConfirm": "¿Dar de baja el cobro?",
+  "cancelSubscriptionConfirmBody": "No se te vuelve a cobrar. Seguís usando todo hasta el {fecha}, y después la cuenta pasa al plan gratuito. Podés volver a suscribirte cuando quieras.",
+  "@cancelSubscriptionConfirmBody": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionAction": "Sí, dar de baja",
+  "cancelSubscriptionDone": "Suscripción dada de baja. Tenés acceso hasta el {fecha}.",
+  "@cancelSubscriptionDone": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionCancelled": "Suscripción dada de baja",
+  "subscriptionCancelledUntil": "Acceso hasta el {fecha}. No se renueva.",
+  "@subscriptionCancelledUntil": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "resubscribe": "Volver a suscribirme",
+  "deleteAccount": "Eliminar mi cuenta",
+  "deleteAccountHint": "Se borra tu cuenta y no se puede deshacer",
+  "deleteAccountTitle": "Eliminar la cuenta",
+  "deleteAccountMember": "Se borra tu cuenta y tu acceso. La organización y sus datos siguen como están.",
+  "deleteAccountOwner": "Sos el dueño de {org}. Se borra la organización COMPLETA y no hay forma de recuperarla:",
+  "@deleteAccountOwner": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountOwnerItems": "{eventos} eventos · {tickets} tickets · {escaneos} escaneos · {miembros} cuentas del equipo",
+  "@deleteAccountOwnerItems": {
+    "placeholders": {
+      "eventos": {
+        "type": "String"
+      },
+      "tickets": {
+        "type": "String"
+      },
+      "escaneos": {
+        "type": "String"
+      },
+      "miembros": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountTypeName": "Escribí {org} para confirmar",
+  "@deleteAccountTypeName": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountAction": "Eliminar definitivamente",
+  "deleteAccountDone": "Cuenta eliminada.",
+  "deleteAccountNameMismatch": "El nombre no coincide.",
+  "deleteAccountSuperadmin": "Una cuenta de super-admin no puede darse de baja desde acá. Pasá el rol a otra cuenta primero."
 }

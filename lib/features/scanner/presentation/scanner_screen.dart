@@ -413,6 +413,31 @@ class _Corner extends StatelessWidget {
   }
 }
 
+/// Hora de la primera entrada, legible por una persona en la puerta.
+///
+/// El servidor devuelve un timestamp ISO en UTC. Se imprimía tal cual, así que
+/// el operador veía "2026-07-28T22:46:22.202+00:00" y tenía que descifrarlo
+/// con gente esperando delante. Ahora ve la hora local, y la fecha solo si la
+/// entrada no fue hoy.
+String _horaLegible(dynamic valor, AppLocalizations l10n) {
+  if (valor == null) return l10n.unknown;
+  final fecha = DateTime.tryParse(valor.toString())?.toLocal();
+  if (fecha == null) return l10n.unknown;
+
+  final hh = fecha.hour.toString().padLeft(2, '0');
+  final mm = fecha.minute.toString().padLeft(2, '0');
+
+  final ahora = DateTime.now();
+  final mismoDia = fecha.year == ahora.year &&
+      fecha.month == ahora.month &&
+      fecha.day == ahora.day;
+  if (mismoDia) return '$hh:$mm';
+
+  final dd = fecha.day.toString().padLeft(2, '0');
+  final mo = fecha.month.toString().padLeft(2, '0');
+  return '$dd/$mo  $hh:$mm';
+}
+
 class _ResultOverlay extends StatelessWidget {
   final Map<String, dynamic> scanResult;
   final VoidCallback onDismiss;
@@ -511,7 +536,7 @@ class _ResultOverlay extends StatelessWidget {
                             Text(l10n.firstEntry,
                                 style: const TextStyle(
                                     color: Colors.grey, fontSize: 12)),
-                            Text((ticket?['scanned_at'] ?? l10n.unknown).toString(),
+                            Text(_horaLegible(ticket?['scanned_at'], l10n),
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,

@@ -3351,6 +3351,131 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'THIS TICKET IS FOR:'**
   String get ticketBelongsTo;
+
+  /// No description provided for @cancelSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription'**
+  String get cancelSubscription;
+
+  /// No description provided for @cancelSubscriptionExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'We stop charging you. You keep access until {fecha}, which is what you already paid for.'**
+  String cancelSubscriptionExplain(String fecha);
+
+  /// No description provided for @cancelSubscriptionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel billing?'**
+  String get cancelSubscriptionConfirm;
+
+  /// No description provided for @cancelSubscriptionConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You won\'t be charged again. Everything keeps working until {fecha}, then the account moves to the free plan. You can subscribe again any time.'**
+  String cancelSubscriptionConfirmBody(String fecha);
+
+  /// No description provided for @cancelSubscriptionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, cancel'**
+  String get cancelSubscriptionAction;
+
+  /// No description provided for @cancelSubscriptionDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled. You have access until {fecha}.'**
+  String cancelSubscriptionDone(String fecha);
+
+  /// No description provided for @subscriptionCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled'**
+  String get subscriptionCancelled;
+
+  /// No description provided for @subscriptionCancelledUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Access until {fecha}. It will not renew.'**
+  String subscriptionCancelledUntil(String fecha);
+
+  /// No description provided for @resubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe again'**
+  String get resubscribe;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletes your account. This cannot be undone'**
+  String get deleteAccountHint;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account and access are deleted. The organization and its data stay as they are.'**
+  String get deleteAccountMember;
+
+  /// No description provided for @deleteAccountOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'You own {org}. The ENTIRE organization is deleted and cannot be recovered:'**
+  String deleteAccountOwner(String org);
+
+  /// No description provided for @deleteAccountOwnerItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{eventos} events · {tickets} tickets · {escaneos} scans · {miembros} team accounts'**
+  String deleteAccountOwnerItems(
+    String eventos,
+    String tickets,
+    String escaneos,
+    String miembros,
+  );
+
+  /// No description provided for @deleteAccountTypeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {org} to confirm'**
+  String deleteAccountTypeName(String org);
+
+  /// No description provided for @deleteAccountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteAccountAction;
+
+  /// No description provided for @deleteAccountDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted.'**
+  String get deleteAccountDone;
+
+  /// No description provided for @deleteAccountNameMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The name doesn\'t match.'**
+  String get deleteAccountNameMismatch;
+
+  /// No description provided for @deleteAccountSuperadmin.
+  ///
+  /// In en, this message translates to:
+  /// **'A super-admin account can\'t be deleted from here. Move the role to another account first.'**
+  String get deleteAccountSuperadmin;
 }
 
 class _AppLocalizationsDelegate

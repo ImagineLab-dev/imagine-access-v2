@@ -186,7 +186,17 @@ class DeviceManagementScreen extends ConsumerWidget {
     final aliasCtrl = TextEditingController();
     final rng = Random.secure();
     final deviceId = currentDeviceId ?? 'DEV-${rng.nextInt(900000) + 100000}';
-    final pin = (rng.nextInt(9000) + 1000).toString();
+    // Seis dígitos, no cuatro.
+    //
+    // Antes era `rng.nextInt(9000) + 1000`: 9.000 combinaciones. El PIN de un
+    // dispositivo de puerta es su única credencial, y el bloqueo por intentos de
+    // `login_device` cuenta por `alias|ip` en un Map en memoria del isolate: se
+    // reinicia solo y rotar IP da cinco intentos nuevos. Con 9.000 posibilidades
+    // eso es forzable. Con 900.000 deja de serlo por fuerza bruta práctica.
+    //
+    // Nadie lo escribe a mano —se genera acá y se copia con un botón—, así que
+    // los dos dígitos extra no le cuestan nada a quien está en la puerta.
+    final pin = (rng.nextInt(900000) + 100000).toString();
     final formKey = GlobalKey<FormState>();
 
     bool isLoading = false;

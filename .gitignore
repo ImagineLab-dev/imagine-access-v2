@@ -81,3 +81,19 @@ build_old/
 
 # Paquetes de deploy generados
 dist/
+
+# Configuracion local de Claude Code.
+#
+# Contiene tokens: se encontro una clave `service_role` de Supabase ahi dentro
+# durante la auditoria del 29/07/2026. Estaba sin trackear y el proyecto al que
+# pertenecia ya no existe, asi que no hubo filtracion — pero estaba a un
+# `git add -A` de entrar al historial, y de ahi no se saca facil.
+.claude/
+
+# Salida de compilacion. Pesa ~14 MB y se regenera con build_web.py.
+build/
+
+# Cualquier variante de archivo de entorno, no solo `.env`.
+*.env
+.env.*
+!.env.example

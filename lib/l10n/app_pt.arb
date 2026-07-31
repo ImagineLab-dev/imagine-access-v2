@@ -767,5 +767,83 @@
   "updateAvailable": "Há uma versão nova. Toque em \"Atualizar\" abaixo.",
   "upToDate": "Dados recarregados. Você já está na última versão.",
   "wrongEvent": "OUTRO EVENTO",
-  "ticketBelongsTo": "ESTE INGRESSO É PARA:"
+  "ticketBelongsTo": "ESTE INGRESSO É PARA:",
+  "cancelSubscription": "Cancelar assinatura",
+  "cancelSubscriptionExplain": "Paramos de cobrar. Você mantém o acesso até {fecha}, que é o que já foi pago.",
+  "@cancelSubscriptionExplain": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionConfirm": "Cancelar a cobrança?",
+  "cancelSubscriptionConfirmBody": "Você não será cobrado de novo. Tudo continua funcionando até {fecha}, depois a conta passa para o plano gratuito. Pode assinar de novo quando quiser.",
+  "@cancelSubscriptionConfirmBody": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelSubscriptionAction": "Sim, cancelar",
+  "cancelSubscriptionDone": "Assinatura cancelada. Você tem acesso até {fecha}.",
+  "@cancelSubscriptionDone": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionCancelled": "Assinatura cancelada",
+  "subscriptionCancelledUntil": "Acesso até {fecha}. Não será renovada.",
+  "@subscriptionCancelledUntil": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "resubscribe": "Assinar novamente",
+  "deleteAccount": "Excluir minha conta",
+  "deleteAccountHint": "Exclui sua conta. Não pode ser desfeito",
+  "deleteAccountTitle": "Excluir conta",
+  "deleteAccountMember": "Sua conta e seu acesso são excluídos. A organização e seus dados continuam como estão.",
+  "deleteAccountOwner": "Você é o dono de {org}. A organização INTEIRA é excluída e não há como recuperar:",
+  "@deleteAccountOwner": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountOwnerItems": "{eventos} eventos · {tickets} ingressos · {escaneos} leituras · {miembros} contas da equipe",
+  "@deleteAccountOwnerItems": {
+    "placeholders": {
+      "eventos": {
+        "type": "String"
+      },
+      "tickets": {
+        "type": "String"
+      },
+      "escaneos": {
+        "type": "String"
+      },
+      "miembros": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountTypeName": "Digite {org} para confirmar",
+  "@deleteAccountTypeName": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountAction": "Excluir definitivamente",
+  "deleteAccountDone": "Conta excluída.",
+  "deleteAccountNameMismatch": "O nome não confere.",
+  "deleteAccountSuperadmin": "Uma conta de super-admin não pode ser excluída aqui. Passe o papel para outra conta primeiro."
 }

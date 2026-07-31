@@ -65,12 +65,30 @@ Claude Code para que tome efecto. Después:
 ```bash
 curl -sI https://imaginecloud.digital/ | head -1                    # 200
 curl -s -o /dev/null -w "%{http_code}\n" https://imaginecloud.digital/scanner   # 200, no 404
-curl -s -o /dev/null -w "%{http_code}\n" https://imaginecloud.digital/assets/.env  # 404
+curl -s https://imaginecloud.digital/assets/.env | head -c 40  # el HTML del index, no un .env
 curl -sI https://imaginecloud.digital/sw.js | grep -i cache-control  # no-cache
 ```
 
 `/scanner` devolviendo 404 significa que el `.htaccess` no está tomando efecto y el
 fallback SPA no funciona: refrescar en cualquier ruta va a romper.
+
+**Sobre `/assets/.env`:** antes acá se pedía comprobar un **404**, y ese chequeo era
+inválido. El fallback SPA manda TODO lo que no es un archivo real a `index.html`
+con código 200, así que esa ruta da 200 siempre, exista el archivo o no. Hay que
+mirar el CONTENIDO: si empieza con el HTML del index, no hay `.env` publicado.
+Comprobado el 29/07/2026 — no está filtrado.
+
+**El deploy REEMPLAZA `public_html` entero.** Lo dice `tool/deploy_hostinger.py`
+en su paso 4: *"REEMPLAZA el contenido de public_html. No es reversible"*. Todo lo
+que no venga dentro del zip se borra. Si algún día se publica la landing en
+`/landing/`, tiene que viajar DENTRO del zip o el próximo deploy se la lleva sin
+avisar.
+
+**Orden cuando cambia una regla compartida entre cliente y Edge Function.** El
+29/07/2026 el PIN de los dispositivos pasó de 4 a 6 dígitos: el cliente lo genera
+y `manage_devices` lo exige. Si se despliega la función ANTES del cliente, el
+cliente en vivo sigue generando 4 y crear un dispositivo falla. Primero el
+cliente, después la función — o las dos juntas.
 
 Y en el navegador, con DevTools:
 

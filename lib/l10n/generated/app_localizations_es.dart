@@ -1752,4 +1752,85 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ticketBelongsTo => 'ESTE TICKET ES PARA:';
+
+  @override
+  String get cancelSubscription => 'Dar de baja la suscripción';
+
+  @override
+  String cancelSubscriptionExplain(String fecha) {
+    return 'Dejamos de cobrarte. Conservás el acceso hasta el $fecha, que es hasta donde está pagado.';
+  }
+
+  @override
+  String get cancelSubscriptionConfirm => '¿Dar de baja el cobro?';
+
+  @override
+  String cancelSubscriptionConfirmBody(String fecha) {
+    return 'No se te vuelve a cobrar. Seguís usando todo hasta el $fecha, y después la cuenta pasa al plan gratuito. Podés volver a suscribirte cuando quieras.';
+  }
+
+  @override
+  String get cancelSubscriptionAction => 'Sí, dar de baja';
+
+  @override
+  String cancelSubscriptionDone(String fecha) {
+    return 'Suscripción dada de baja. Tenés acceso hasta el $fecha.';
+  }
+
+  @override
+  String get subscriptionCancelled => 'Suscripción dada de baja';
+
+  @override
+  String subscriptionCancelledUntil(String fecha) {
+    return 'Acceso hasta el $fecha. No se renueva.';
+  }
+
+  @override
+  String get resubscribe => 'Volver a suscribirme';
+
+  @override
+  String get deleteAccount => 'Eliminar mi cuenta';
+
+  @override
+  String get deleteAccountHint => 'Se borra tu cuenta y no se puede deshacer';
+
+  @override
+  String get deleteAccountTitle => 'Eliminar la cuenta';
+
+  @override
+  String get deleteAccountMember =>
+      'Se borra tu cuenta y tu acceso. La organización y sus datos siguen como están.';
+
+  @override
+  String deleteAccountOwner(String org) {
+    return 'Sos el dueño de $org. Se borra la organización COMPLETA y no hay forma de recuperarla:';
+  }
+
+  @override
+  String deleteAccountOwnerItems(
+    String eventos,
+    String tickets,
+    String escaneos,
+    String miembros,
+  ) {
+    return '$eventos eventos · $tickets tickets · $escaneos escaneos · $miembros cuentas del equipo';
+  }
+
+  @override
+  String deleteAccountTypeName(String org) {
+    return 'Escribí $org para confirmar';
+  }
+
+  @override
+  String get deleteAccountAction => 'Eliminar definitivamente';
+
+  @override
+  String get deleteAccountDone => 'Cuenta eliminada.';
+
+  @override
+  String get deleteAccountNameMismatch => 'El nombre no coincide.';
+
+  @override
+  String get deleteAccountSuperadmin =>
+      'Una cuenta de super-admin no puede darse de baja desde acá. Pasá el rol a otra cuenta primero.';
 }
