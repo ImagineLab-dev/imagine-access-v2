@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.0.0"
 import { corsHeaders } from "../_shared/cors.ts"
+import { puedeGestionarTickets } from "../_shared/roles.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
 serve(async (req: Request) => {
@@ -68,7 +69,7 @@ serve(async (req: Request) => {
             .eq('user_id', user.id)
             .single()
 
-        if (!profile || (profile.role !== 'admin' && profile.role !== 'rrpp')) {
+        if (!profile || !puedeGestionarTickets(profile.role)) {
             throw new Error("Forbidden: Only Admin or RRPP can void tickets")
         }
 

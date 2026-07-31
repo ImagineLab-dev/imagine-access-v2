@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { corsHeaders } from "../_shared/cors.ts"
+import { esAdmin, esSuperAdmin } from "../_shared/roles.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
 serve(async (req) => {
@@ -52,16 +53,56 @@ serve(async (req) => {
             ? user_id.trim()
             : caller.id
 
+        // Actuar sobre el perfil de OTRO usuario.
+        //
+        // Antes esto solo preguntaba "¿el que llama es admin?". Nunca preguntaba
+        // si el usuario objetivo era de su organización, y esta función corre con
+        // el service role, que no pasa por RLS. Resultado: cualquier admin —o
+        // sea, cualquiera que se registre— pasando el `user_id` del dueño de
+        // otra organización obtenía la fila COMPLETA de `organizations`, que
+        // incluye `tax_id`, `legal_name`, `contact_email`, `contact_phone`,
+        // `address`, `plan`, `subscription_expires_at` y `dlocal_plan_token`. Y
+        // si esa organización conservaba el nombre por defecto, podía
+        // renombrarla y cambiarle el slug (ver más abajo).
+        //
+        // Explotarlo requería conocer un UUID ajeno, lo que lo hacía improbable
+        // pero no imposible. La defensa correcta es comparar organizaciones: así
+        // conocer el UUID deja de servir para nada.
+        //
+        // Hoy NADIE usa este camino: el cliente manda siempre su propio id
+        // (auth_controller.dart, tres llamadas) y ninguna Edge Function invoca
+        // esta función. Es superficie de ataque sin uso. Se conserva la
+        // capacidad, pero acotada a la misma organización.
         if (requestedUserId !== caller.id) {
-            const { data: callerProfile } = await supabaseAdmin
+            // El rol y la organización se leen de la TABLA, no del claim del
+            // JWT. Para una operación privilegiada sobre otra persona no
+            // conviene fiarse de un claim que puede estar viejo: el claim se
+            // sella al emitir el token y sobrevive a una degradación de rol
+            // hasta que expira.
+            const { data: perfilLlamador } = await supabaseAdmin
                 .from('users_profile')
-                .select('role')
+                .select('role, organization_id')
                 .eq('user_id', caller.id)
                 .single()
 
-            const callerRole = caller.app_metadata?.role ?? callerProfile?.role
-            if (callerRole !== 'admin') {
+            if (!esAdmin(perfilLlamador?.role)) {
                 throw new Error('Forbidden: cannot manage profile for another user')
+            }
+
+            const { data: perfilObjetivo } = await supabaseAdmin
+                .from('users_profile')
+                .select('organization_id')
+                .eq('user_id', requestedUserId)
+                .maybeSingle()
+
+            // El super-admin de la plataforma sí cruza organizaciones: para eso
+            // existe. Un admin común, no.
+            if (!esSuperAdmin(perfilLlamador?.role)) {
+                if (!perfilObjetivo?.organization_id ||
+                    !perfilLlamador?.organization_id ||
+                    perfilObjetivo.organization_id !== perfilLlamador.organization_id) {
+                    throw new Error('Forbidden: user is not from your organization')
+                }
             }
         }
 
@@ -86,14 +127,43 @@ serve(async (req) => {
                 .eq('id', existingProfile.organization_id)
                 .single()
 
-            // FIX: If user is org owner but profile has wrong role, ensure it's 'admin'
+            // El dueño de una organización tiene que poder administrarla. Si su
+            // perfil quedó con un rol MENOR que admin, se repara.
+            //
+            // La condición original era `profileRole !== 'admin'`, y eso incluía
+            // a `superadmin`, que está POR ENCIMA de admin. Efecto real: el
+            // dueño de la plataforma, que además es dueño de su organización,
+            // se degradaba a `admin` en cada login. La tabla sobrevivía porque
+            // `guard_profile_self_update` revierte el cambio en silencio —el
+            // service role no pasa `is_admin()`— pero el claim del token se
+            // escribía igual más abajo, así que el panel de super-admin
+            // desaparecía del menú después de cada ingreso.
+            const ROLES_MENORES_QUE_ADMIN = new Set(['rrpp', 'door'])
+            const rolInvalidoParaUnDueno = existingProfile.role == null ||
+                existingProfile.role === '' ||
+                ROLES_MENORES_QUE_ADMIN.has(existingProfile.role)
+
             let profileRole = existingProfile.role
-            if (existingOrg?.owner_id === requestedUserId && profileRole !== 'admin') {
+            if (existingOrg?.owner_id === requestedUserId && rolInvalidoParaUnDueno) {
                 await supabaseAdmin
                     .from('users_profile')
                     .update({ role: 'admin' })
                     .eq('user_id', requestedUserId)
-                profileRole = 'admin'
+
+                // Se vuelve a LEER en vez de asumir que el UPDATE quedó.
+                //
+                // `guard_profile_self_update` puede revertirlo sin devolver
+                // error, y en ese caso dar por hecho que quedó en 'admin'
+                // escribía en el token un rol distinto al de la tabla. Esa
+                // discrepancia es justamente lo que rompe la app: el cliente
+                // lee el rol del token y la base lo lee de la tabla. El claim
+                // se deriva de lo que REALMENTE está guardado.
+                const { data: reLeido } = await supabaseAdmin
+                    .from('users_profile')
+                    .select('role')
+                    .eq('user_id', requestedUserId)
+                    .single()
+                profileRole = reLeido?.role ?? existingProfile.role
             }
 
             // FIX: If caller is the org owner and sent a real organization_name,

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import QRCode from "npm:qrcode@1.5.3"
 import { corsHeaders } from "../_shared/cors.ts"
+import { puedeGestionarTickets } from "../_shared/roles.ts"
 import { sendEmail } from "../_shared/email.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
@@ -97,7 +98,7 @@ serve(async (req) => {
         .single()
       callerRole = roleProfile?.role
     }
-    if (!['admin', 'rrpp'].includes(callerRole ?? '')) {
+    if (!puedeGestionarTickets(callerRole)) {
       throw new Error("Forbidden: only Admin or RRPP can resend emails")
     }
 

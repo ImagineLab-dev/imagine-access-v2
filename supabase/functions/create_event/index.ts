@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts"
+import { esAdmin } from "../_shared/roles.ts"
 import { getSupabaseClient } from "../_shared/supabaseClient.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
@@ -42,7 +43,7 @@ serve(async (req) => {
         }
 
         const userRole = profile.role ?? user.app_metadata?.role ?? 'rrpp'
-        if (userRole !== 'admin') {
+        if (!esAdmin(userRole)) {
             return new Response(JSON.stringify({ error: 'Forbidden: admin only' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 403,

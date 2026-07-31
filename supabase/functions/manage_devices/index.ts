@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { corsHeaders } from "../_shared/cors.ts"
+import { esAdmin } from "../_shared/roles.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 
 const toHex = (bytes: Uint8Array) =>
@@ -87,7 +88,7 @@ serve(async (req) => {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) throw new Error('No authorization header')
         const callerRole = await getCallerRole(supabaseAdmin, authHeader)
-        if (callerRole !== 'admin') {
+        if (!esAdmin(callerRole)) {
             throw new Error('Forbidden: Admin role required')
         }
         const organizationId = await getCallerOrgId(supabaseAdmin, authHeader)
@@ -121,6 +122,17 @@ serve(async (req) => {
             if (!id || !pinRaw) throw new Error("Missing ID or PIN")
             if (typeof alias === 'string' && alias.length > 100) throw new Error("Alias max 100 characters")
             if (String(pinRaw).length > 64) throw new Error("PIN max 64 characters")
+            // Había máximo y no había mínimo, así que un PIN de un solo carácter
+            // se aceptaba. El PIN es la única credencial de un dispositivo de
+            // puerta y el bloqueo por intentos de `login_device` es de mejor
+            // esfuerzo: cuenta por `alias|ip` en un Map en memoria del isolate,
+            // que se reinicia solo, y rotar IP renueva los cinco intentos. Sin
+            // un largo mínimo, eso no alcanza.
+            //
+            // Seis es lo que genera la app (device_management_screen.dart). Este
+            // control existe para que la regla no dependa del cliente: la API es
+            // pública y cualquiera puede llamarla con lo que quiera.
+            if (String(pinRaw).trim().length < 6) throw new Error("PIN must be at least 6 characters")
 
             const pin = String(pinRaw).trim()
             const pinSalt = randomHex(16)

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts"
 import QRCode from "npm:qrcode@1.5.3"
 import { corsHeaders } from "../_shared/cors.ts"
+import { esAdmin } from "../_shared/roles.ts"
 import { bloqueEntrada, estilosEntrada } from "../_shared/ticket_layout.ts"
 import { sendEmail } from "../_shared/email.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
@@ -121,7 +122,7 @@ serve(async (req) => {
         }
 
         const userRole = user.app_metadata?.role || 'rrpp';
-        const isAdmin = userRole === 'admin';
+        const isAdmin = esAdmin(userRole);
 
         // Block door role from creating tickets
         if (userRole === 'door') {

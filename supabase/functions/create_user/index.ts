@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { corsHeaders } from "../_shared/cors.ts"
+import { esAdmin } from "../_shared/roles.ts"
 import { getClientIp, isRateLimited, rateLimitResponse } from "../_shared/rate_limiter.ts"
 import { sendEmail } from "../_shared/email.ts"
 import { asuntoInvitacion, cuerpoInvitacion, type Idioma } from "../_shared/invitation_email.ts"
@@ -47,7 +48,7 @@ serve(async (req: Request) => {
                 .single()
             callerRole = callerProfileRole?.role
         }
-        if (callerRole !== 'admin') {
+        if (!esAdmin(callerRole)) {
             throw new Error('Forbidden: Admin role required')
         }
 
