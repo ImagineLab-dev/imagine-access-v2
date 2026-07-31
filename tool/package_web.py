@@ -64,7 +64,44 @@ def main() -> None:
 
     if missing:
         sys.exit(f"\nFaltan archivos críticos: {', '.join(missing)}")
+
+    purgar_viejos(dest_dir)
     print("\n  Listo para subir.")
+
+
+# Cuántos paquetes se conservan: el que está desplegado y uno para volver
+# atrás. Más que eso no sirve para nada — el zip se reconstruye entero desde
+# el código con `build_web.py` + este script.
+CONSERVAR = 2
+
+
+def purgar_viejos(dest_dir: Path) -> None:
+    """Borra los paquetes viejos de la carpeta de salida.
+
+    Nada limpiaba esta carpeta, así que quedaba un zip de ~14 MB por cada
+    deploy. En dos días de iteración se habían juntado 31: 416 MB de copias
+    del mismo sitio, ninguna reconstruible a partir de la otra pero todas
+    reconstruibles a partir del código.
+
+    Se conservan los más recientes por fecha de modificación, que es el orden
+    en que se generan.
+    """
+    paquetes = sorted(
+        dest_dir.glob("imagineaccess_*.zip"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    sobrantes = paquetes[CONSERVAR:]
+    if not sobrantes:
+        return
+
+    liberado = 0
+    for viejo in sobrantes:
+        liberado += viejo.stat().st_size
+        viejo.unlink()
+
+    print(f"\n  purgados {len(sobrantes)} paquetes viejos "
+          f"({liberado / 1048576:.0f} MB); se conservan los {CONSERVAR} últimos")
 
 
 if __name__ == "__main__":

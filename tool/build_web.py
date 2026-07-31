@@ -47,7 +47,12 @@ PRECACHE_EXCLUDE_SUFFIXES = {".map", ".symbols"}
 # app funciona offline recién después de una carga online exitosa, que es
 # exactamente el flujo real: se instala en el local con wifi y sigue andando
 # cuando la señal se cae.
-PRECACHE_EXCLUDE_DIRS = ("canvaskit/",)
+# `landing/` viaja en el zip pero NO va al precache del service worker: es un
+# sitio aparte, con su propio ciclo de vida, y meterlo en el caché de la app la
+# haría pesar más para nada. La copia ocurre después de armar el manifest, así
+# que esta exclusión es redundante — y está igual, porque si algún día alguien
+# reordena los pasos, el orden deja de proteger y esta línea sí.
+PRECACHE_EXCLUDE_DIRS = ("canvaskit/", "landing/")
 
 # Símbolos de depuración: ~8 MB inútiles en producción.
 STRIP_SUFFIXES = {".symbols"}
@@ -197,6 +202,41 @@ def copy_htaccess(supabase_url: str) -> None:
     print(f"  copiado .htaccess (CSP apuntando a {host})")
 
 
+def copy_landing() -> None:
+    """Copia `landing/` dentro del build, para que viaje en el mismo zip.
+
+    El deploy REEMPLAZA `public_html` entero (`deploy_hostinger.py`, paso 4:
+    "No es reversible"). Así que una landing subida por separado sobrevive
+    exactamente hasta el siguiente deploy de la app, y desaparece sin que nadie
+    se entere hasta que un anuncio empiece a apuntar a un 404.
+
+    Va DESPUÉS de `inject_manifest` a propósito: si se copiara antes, sus
+    archivos entrarían al precache del service worker de la app.
+    """
+    origen = ROOT / "landing"
+    if not origen.is_dir():
+        print("  sin carpeta landing/, se omite")
+        return
+
+    destino = BUILD_DIR / "landing"
+    if destino.exists():
+        shutil.rmtree(destino)
+
+    copiados = 0
+    for path in sorted(origen.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(origen)
+        final = destino / rel
+        final.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, final)
+        copiados += 1
+
+    peso = sum(f.stat().st_size for f in destino.rglob("*") if f.is_file())
+    print(f"  copiada landing/ ({copiados} archivos, {peso / 1024:.0f} KB) "
+          f"-> queda en /landing/ del sitio")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build de producción de la PWA")
     parser.add_argument("--url", help="SUPABASE_URL")
@@ -224,6 +264,8 @@ def main() -> None:
     version = compute_version(files)
     inject_manifest(files, version)
     copy_htaccess(url)
+    # Después del manifest, nunca antes: ver el comentario de la función.
+    copy_landing()
 
     total = sum((BUILD_DIR / ("index.html" if f == "/" else f)).stat().st_size
                 for f in files

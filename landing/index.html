@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imagine Access · Control de acceso para eventos</title>
+<meta name="description" content="Emitís entradas con código QR, escaneás en la puerta y sabés al instante si entra o no. Funciona sin señal. Desde USD 25 al mes.">
+<link rel="icon" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/logo.png">
+
+<!-- La tarjeta para compartir es una imagen propia de 1200x630, no el icono.
+     Este link se va a pegar sobre todo en WhatsApp, y ahí la vista previa ocupa
+     media pantalla: un icono cuadrado de 96 px se ve como un error de carga.
+
+     Las dos URL van ABSOLUTAS y con /landing/ incluido. Open Graph no resuelve
+     rutas relativas: si `og:image` dijera solo "img/og.jpg", el rastreador de
+     WhatsApp la buscaría en la raíz del dominio, donde no existe, y la vista
+     previa saldría sin imagen. Si algún día la landing se muda a la raíz, estas
+     dos líneas son de las que hay que cambiar. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://imaginecloud.digital/landing/">
+<meta property="og:title" content="Imagine Access · Control de acceso para eventos">
+<meta property="og:description" content="Ni papel ni Excel. Tu puerta, desde el celular.">
+<meta property="og:image" content="https://imaginecloud.digital/landing/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_PY">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Píxel de Meta. Antes de los scripts de presentación porque es lo que mide
+     la campaña que paga esta página. -->
+<script src="js/meta-pixel.js" async></script>
+
+<!-- Sin `async` ni `defer`: tiene que correr antes del primer cuadro. Ver el
+     archivo para el por qué. -->
+<script src="js/js-presente.js"></script>
+
+<!--
+  Tema OSCURO bloqueado, no dark-mode opcional.
+  La marca del producto es oscura (#0B0F16), la app es oscura, y el contexto es
+  nocturno. Un modo claro pelearía con la identidad en vez de servirla.
+
+  Sistema de radios, documentado y uniforme:
+    superficies 16px · botones pastilla · campos 10px
+-->
+<style>
+  :root {
+    --bg:        #0B0F16;
+    --surface:   #101725;
+    --surface-2: #151E30;
+    --line:      rgba(255,255,255,.09);
+    --line-2:    rgba(255,255,255,.16);
+    --text:      #EAF0F7;
+    --muted:     #8E9FB6;
+    --accent:    #4A9EFF;
+    --ok:        #22C55E;
+    --bad:       #EF4444;
+
+    --r-surface: 16px;
+    --r-field:   10px;
+
+    /* Pila del sistema: cero webfonts.
+       Es la decisión correcta para un público que abre esto en 4G desde el
+       teléfono, y el LCP lo agradece. Si más adelante se quiere una tipografía
+       propia, se auto-hospeda; nunca por <link> a Google Fonts. */
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+            "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono",
+            "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+
+  .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* `balance` reparte las líneas del titular en vez de llenar la primera y
+     dejar una palabra sola abajo. Sin esto, el h1 cierra con "celular." solo en
+     su renglón a 1440 px de ancho. Donde no está soportado el navegador ignora
+     la propiedad y corta como siempre: no hay nada que emular. */
+  h1, h2, h3 { margin: 0; letter-spacing: -.028em; line-height: 1.06; text-wrap: balance; }
+  h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 680; }
+  h2 { font-size: clamp(1.9rem, 4.2vw, 3rem); font-weight: 650; }
+  h3 { font-size: 1.16rem; font-weight: 620; letter-spacing: -.015em; }
+  p  { margin: 0; }
+
+  .lede  { color: var(--muted); font-size: clamp(1.03rem, 1.7vw, 1.2rem); max-width: 58ch; }
+  .body  { color: var(--muted); max-width: 62ch; }
+  .small { font-size: .92rem; color: var(--muted); }
+
+  /* Solo 2 antetítulos en toda la página, y es a propósito: uno cada tres
+     secciones. Repetirlos arriba de cada bloque produce el ritmo plantillero
+     que se reconoce a un kilómetro. */
+  .eyebrow {
+    font: 600 .72rem/1 var(--mono);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+
+  /* ---------- Botones: pastilla, contraste verificado ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 9px; white-space: nowrap;
+    padding: 14px 26px; border-radius: 999px;
+    font: 600 .97rem/1 var(--sans); letter-spacing: -.01em;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent;
+    transition: transform .18s cubic-bezier(.16,1,.3,1),
+                background-color .18s ease, border-color .18s ease;
+  }
+  /* #4A9EFF con texto #06101F: contraste holgado sobre AA. */
+  .btn-primary { background: var(--accent); color: #06101F; }
+  .btn-primary:hover { background: #6BB0FF; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(1px) scale(.99); }
+
+  .btn-ghost { border-color: var(--line-2); color: var(--text); background: transparent; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost:active { transform: translateY(1px) scale(.99); }
+
+  .btn-sm { padding: 10px 19px; font-size: .9rem; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* ---------- Navegación: una línea, 68px ---------- */
+  header {
+    position: sticky; top: 0; z-index: 40; height: 68px;
+    background: rgba(11,15,22,.82);
+    backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    header { background: var(--bg); backdrop-filter: none; }
+  }
+  .nav { height: 68px; display: flex; align-items: center; gap: 30px; }
+  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 640; letter-spacing: -.02em; }
+  .brand img { width: 29px; height: 29px; border-radius: 8px; }
+  .nav-links { display: flex; gap: 28px; margin-left: auto; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: .94rem; transition: color .15s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 860px) { .nav-links { display: none; } .nav { gap: 16px; } .nav .btn { margin-left: auto; } }
+
+  /* ---------- Secciones ---------- */
+  section { padding: 96px 0; }
+  @media (max-width: 760px) { section { padding: 64px 0; } }
+
+  /* ---------- Hero: partido asimétrico ---------- */
+  .hero { padding-top: 72px; padding-bottom: 88px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 64px; align-items: center; }
+  .hero h1 span { color: var(--accent); }
+  .hero .lede { margin-top: 22px; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  @media (max-width: 940px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+    .hero { padding-top: 48px; }
+  }
+
+  /* Panel fotográfico del hero.
+     No hay marco de dispositivo dibujado con divs: la foto ya trae un teléfono
+     real en una mano, y encuadrarlo dentro de otro teléfono de CSS se ve como
+     lo que es. Va como foto, con el mismo radio que el resto de las
+     superficies.
+     Las tres fotos se recortaron en el archivo, no con object-position: traían
+     el titular y el precio quemados en el pixel, y un reencuadre por CSS
+     vuelve a mostrarlos en cuanto cambia el alto del contenedor. */
+  .foto-hero {
+    border: 1px solid var(--line-2); border-radius: var(--r-surface);
+    overflow: hidden; box-shadow: 0 30px 90px rgba(0,0,0,.55);
+    max-width: 420px; margin-inline: auto;
+  }
+  .foto-hero img { display: block; width: 100%; height: auto; }
+
+  /* ---------- Problema: editorial a ancho completo ---------- */
+  .problema { border-top: 1px solid var(--line); background: var(--surface); }
+  .problema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .problema figure { margin: 0; border-radius: var(--r-surface); overflow: hidden; border: 1px solid var(--line); }
+  /* Sin filtro de gris: la foto es la pantalla de rechazo y el color ES el
+     mensaje. Desaturarla borraría lo único que hay que entender de un vistazo. */
+  .problema img { display: block; width: 100%; height: auto; }
+  .costos { margin-top: 30px; display: grid; gap: 16px; }
+  .costo { display: grid; grid-template-columns: 22px 1fr; gap: 14px; align-items: start; }
+  .costo svg { margin-top: 5px; color: var(--bad); flex: none; }
+  @media (max-width: 860px) { .problema-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+  /* ---------- Pasos: rejilla 2x2, sin tarjetas ---------- */
+  .pasos-grid {
+    margin-top: 52px; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 44px 56px;
+  }
+  .paso { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start; }
+  .paso-n {
+    font: 600 1.5rem/1 var(--mono); color: var(--accent);
+    width: 46px; height: 46px; border-radius: 999px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid rgba(74,158,255,.32); background: rgba(74,158,255,.08);
+  }
+  .paso p { margin-top: 8px; color: var(--muted); font-size: .98rem; }
+  @media (max-width: 760px) { .pasos-grid { grid-template-columns: 1fr; gap: 32px; } }
+
+  /* ---------- Sin señal: banda a sangre completa, solo texto ----------
+     Sin foto y sin captura. Una pantalla no puede mostrar que algo funciona
+     cuando no hay conexión —se ve idéntica a cuando sí la hay—, así que
+     cualquier imagen acá sería relleno. La banda vive del contraste con las
+     secciones partidas que tiene arriba y abajo. */
+  .offline { position: relative; border-block: 1px solid var(--line); overflow: hidden; }
+  .offline::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(78% 130% at 6% 46%, rgba(239,68,68,.11), transparent 60%),
+      radial-gradient(64% 108% at 84% 12%, rgba(74,158,255,.09), transparent 64%),
+      var(--surface);
+  }
+  .offline .wrap { position: relative; z-index: 1; }
+  .offline-grid { max-width: 700px; }
+  .senal {
+    display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    padding: 8px 15px; border-radius: 999px;
+    border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.11);
+    font: 600 .82rem/1 var(--mono); letter-spacing: .04em; color: #FF9B9B;
+  }
+
+  /* ---------- Funciones: bento, 6 celdas para 6 funciones ----------
+     Los anchos suman NUEVE unidades en tres columnas: tres celdas de dos y
+     tres de una, alternadas 2+1 / 1+2 / 2+1. Cualquier otro reparto deja un
+     hueco al final —siete unidades dejan dos columnas vacías en la última
+     fila— y el hueco se lee como algo que falta cargar. */
+  .bento {
+    margin-top: 52px; display: grid; gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+    /* `dense` rellena los huecos que dejan las celdas anchas cuando no entran
+       en la fila en curso. A tres columnas no cambia nada —las nueve unidades
+       ya cierran exactas— pero a DOS columnas, que es lo que se ve en una
+       tablet, sin esto quedan dos agujeros: uno al lado de "Vence por horario"
+       y otro al lado de la última celda. Se comprobó a 800 px. */
+    grid-auto-flow: dense;
+  }
+  .cel {
+    border: 1px solid var(--line); border-radius: var(--r-surface);
+    padding: 28px; background: var(--surface);
+    display: flex; flex-direction: column; gap: 11px;
+    transition: border-color .2s ease, transform .2s cubic-bezier(.16,1,.3,1);
+  }
+  .cel:hover { border-color: var(--line-2); transform: translateY(-2px); }
+  .cel p { color: var(--muted); font-size: .96rem; }
+  .cel-icono { color: var(--accent); margin-bottom: 3px; }
+  /* Variación visual real en 3 de 6 celdas, no seis cajas de texto iguales. */
+  .cel-ancha { grid-column: span 2; }
+  .cel-acento {
+    background:
+      radial-gradient(120% 130% at 8% 0%, rgba(74,158,255,.2), transparent 62%),
+      var(--surface-2);
+    border-color: rgba(74,158,255,.26);
+  }
+  /* Celda con el panel real de la app. La captura NO se oscurece ni se
+     desatura como se haría con una foto de ambiente: es la interfaz y el punto
+     es que se pueda leer. Va en `contain` y no en `cover` porque el teléfono
+     ocupa casi todo el alto de la imagen y `cover` le corta la punta; el fondo
+     del archivo es el mismo azul oscuro, así que el sobrante no se ve. */
+  .cel-full { grid-column: 1 / -1; }
+  .cel-panel { padding: 0; overflow: hidden; display: grid; grid-template-columns: .9fr 1.1fr; }
+  .cel-panel > div { padding: 32px; align-self: center; display: flex; flex-direction: column; gap: 11px; }
+  .cel-panel figure { margin: 0; position: relative; min-height: 330px; background: #0A0E18; }
+  .cel-panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  @media (max-width: 900px) {
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .cel-ancha { grid-column: span 2; }
+  }
+  @media (max-width: 620px) {
+    .bento { grid-template-columns: 1fr; }
+    .cel-ancha { grid-column: span 1; }
+    .cel-panel { grid-template-columns: 1fr; }
+    .cel-panel figure { min-height: 340px; }
+  }
+
+  /* ---------- Precio: dos planes, no tres tarjetas iguales ---------- */
+  .precio { background: var(--surface); border-top: 1px solid var(--line); }
+  .planes { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 860px; }
+  .plan {
+    border: 1px solid var(--line); border-radius: var(--r-surface);
+    padding: 32px; background: var(--bg); display: flex; flex-direction: column;
+  }
+  .plan-destacado { border-color: rgba(74,158,255,.4); box-shadow: 0 0 0 1px rgba(74,158,255,.14); }
+  .plan-etiqueta { font: 600 .78rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .plan-destacado .plan-etiqueta { color: var(--accent); }
+  .plan-cifra { display: flex; align-items: baseline; gap: 9px; margin: 20px 0 6px; }
+  .plan-cifra b { font-size: 2.7rem; font-weight: 680; letter-spacing: -.035em; }
+  .plan ul { list-style: none; margin: 24px 0 28px; padding: 0; display: grid; gap: 12px; }
+  .plan li { display: grid; grid-template-columns: 19px 1fr; gap: 12px; align-items: start; font-size: .96rem; color: var(--muted); }
+  .plan li svg { margin-top: 4px; color: var(--ok); flex: none; }
+  .plan .btn { margin-top: auto; }
+  .precio-nota { margin-top: 26px; }
+  @media (max-width: 760px) { .planes { grid-template-columns: 1fr; } }
+
+  /* ---------- Preguntas: acordeón nativo ---------- */
+  .faq { max-width: 780px; margin-top: 44px; }
+  .faq details { border-top: 1px solid var(--line); }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; padding: 22px 44px 22px 0; position: relative;
+    font-weight: 580; font-size: 1.04rem; letter-spacing: -.015em;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+"; position: absolute; right: 6px; top: 50%; translate: 0 -50%;
+    font: 400 1.5rem/1 var(--sans); color: var(--accent); transition: rotate .2s ease;
+  }
+  .faq details[open] summary::after { content: "+"; rotate: 45deg; }
+  .faq .respuesta { padding: 0 8px 24px 0; color: var(--muted); max-width: 64ch; }
+
+  /* ---------- Cierre ---------- */
+  .cierre { text-align: center; border-top: 1px solid var(--line); }
+  .cierre .lede { margin: 20px auto 0; }
+  .cierre .hero-cta { justify-content: center; }
+
+  footer { border-top: 1px solid var(--line); padding: 40px 0; }
+  .foot { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+  .foot a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .foot a:hover { color: var(--text); }
+  .foot nav { display: flex; gap: 22px; flex-wrap: wrap; }
+
+  /* ---------- Aparición al entrar en pantalla ----------
+     Con IntersectionObserver, nunca con un listener de scroll: ese corre en
+     cada cuadro y traba el desplazamiento en teléfonos modestos. */
+  /* El estado oculto está condicionado a `.js`, que lo pone un script en el
+     <head>. Sin JavaScript la clase nunca aparece y el contenido se ve desde el
+     primer cuadro: una landing no puede depender de un script para mostrar el
+     texto, y el modo de fallo de ese acoplamiento es la página en blanco.
+     El script de abajo agrega además un plazo máximo, por si el
+     IntersectionObserver existe pero nunca llega a disparar. */
+  .js .revelar { opacity: 0; transform: translateY(22px); }
+  .revelar.visible {
+    opacity: 1; transform: none;
+    transition: opacity .62s cubic-bezier(.16,1,.3,1),
+                transform .62s cubic-bezier(.16,1,.3,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js .revelar { opacity: 1; transform: none; }
+    .revelar.visible { transition: none; }
+    .btn { transition: none; }
+    .cel { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <img src="img/logo.png" alt="">
+      Imagine Access
+    </a>
+    <div class="nav-links">
+      <a href="#funciona">Cómo funciona</a>
+      <a href="#funciones">Funciones</a>
+      <a href="#precio">Precio</a>
+      <a href="#preguntas">Preguntas</a>
+    </div>
+    <a class="btn btn-primary btn-sm" href="https://imaginecloud.digital">Probar gratis</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============
+     Cuatro elementos de texto como máximo: titular, bajada, botones. Sin
+     antetítulo, sin franja de confianza, sin línea chica bajo los botones. -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <!-- El espacio duro entre "el" y "celular" ata las dos palabras para que
+           la segunda línea no termine con una sola palabra suelta abajo.
+           `text-wrap: balance` debería resolverlo, pero Chrome no lo aplica
+           cuando el titular ya trae un <br> forzado, así que se decide acá. -->
+      <h1>Ni papel ni Excel.<br><span>Tu puerta, desde el&nbsp;celular.</span></h1>
+      <p class="lede">
+        Emitís entradas con código QR, escaneás en la puerta y sabés al instante
+        si entra o no.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://imaginecloud.digital">Probar gratis</a>
+        <a class="btn btn-ghost" href="#funciona">Cómo funciona</a>
+      </div>
+    </div>
+
+    <figure class="foto-hero revelar">
+      <img src="img/puerta-acceso-permitido.jpg" width="768" height="799"
+           alt="Alguien sostiene un teléfono en la entrada de un evento nocturno; la pantalla muestra ACCESO PERMITIDO en verde con el nombre del invitado">
+    </figure>
+  </div>
+</section>
+
+<!-- ============ EL PROBLEMA ============ -->
+<section class="problema">
+  <div class="wrap problema-grid">
+    <div class="revelar">
+      <h2>La lista se congela cuando la imprimís</h2>
+      <div class="costos">
+        <div class="costo">
+          <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88Zm12-88a12 12 0 1 1-12-12 12 12 0 0 1 12 12Zm-4-60v40a8 8 0 0 1-16 0V68a8 8 0 0 1 16 0Z"/></svg>
+          <p class="body">Cada RRPP manda su lista a distinta hora. A las once de la noche nadie sabe cuál es la buena.</p>
+        </div>
+        <div class="costo">
+          <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88Zm12-88a12 12 0 1 1-12-12 12 12 0 0 1 12 12Zm-4-60v40a8 8 0 0 1-16 0V68a8 8 0 0 1 16 0Z"/></svg>
+          <p class="body">Una hoja de papel no avisa cuando un código ya entró. Con dos puertas, la misma entrada pasa dos veces.</p>
+        </div>
+        <div class="costo">
+          <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88Zm12-88a12 12 0 1 1-12-12 12 12 0 0 1 12 12Zm-4-60v40a8 8 0 0 1-16 0V68a8 8 0 0 1 16 0Z"/></svg>
+          <p class="body">El que compra después de que imprimiste no está en la lista. Llega, ya pagó, y se queda afuera.</p>
+        </div>
+      </div>
+    </div>
+    <figure class="revelar">
+      <img src="img/un-qr-una-vez.jpg" width="1000" height="700" loading="lazy"
+           alt="Pantalla del escáner con ACCESO DENEGADO: el código ya se había usado y muestra a qué hora entró la primera vez">
+    </figure>
+  </div>
+</section>
+
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section id="funciona">
+  <div class="wrap">
+    <h2 class="revelar">Cuatro pasos</h2>
+    <div class="pasos-grid">
+      <div class="paso revelar">
+        <div class="paso-n">1</div>
+        <div>
+          <h3>Cargás el evento</h3>
+          <p>Fecha, lugar y los tipos de entrada con su precio. Podés marcar hasta qué hora vale cada tipo.</p>
+        </div>
+      </div>
+      <div class="paso revelar">
+        <div class="paso-n">2</div>
+        <div>
+          <h3>Emitís la entrada</h3>
+          <p>Con el nombre y el correo del comprador. Si vendés un pack, se emiten todas juntas.</p>
+        </div>
+      </div>
+      <div class="paso revelar">
+        <div class="paso-n">3</div>
+        <div>
+          <h3>Le llega el correo</h3>
+          <p>Con la imagen de tu evento, sus datos y su código QR. Lo puede mostrar del teléfono o imprimirlo.</p>
+        </div>
+      </div>
+      <div class="paso revelar">
+        <div class="paso-n">4</div>
+        <div>
+          <h3>Escaneás en la puerta</h3>
+          <p>Verde entra, rojo no. Si el código ya se usó, te dice a qué hora entró la primera vez.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIN SEÑAL ============ -->
+<section class="offline">
+  <div class="wrap offline-grid">
+    <div class="revelar">
+      <span class="senal">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.9 34.6a8 8 0 0 0-11.8 10.8l19.2 21.1C25 88.8 6.6 116.7 5.6 118.2a8 8 0 0 0 13.3 8.9c.2-.3 21.6-32 60.6-50.2l23.2 25.6c-30 9.5-51.9 30-53 31a8 8 0 0 0 10.7 11.9c.3-.3 27.2-24.7 56.9-28.7l25.6 28.1a63.6 63.6 0 0 0-38.4 18.3 8 8 0 0 0 11.3 11.3 47.9 47.9 0 0 1 33.3-14l53 58.2a8 8 0 0 0 11.8-10.8Z"/></svg>
+        Sin señal
+      </span>
+      <h2>Se cae el wifi. La puerta no.</h2>
+      <p class="lede" style="margin-top:20px">
+        El escáner sigue validando y guarda cada lectura en el teléfono. Cuando
+        vuelve la conexión sincroniza todo solo, sin que hagas nada.
+      </p>
+      <p class="small" style="margin-top:18px; max-width:56ch">
+        Podés trabajar toda la noche sin internet y ver los números completos al
+        día siguiente.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FUNCIONES ============ -->
+<section id="funciones">
+  <div class="wrap">
+    <p class="eyebrow revelar">Funciones</p>
+    <h2 class="revelar">Lo que hace, sin vueltas</h2>
+
+    <div class="bento">
+      <div class="cel cel-ancha cel-acento revelar">
+        <span class="cel-icono">
+          <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M104 40H48a8 8 0 0 0-8 8v56a8 8 0 0 0 8 8h56a8 8 0 0 0 8-8V48a8 8 0 0 0-8-8Zm-8 56H56V56h40Zm112-56h-56a8 8 0 0 0-8 8v56a8 8 0 0 0 8 8h56a8 8 0 0 0 8-8V48a8 8 0 0 0-8-8Zm-8 56h-40V56h40ZM104 144H48a8 8 0 0 0-8 8v56a8 8 0 0 0 8 8h56a8 8 0 0 0 8-8v-56a8 8 0 0 0-8-8Zm-8 56H56v-40h40Zm88-56a8 8 0 0 0-8 8v16h-16v-16a8 8 0 0 0-16 0v56a8 8 0 0 0 16 0v-24h16v24a8 8 0 0 0 16 0v-56a8 8 0 0 0-8-8Zm32 0a8 8 0 0 0-8 8v56a8 8 0 0 0 16 0v-56a8 8 0 0 0-8-8Z"/></svg>
+        </span>
+        <h3>Un QR, una sola vez</h3>
+        <p>
+          Cada entrada lleva su código firmado. El primero entra y el segundo no,
+          así que la captura de pantalla que reenviaron por WhatsApp no pasa. Y el
+          código de otra fecha tampoco sirve para la de hoy.
+        </p>
+      </div>
+
+      <div class="cel revelar">
+        <span class="cel-icono">
+          <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128 40a96 96 0 1 0 96 96 96.11 96.11 0 0 0-96-96Zm0 176a80 80 0 1 1 80-80 80.09 80.09 0 0 1-80 80Zm45.66-93.66a8 8 0 0 1 0 11.32l-40 40a8 8 0 0 1-11.32 0l-20-20a8 8 0 0 1 11.32-11.32L128 156.69l34.34-34.35a8 8 0 0 1 11.32 0Z"/></svg>
+        </span>
+        <h3>Vence por horario</h3>
+        <p>Marcás hasta qué hora vale cada tipo de entrada. Después de esa hora, el escáner la rechaza.</p>
+      </div>
+
+      <!-- Fila completa: la única celda con captura de la app. Va acá y no en el
+           hero porque este panel es un tablero de números, y un tablero se
+           entiende después de saber qué se emite y qué se escanea. -->
+      <div class="cel cel-full cel-panel revelar">
+        <div>
+          <span class="cel-icono">
+            <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232 208a8 8 0 0 1-8 8H32a8 8 0 0 1-8-8V48a8 8 0 0 1 16 0v94.37L90.73 98a8 8 0 0 1 10.07-.38l58.81 44.11L218.73 90a8 8 0 1 1 10.54 12l-64 56a8 8 0 0 1-10.07.38L96.39 114.29 40 163.63V200h184a8 8 0 0 1 8 8Z"/></svg>
+          </span>
+          <h3>Números en vivo</h3>
+          <p>
+            Cuántos entraron, quién vendió y cuánto falta, mientras el evento
+            pasa. No al día siguiente con las listas de todos sobre la mesa.
+          </p>
+        </div>
+        <figure>
+          <img src="img/emision-ticket.jpg" width="1000" height="700" loading="lazy"
+               alt="Panel de control de la aplicación en un teléfono: tickets totales, válidos, escaneados y ventas del evento">
+        </figure>
+      </div>
+
+      <div class="cel revelar">
+        <span class="cel-icono">
+          <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M117.25 157.92a60 60 0 1 0-66.5 0 95.83 95.83 0 0 0-47.22 37.71 8 8 0 1 0 13.4 8.74 80 80 0 0 1 134.14 0 8 8 0 0 0 13.4-8.74 95.83 95.83 0 0 0-47.22-37.71ZM40 108a44 44 0 1 1 44 44 44.05 44.05 0 0 1-44-44Zm210.14 98.7a8 8 0 0 1-11.07-2.33A79.83 79.83 0 0 0 172 168a8 8 0 0 1 0-16 44 44 0 1 0-16.34-84.87 8 8 0 1 1-6-14.85 60 60 0 0 1 55.53 105.64 95.83 95.83 0 0 1 47.22 37.71 8 8 0 0 1-2.27 11.07Z"/></svg>
+        </span>
+        <h3>Cada uno con su acceso</h3>
+        <p>El RRPP vende y ve sus ventas. La puerta solo escanea. Vos ves todo.</p>
+      </div>
+
+      <div class="cel revelar">
+        <span class="cel-icono">
+          <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224 48H32a8 8 0 0 0-8 8v136a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a8 8 0 0 0-8-8Zm-96 85.15L52.57 64h150.86ZM40 76.83l53.61 49.16L40 178.2Zm12.16 115.17 53.15-51.65 15.25 14a8 8 0 0 0 10.83 0l15.25-14 53.15 51.65Zm113.84-66 53.61-49.17v101.35Z"/></svg>
+        </span>
+        <h3>Correo con tu arte</h3>
+        <p>El ticket que recibe tu cliente lleva la imagen de tu evento, no una línea de texto plano.</p>
+      </div>
+
+      <div class="cel cel-acento revelar">
+        <span class="cel-icono">
+          <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M176 16H80a24 24 0 0 0-24 24v176a24 24 0 0 0 24 24h96a24 24 0 0 0 24-24V40a24 24 0 0 0-24-24Zm8 200a8 8 0 0 1-8 8H80a8 8 0 0 1-8-8V40a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8Zm-40-16a8 8 0 0 1-8 8h-16a8 8 0 0 1 0-16h16a8 8 0 0 1 8 8Z"/></svg>
+        </span>
+        <h3>Sin instalar de tiendas</h3>
+        <p>Se agrega a la pantalla de inicio desde el navegador. Le pasás un link a tu equipo y ya están adentro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRECIO ============ -->
+<section class="precio" id="precio">
+  <div class="wrap">
+    <p class="eyebrow revelar">Precio</p>
+    <h2 class="revelar">Un solo plan, dos formas de pagarlo</h2>
+
+    <div class="planes">
+      <div class="plan revelar">
+        <span class="plan-etiqueta">Mensual</span>
+        <div class="plan-cifra"><b>USD 25</b><span class="small">al mes</span></div>
+        <p class="small">Se renueva solo. Podés cortarlo cuando quieras.</p>
+        <ul>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Eventos ilimitados</li>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Tickets ilimitados</li>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Todo tu equipo, con accesos separados</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://imaginecloud.digital">Probar gratis</a>
+      </div>
+
+      <div class="plan plan-destacado revelar">
+        <span class="plan-etiqueta">Anual</span>
+        <div class="plan-cifra"><b>USD 250</b><span class="small">al año</span></div>
+        <p class="small">Dos meses bonificados sobre el mensual.</p>
+        <ul>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Todo lo del plan mensual</li>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Un solo cobro al año</li>
+          <li><svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z"/></svg> Menos comisiones por transferencia</li>
+        </ul>
+        <a class="btn btn-primary" href="https://imaginecloud.digital">Probar gratis</a>
+      </div>
+    </div>
+
+    <p class="body precio-nota">
+      Arrancás con <strong style="color:var(--text)">15 tickets gratis</strong>
+      para probarlo en un evento real. Sin tarjeta y sin que te llame un vendedor.
+    </p>
+  </div>
+</section>
+
+<!-- ============ PREGUNTAS ============ -->
+<section id="preguntas">
+  <div class="wrap">
+    <h2 class="revelar">Preguntas</h2>
+    <div class="faq revelar">
+      <details>
+        <summary>¿Funciona si en el evento no hay internet?</summary>
+        <div class="respuesta">
+          Sí. El escáner valida igual y guarda cada lectura en el teléfono. Cuando
+          vuelve la conexión sincroniza todo solo. Podés trabajar la noche entera
+          sin señal.
+        </div>
+      </details>
+      <details>
+        <summary>¿Tengo que instalar algo de la App Store o Play Store?</summary>
+        <div class="respuesta">
+          No. Se abre desde el navegador y se agrega a la pantalla de inicio, donde
+          queda como cualquier otra aplicación. Funciona en Android, iPhone, tablet
+          y computadora.
+        </div>
+      </details>
+      <details>
+        <summary>¿Qué pasa si alguien reenvía su entrada a un amigo?</summary>
+        <div class="respuesta">
+          Cada código vale una sola vez. El primero que lo presenta entra; el
+          segundo recibe un rechazo, y el escáner le muestra al operador a qué hora
+          entró la primera vez. Un código de otra de tus fechas tampoco sirve.
+        </div>
+      </details>
+      <details>
+        <summary>¿Desde qué países puedo pagar la suscripción?</summary>
+        <div class="respuesta">
+          Paraguay, Argentina, Uruguay, Brasil, Chile, Bolivia, Colombia, Perú,
+          Ecuador, Panamá, República Dominicana, Costa Rica, Guatemala, México,
+          Estados Unidos y España, entre otros. El cobro lo procesa dLocal.
+        </div>
+      </details>
+      <details>
+        <summary>¿Qué pasa cuando se me terminan los 15 tickets gratis?</summary>
+        <div class="respuesta">
+          Podés seguir entrando, viendo tus datos y validando los tickets que ya
+          emitiste. Para emitir nuevos hace falta activar la suscripción. Nada se
+          borra ni se bloquea.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CIERRE ============ -->
+<section class="cierre">
+  <div class="wrap">
+    <h2 class="revelar">Probalo en tu próximo evento</h2>
+    <p class="lede revelar">
+      Quince tickets gratis, sin tarjeta. Si te sirve, son 25 dólares al mes.
+    </p>
+    <div class="hero-cta revelar">
+      <a class="btn btn-primary" href="https://imaginecloud.digital">Probar gratis</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="#top">
+      <img src="img/logo.png" alt="" style="width:24px;height:24px">
+      Imagine Access
+    </a>
+    <nav>
+      <a href="#funciona">Cómo funciona</a>
+      <a href="#precio">Precio</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="https://imaginecloud.digital">Entrar</a>
+    </nav>
+    <span class="small">Imagine Access, por ImagineLab</span>
+  </div>
+</footer>
+
+<script src="js/aparicion.js"></script>
+
+</body>
+</html>
