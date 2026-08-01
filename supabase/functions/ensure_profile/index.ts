@@ -203,6 +203,31 @@ serve(async (req) => {
                 }
             }
 
+            // Completar el país si la organización se quedó sin él.
+            //
+            // Solo cuando está VACÍO. Nunca se pisa uno ya cargado: alguien que
+            // eligió su país de facturación y después viaja no debería
+            // encontrarse con que el cobro le cambió de plaza sola.
+            //
+            // Hace falta porque el país solo se escribía al crear la
+            // organización, así que todas las cuentas anteriores a esto se
+            // quedaron sin él —y sin país dLocal ofrece los medios de pago de
+            // todos los países juntos en el checkout—. Al entrar se completa
+            // sin pedirle nada a nadie.
+            // `== null` y no `!finalOrg.country`: la condición tiene que decir
+            // lo mismo que el filtro `.is('country', null)` de abajo, o el
+            // UPDATE no encontraría la fila y esto sería un no-op silencioso.
+            if (paisFacturacion && finalOrg && finalOrg.country == null) {
+                const { data: conPais } = await supabaseAdmin
+                    .from('organizations')
+                    .update({ country: paisFacturacion })
+                    .eq('id', finalOrg.id)
+                    .is('country', null)
+                    .select()
+                    .maybeSingle()
+                if (conPais) finalOrg = conPais
+            }
+
             // Always sync role to auth.users metadata (ensures JWT has correct role)
             await supabaseAdmin.auth.admin.updateUserById(requestedUserId, {
                 app_metadata: {

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/platform/captcha.dart';
+import '../../../core/platform/pais.dart';
 import '../../events/data/event_repository.dart';
 import '../../events/presentation/event_state.dart';
 
@@ -257,6 +258,11 @@ class AuthController extends StateNotifier<bool> {
           'email': user.email,
           'display_name': displayName,
           'organization_name': cachedOrg?.name,
+          // Decide qué medios de pago le ofrece dLocal en el checkout. Sin
+          // esto se los muestra TODOS, de todos los países, y quien paga
+          // tiene que buscar el suyo entre los demás. El servidor descarta lo
+          // que no reconoce, así que mandar `null` es seguro.
+          'country': paisDetectado,
         },
       );
     }
@@ -325,6 +331,10 @@ class AuthController extends StateNotifier<bool> {
             body: {
               'user_id': response.user!.id,
               'email': email,
+              // También al entrar, no solo al crear la cuenta: las cuentas que
+              // ya existen se quedaron sin país, y este es el momento natural
+              // para completarlo sin pedirle nada a nadie.
+              'country': paisDetectado,
             },
           );
         } catch (e) {

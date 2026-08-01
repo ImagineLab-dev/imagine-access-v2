@@ -15,6 +15,32 @@ class CurrencyHelper {
     'BRL': CurrencyInfo('R\$', 'Real (BRL)', 2, Icons.attach_money),
   };
 
+  /// Moneda de cada plaza donde opera dLocal.
+  ///
+  /// Existe porque la moneda por defecto era `'PYG'` fija: un cliente de fuera
+  /// de Paraguay que no tocara configuraciones creaba su primer evento en
+  /// guaraníes, y recién lo notaba al ver los precios.
+  ///
+  /// Los países sin moneda propia en la lista de arriba —México, Centroamérica,
+  /// Asia— caen en USD a propósito: mostrar un símbolo que no sabemos formatear
+  /// sería peor que mostrar dólares, que se entienden en todos lados.
+  static const Map<String, String> _monedaPorPais = {
+    'PY': 'PYG',
+    'AR': 'ARS',
+    'UY': 'UYU',
+    'BR': 'BRL',
+    'CL': 'CLP',
+    'BO': 'BOB',
+    'CO': 'COP',
+    'PE': 'PEN',
+  };
+
+  /// Moneda que le corresponde a un país. USD cuando no se conoce.
+  static String monedaDePais(String? codigoPais) {
+    if (codigoPais == null || codigoPais.isEmpty) return 'USD';
+    return _monedaPorPais[codigoPais.toUpperCase()] ?? 'USD';
+  }
+
   static String getSymbol(String currencyCode) {
     return currencies[currencyCode.toUpperCase()]?.symbol ?? currencyCode;
   }

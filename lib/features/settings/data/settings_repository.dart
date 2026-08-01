@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../../core/utils/currency_helper.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/ttl_cache.dart';
 import '../../../core/i18n/locale_provider.dart';
@@ -35,13 +36,41 @@ class SettingsRepository {
       }
 
       final response = await query.maybeSingle();
-      return response?['setting_value'] as String? ?? 'PYG';
+      final elegida = response?['setting_value'] as String?;
+      if (elegida != null && elegida.isNotEmpty) return elegida;
+
+      // Sin elección explícita, la del país de la organización.
+      //
+      // Antes acá había un `'PYG'` fijo, así que quien no entrara a
+      // configuraciones creaba su primer evento en guaraníes viviera donde
+      // viviera. El país sale del alta, sin preguntarle nada a nadie.
+      return await _monedaDelPais(orgId);
     } catch (e) {
       if (kDebugMode) {
         dev.log('Error fetching default currency',
             error: e, name: 'SettingsRepository');
       }
-      return 'PYG';
+      // Ante un fallo de red, USD: se entiende en todas las plazas donde
+      // opera dLocal, mientras que el guaraní solo tiene sentido en una.
+      return 'USD';
+    }
+  }
+
+  /// Moneda que corresponde al país de la organización.
+  ///
+  /// Se consulta aparte y no junto con el ajuste porque solo hace falta cuando
+  /// nadie eligió moneda todavía, que es una vez por organización.
+  Future<String> _monedaDelPais(String? orgId) async {
+    if (orgId == null || orgId.isEmpty) return 'USD';
+    try {
+      final org = await _client
+          .from('organizations')
+          .select('country')
+          .eq('id', orgId)
+          .maybeSingle();
+      return CurrencyHelper.monedaDePais(org?['country'] as String?);
+    } catch (_) {
+      return 'USD';
     }
   }
 
