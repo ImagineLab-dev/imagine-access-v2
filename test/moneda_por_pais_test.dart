@@ -98,6 +98,19 @@ void main() {
       expect(zonasHorarias.containsKey('America/Lima'), isTrue);
       expect(zonasHorarias['America/Lima'], contains('Perú'));
     });
+
+    test('solo se ofrecen plazas donde dLocal acepta cobrar', () {
+      // Verificado contra la API el 01/08/2026 creando un plan por país.
+      // El Salvador fue el único rechazado: "The 'country' is invalid or
+      // unsupported". Ofrecerlo dejaba crear un evento que después no podía
+      // vender una sola entrada.
+      expect(zonasHorarias.containsKey('America/El_Salvador'), isFalse,
+          reason: 'dLocal rechaza SV: no se puede cobrar ahí');
+
+      expect(zonasHorarias.length, 14,
+          reason: 'son las 14 plazas que dLocal acepto; '
+              'si cambia, hay que volver a comprobarlo contra la API');
+    });
   });
 
   test('fuera del navegador no se detecta país, y no explota', () {

@@ -35,9 +35,16 @@ import '../../../core/platform/pais.dart';
 /// pasarela habilitada deja crear un evento que después no puede vender
 /// entradas, y eso se descubre tarde. Salieron EEUU, España y Reino Unido.
 ///
-/// Esta lista hay que contrastarla contra la cobertura vigente de dLocal antes
-/// de dar por buena cualquiera de las plazas: los proveedores de pago dan de
-/// alta y de baja países, y se escribió sin consultar su documentación.
+/// VERIFICADA contra la API de dLocal el 01/08/2026, creando un plan de prueba
+/// por cada país y desactivándolo después. Los 14 de acá abajo fueron
+/// aceptados. **El Salvador fue rechazado** con "The 'country' is invalid or
+/// unsupported", así que se quitó: estaba ofrecido y nadie podía cobrar ahí.
+///
+/// Antes esta lista se había escrito sin consultar la cobertura real, y era
+/// justamente el riesgo que ese descuido dejaba abierto.
+///
+/// Los proveedores dan de alta y de baja plazas, así que conviene repetir la
+/// comprobación de vez en cuando; no es una lista que envejezca bien sola.
 const Map<String, String> zonasHorarias = {
   'America/Asuncion': 'Paraguay (GMT-3)',
   'America/Argentina/Buenos_Aires': 'Argentina (GMT-3)',
@@ -52,7 +59,6 @@ const Map<String, String> zonasHorarias = {
   'America/Santo_Domingo': 'Rep. Dominicana (GMT-4)',
   'America/Costa_Rica': 'Costa Rica (GMT-6)',
   'America/Guatemala': 'Guatemala (GMT-6)',
-  'America/El_Salvador': 'El Salvador (GMT-6)',
   'America/Mexico_City': 'México (GMT-6)',
 };
 
