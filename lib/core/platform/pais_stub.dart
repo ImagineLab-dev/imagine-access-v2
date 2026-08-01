@@ -5,3 +5,6 @@
 /// vacía: fuera del navegador la respuesta honesta es "no sé", y quien llama ya
 /// sabe seguir sin país.
 String? detectarPais() => null;
+
+/// Zona horaria fuera del navegador: desconocida.
+String? detectarZonaHoraria() => null;

@@ -7,6 +7,7 @@ import '../../../core/utils/error_handler.dart';
 import '../data/event_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../../../core/utils/currency_helper.dart';
 
 class CreateEventDialog extends ConsumerStatefulWidget {
   const CreateEventDialog({super.key});
@@ -148,9 +149,15 @@ class _CreateEventDialogState extends ConsumerState<CreateEventDialog> {
                       child: DropdownButton<String>(
                         value: _currency,
                         dropdownColor: theme.scaffoldBackgroundColor,
-                        items: ['PYG', 'USD']
-                            .map((c) =>
-                                DropdownMenuItem(value: c, child: Text(c)))
+                        // Mismas monedas que en la pantalla de crear evento, y
+                        // por la misma razón: acá había una lista a mano con
+                        // PYG y USD, así que las dos pantallas podían ofrecer
+                        // cosas distintas. `CurrencyHelper` es la única fuente.
+                        items: CurrencyHelper.currencies.keys
+                            .map((c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(CurrencyHelper.getLabel(c)),
+                                ))
                             .toList(),
                         onChanged: (v) => setState(() => _currency = v!),
                       ),

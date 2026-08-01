@@ -20,6 +20,59 @@ import 'event_state.dart'; // To access selectedEventProvider
 
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../core/utils/currency_helper.dart';
+import '../../../core/platform/pais.dart';
+
+/// Zonas horarias que se pueden elegir para un evento.
+///
+/// Vive acá arriba y no dentro del desplegable porque el valor inicial también
+/// la necesita: si se preseleccionara una zona que no está en esta lista,
+/// `DropdownButton` lanza en tiempo de ejecución por tener un `value` que no
+/// coincide con ningún `item`. Teniéndola en un solo lugar, las dos mitades no
+/// pueden discrepar.
+///
+/// Solo los países donde se puede cobrar. Ofrecer la zona de un país sin
+/// pasarela habilitada deja crear un evento que después no puede vender
+/// entradas, y eso se descubre tarde. Salieron EEUU, España y Reino Unido.
+///
+/// Esta lista hay que contrastarla contra la cobertura vigente de dLocal antes
+/// de dar por buena cualquiera de las plazas: los proveedores de pago dan de
+/// alta y de baja países, y se escribió sin consultar su documentación.
+const Map<String, String> zonasHorarias = {
+  'America/Asuncion': 'Paraguay (GMT-3)',
+  'America/Argentina/Buenos_Aires': 'Argentina (GMT-3)',
+  'America/Montevideo': 'Uruguay (GMT-3)',
+  'America/Sao_Paulo': 'Brasil (GMT-3)',
+  'America/Santiago': 'Chile (GMT-3/-4)',
+  'America/La_Paz': 'Bolivia (GMT-4)',
+  'America/Bogota': 'Colombia (GMT-5)',
+  'America/Lima': 'Perú (GMT-5)',
+  'America/Guayaquil': 'Ecuador (GMT-5)',
+  'America/Panama': 'Panamá (GMT-5)',
+  'America/Santo_Domingo': 'Rep. Dominicana (GMT-4)',
+  'America/Costa_Rica': 'Costa Rica (GMT-6)',
+  'America/Guatemala': 'Guatemala (GMT-6)',
+  'America/El_Salvador': 'El Salvador (GMT-6)',
+  'America/Mexico_City': 'México (GMT-6)',
+};
+
+/// Zona horaria con la que arranca un evento nuevo.
+///
+/// La del navegador cuando está entre las que se ofrecen, y Paraguay si no.
+/// Antes era Paraguay siempre, así que alguien en Lima creaba su evento en
+/// horario paraguayo —dos horas corridas— y solo lo notaba si miraba el
+/// desplegable.
+///
+/// Se filtra contra `zonasHorarias` a propósito: un navegador puede declarar
+/// `America/Argentina/Cordoba`, que es válida pero no está en la lista, y
+/// preseleccionarla rompería el desplegable.
+String zonaHorariaInicial() {
+  final delNavegador = zonaHorariaDetectada;
+  if (delNavegador != null && zonasHorarias.containsKey(delNavegador)) {
+    return delNavegador;
+  }
+  return 'America/Asuncion';
+}
 
 // ─── Date helpers ───
 // Parse a stored date string back to a local DateTime (wall-clock time).
@@ -58,7 +111,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 20, minute: 0);
   String _currency = 'PYG';
-  String _timezone = 'America/Asuncion';
+  String _timezone = zonaHorariaInicial();
 
   List<Map<String, dynamic>> _ticketTypes = [];
   final List<String> _deletedTicketTypeIds = []; // Track deletions
@@ -86,7 +139,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     _cityCtrl = TextEditingController(text: data['city']);
     _imageUrl = data['image_url'] as String?;
     _currency = data['currency'] ?? 'PYG';
-    _timezone = data['timezone'] ?? 'America/Asuncion';
+    // Al EDITAR manda la del evento; solo si no tuviera se usa la detectada.
+    _timezone = data['timezone'] ?? zonaHorariaInicial();
 
     if (data['date'] != null) {
       final parsed = _parseWallClock(data['date']);
@@ -718,12 +772,22 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                   .withValues(alpha: 0.1)),
                             ),
                           ),
-                          items: const [
-                            DropdownMenuItem(
-                                value: 'PYG', child: Text('GS (PYG)')),
-                            DropdownMenuItem(
-                                value: 'USD', child: Text('USD (\$ )')),
-                          ],
+                          // Salen de `CurrencyHelper` y no de una lista a mano.
+                          //
+                          // Acá estaban escritas PYG y USD nada más, así que un
+                          // cliente peruano no podía elegir soles aunque la app
+                          // sepa formatearlos: tenía que cobrar sus entradas en
+                          // guaraníes o en dólares. Lo mismo para Argentina,
+                          // Chile, Colombia, Uruguay, Bolivia y Brasil.
+                          //
+                          // El helper es la única fuente: si mañana se agrega
+                          // una moneda ahí, aparece acá sola.
+                          items: CurrencyHelper.currencies.keys
+                              .map((codigo) => DropdownMenuItem(
+                                    value: codigo,
+                                    child: Text(CurrencyHelper.getLabel(codigo)),
+                                  ))
+                              .toList(),
                           onChanged: (v) => setState(() => _currency = v!),
                         ),
                       ],
@@ -885,23 +949,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 // de dLocal antes de dar por buena cualquiera de las plazas:
                 // los proveedores de pago dan de alta y de baja países, y esto
                 // se escribió sin consultar su documentación.
-                items: const [
-                  DropdownMenuItem(value: 'America/Asuncion', child: Text('Paraguay (GMT-3)')),
-                  DropdownMenuItem(value: 'America/Argentina/Buenos_Aires', child: Text('Argentina (GMT-3)')),
-                  DropdownMenuItem(value: 'America/Montevideo', child: Text('Uruguay (GMT-3)')),
-                  DropdownMenuItem(value: 'America/Sao_Paulo', child: Text('Brasil (GMT-3)')),
-                  DropdownMenuItem(value: 'America/Santiago', child: Text('Chile (GMT-3/-4)')),
-                  DropdownMenuItem(value: 'America/La_Paz', child: Text('Bolivia (GMT-4)')),
-                  DropdownMenuItem(value: 'America/Bogota', child: Text('Colombia (GMT-5)')),
-                  DropdownMenuItem(value: 'America/Lima', child: Text('Perú (GMT-5)')),
-                  DropdownMenuItem(value: 'America/Guayaquil', child: Text('Ecuador (GMT-5)')),
-                  DropdownMenuItem(value: 'America/Panama', child: Text('Panamá (GMT-5)')),
-                  DropdownMenuItem(value: 'America/Santo_Domingo', child: Text('Rep. Dominicana (GMT-4)')),
-                  DropdownMenuItem(value: 'America/Costa_Rica', child: Text('Costa Rica (GMT-6)')),
-                  DropdownMenuItem(value: 'America/Guatemala', child: Text('Guatemala (GMT-6)')),
-                  DropdownMenuItem(value: 'America/El_Salvador', child: Text('El Salvador (GMT-6)')),
-                  DropdownMenuItem(value: 'America/Mexico_City', child: Text('México (GMT-6)')),
-                ],
+                items: zonasHorarias.entries
+                    .map((z) => DropdownMenuItem(
+                          value: z.key,
+                          child: Text(z.value),
+                        ))
+                    .toList(),
                 onChanged: (v) => setState(() => _timezone = v!),
               ),
 

@@ -9,6 +9,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:imagine_access/core/utils/currency_helper.dart';
 import 'package:imagine_access/core/platform/pais.dart';
+import 'package:imagine_access/features/events/presentation/create_event_screen.dart';
 
 void main() {
   group('moneda que le toca a cada país', () {
@@ -52,6 +53,50 @@ void main() {
         expect(CurrencyHelper.currencies.containsKey(moneda), isTrue,
             reason: '$pais -> $moneda no está en currencies');
       }
+    });
+  });
+
+  group('monedas que se pueden elegir al crear un evento', () {
+    test('están las 10 que la app sabe formatear, no dos', () {
+      // El desplegable tenía escritas PYG y USD nada más, así que un peruano
+      // no podía cobrar en soles aunque el formateador los soporte. Ahora sale
+      // de `currencies`, y este test lo fija: si alguien vuelve a escribir una
+      // lista a mano más corta, falla.
+      expect(CurrencyHelper.currencies.length, greaterThanOrEqualTo(10));
+      for (final esperada in ['PYG', 'USD', 'ARS', 'CLP', 'COP', 'PEN',
+                              'UYU', 'BOB', 'VES', 'BRL']) {
+        expect(CurrencyHelper.currencies.containsKey(esperada), isTrue,
+            reason: 'falta $esperada');
+      }
+    });
+
+    test('todas tienen etiqueta legible para el desplegable', () {
+      for (final codigo in CurrencyHelper.currencies.keys) {
+        final etiqueta = CurrencyHelper.getLabel(codigo);
+        expect(etiqueta, isNotEmpty);
+        // La etiqueta tiene que decir cuál es: "Sol Peruano (PEN)". Si
+        // devolviera solo el código, el desplegable sería ilegible.
+        expect(etiqueta, contains(codigo), reason: codigo);
+        expect(etiqueta.length, greaterThan(codigo.length), reason: codigo);
+      }
+    });
+  });
+
+  group('zona horaria del evento', () {
+    test('sin navegador arranca en Paraguay', () {
+      expect(zonaHorariaInicial(), 'America/Asuncion');
+    });
+
+    test('el valor inicial SIEMPRE está entre las opciones', () {
+      // Si no lo estuviera, `DropdownButton` lanza en tiempo de ejecución al
+      // abrir la pantalla. Es la razón por la que `zonaHorariaInicial()`
+      // filtra contra esta misma lista.
+      expect(zonasHorarias.containsKey(zonaHorariaInicial()), isTrue);
+    });
+
+    test('Perú está entre las opciones', () {
+      expect(zonasHorarias.containsKey('America/Lima'), isTrue);
+      expect(zonasHorarias['America/Lima'], contains('Perú'));
     });
   });
 

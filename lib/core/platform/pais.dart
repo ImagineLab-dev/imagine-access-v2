@@ -22,3 +22,14 @@ import 'pais_stub.dart' if (dart.library.js_interop) 'pais_web.dart';
 /// cualquier test que alcance el controlador de autenticación dejaría de
 /// compilar en la VM de Dart.
 String? get paisDetectado => detectarPais();
+
+/// Zona horaria del navegador, tal cual la declara: `America/Lima`.
+///
+/// Se usa para preseleccionar la zona de un evento nuevo. Antes era Paraguay
+/// siempre, así que alguien en Lima creaba su evento con dos horas corridas y
+/// solo lo notaba si abría el desplegable.
+///
+/// Devuelve el identificador crudo, sin filtrar: quien la use tiene que
+/// comprobar que esté entre las opciones que ofrece, porque hay zonas válidas
+/// —`America/Argentina/Cordoba`— que no están en la lista.
+String? get zonaHorariaDetectada => detectarZonaHoraria();

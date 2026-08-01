@@ -89,17 +89,30 @@ String? detectarPais() {
   }
 }
 
-/// `Intl.DateTimeFormat().resolvedOptions().timeZone`
-String? _desdeZonaHoraria() {
-  final intl = globalContext.getProperty<JSObject?>('Intl'.toJS);
-  if (intl == null) return null;
-  final constructor = intl.getProperty<JSFunction?>('DateTimeFormat'.toJS);
-  if (constructor == null) return null;
+/// Zona horaria cruda que declara el navegador: `America/Lima`.
+///
+/// Se expone aparte del país porque la pantalla de crear evento la necesita
+/// tal cual, para preseleccionar la zona del evento.
+String? detectarZonaHoraria() {
+  try {
+    final intl = globalContext.getProperty<JSObject?>('Intl'.toJS);
+    if (intl == null) return null;
+    final constructor = intl.getProperty<JSFunction?>('DateTimeFormat'.toJS);
+    if (constructor == null) return null;
 
-  final formateador = constructor.callAsConstructor<JSObject>();
-  final opciones = formateador.callMethod<JSObject?>('resolvedOptions'.toJS);
-  final zona = opciones?.getProperty<JSString?>('timeZone'.toJS)?.toDart;
-  if (zona == null || zona.isEmpty) return null;
+    final formateador = constructor.callAsConstructor<JSObject>();
+    final opciones = formateador.callMethod<JSObject?>('resolvedOptions'.toJS);
+    final zona = opciones?.getProperty<JSString?>('timeZone'.toJS)?.toDart;
+    return (zona == null || zona.isEmpty) ? null : zona;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// País a partir de la zona horaria.
+String? _desdeZonaHoraria() {
+  final zona = detectarZonaHoraria();
+  if (zona == null) return null;
 
   final exacto = _porZona[zona];
   if (exacto != null) return exacto;
