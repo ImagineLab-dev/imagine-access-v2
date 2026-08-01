@@ -24,8 +24,28 @@ import { corsFor } from '../_shared/cors.ts'
 import { getClientIp, isRateLimited } from '../_shared/rate_limiter.ts'
 import { enviarEventoMeta } from '../_shared/meta_capi.ts'
 
-/** Lo único que la landing tiene permitido reportar. */
-const EVENTOS_PERMITIDOS = new Set(['PageView', 'ClicProbarGratis'])
+/**
+ * Lo único que el navegador tiene permitido reportar.
+ *
+ * `Purchase` y `Subscribe` NO están y no deben estar: los manda el webhook de
+ * dLocal cuando el cobro está confirmado. Aceptarlos acá dejaría que cualquiera
+ * declare compras que nunca ocurrieron, y ese es justo el evento sobre el que
+ * optimiza la campaña.
+ */
+const EVENTOS_PERMITIDOS = new Set([
+    // Landing
+    'PageView',
+    'ClicProbarGratis',
+    // App
+    'CompleteRegistration',
+    'ViewContent',
+    'InitiateCheckout',
+])
+
+/** Techo del importe declarado por el navegador. Los precios los fija nuestra
+ *  propia interfaz, así que cualquier valor por encima de esto es basura o un
+ *  intento de inflar la atribución. */
+const VALOR_MAXIMO = 10_000
 
 const DOMINIO = 'imaginecloud.digital'
 
@@ -144,8 +164,14 @@ function saneados(v: unknown): Record<string, unknown> | null {
         if (n >= 8) break
         if (typeof k !== 'string' || k.length > 40) continue
         if (typeof valor === 'string') salida[k] = valor.slice(0, 100)
-        else if (typeof valor === 'number' && Number.isFinite(valor)) salida[k] = valor
-        else continue
+        else if (typeof valor === 'number' && Number.isFinite(valor)) {
+            // El importe viene del navegador, así que se acota. No puede
+            // fabricar una compra —`Purchase` no está en la lista— pero sí
+            // inflaría el valor de un ViewContent o un InitiateCheckout.
+            salida[k] = k === 'value'
+                ? Math.min(Math.max(valor, 0), VALOR_MAXIMO)
+                : valor
+        } else continue
         n++
     }
     return Object.keys(salida).length > 0 ? salida : null

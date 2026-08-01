@@ -80,6 +80,34 @@
     return m ? m.pop() : null;
   }
 
+  /* Se asegura de que `_fbp` exista ANTES de arrancar el píxel.
+   *
+   * Sin esto el envío por servidor salía casi siempre sin `_fbp`, y Meta lo
+   * midió: de 14 eventos de servidor, 2 la llevaban. El 14 %.
+   *
+   * La causa es una carrera. `fbevents.js` se carga async, y el PageView se
+   * manda apenas se inicializa el píxel: en ese instante el script de Meta
+   * todavía no corrió, así que la cookie que él crea no existe. Los únicos que
+   * la mandaban eran los visitantes repetidos, que ya la traían de antes —y
+   * eso es exactamente 2 de 14—.
+   *
+   * Escribirla acá la vuelve determinista: existe desde el primer instante,
+   * el píxel adopta la que encuentra en vez de generar otra, y las dos mitades
+   * mandan el mismo valor. Formato de Meta: fb.<subdominio>.<ms>.<aleatorio>,
+   * con 1 para un dominio de dos partes como el nuestro.
+   *
+   * Se comparte entre la landing y la app porque están en el mismo host, así
+   * que Meta puede unir "vio la landing" con "abrió la app".
+   */
+  function asegurarFbp() {
+    if (cookie('_fbp')) return;
+    var aleatorio = Math.floor(Math.random() * 2147483647);
+    var valor = 'fb.1.' + Date.now() + '.' + aleatorio;
+    var vence = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = '_fbp=' + valor + ';expires=' + vence +
+      ';path=/;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
+  }
+
   /* De qué clic de anuncio viene esta visita.
    *
    * Es el dato más valioso del envío por servidor: sin él la conversión llega
@@ -128,6 +156,9 @@
     fbq(tipo, nombre, datos || {}, { eventID: eventId });
     alServidor(nombre, eventId, datos);
   }
+
+  // ANTES del init, no después: el píxel adopta la cookie que ya encuentra.
+  asegurarFbp();
 
   fbq('init', PIXEL_ID);
   evento('track', 'PageView');
