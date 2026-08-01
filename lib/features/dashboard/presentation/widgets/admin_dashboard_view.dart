@@ -286,7 +286,7 @@ class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
     final l10n = AppLocalizations.of(context);
 
     return GestureDetector(
-      onTap: _loading ? null : () => _export(context, ref),
+      onTap: _loading ? null : () => _export(ref),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -320,7 +320,14 @@ class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
     );
   }
 
-  Future<void> _export(BuildContext context, WidgetRef ref) async {
+  /// Sin recibir el `BuildContext` por parámetro: se usa el del `State`.
+  ///
+  /// Es el mismo objeto —lo llamaba el `build` de esta misma clase pasándole su
+  /// propio contexto— pero el analizador no podía probarlo, y avisaba cuatro
+  /// veces que el `mounted` era "de un objeto no relacionado". Eran falsos
+  /// positivos, y el problema de convivir con ellos es que el día que aparezca
+  /// uno de verdad va a pasar desapercibido entre los cuatro de siempre.
+  Future<void> _export(WidgetRef ref) async {
     final selectedEvent = ref.read(selectedEventProvider);
     if (selectedEvent == null) {
       final l10n = AppLocalizations.of(context);
