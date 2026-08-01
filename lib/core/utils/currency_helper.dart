@@ -13,6 +13,12 @@ class CurrencyHelper {
     'BOB': CurrencyInfo('Bs', 'Boliviano (BOB)', 2, Icons.money),
     'VES': CurrencyInfo('Bs.D', 'Bolívar (VES)', 2, Icons.money),
     'BRL': CurrencyInfo('R\$', 'Real (BRL)', 2, Icons.attach_money),
+    // Faltaban, y son plazas donde dLocal sí cobra: un cliente mexicano tenía
+    // que poner el precio de sus entradas en dólares o en guaraníes.
+    'MXN': CurrencyInfo('\$', 'Peso Mexicano (MXN)', 2, Icons.attach_money),
+    'CRC': CurrencyInfo('₡', 'Colón (CRC)', 2, Icons.money),
+    'GTQ': CurrencyInfo('Q', 'Quetzal (GTQ)', 2, Icons.money),
+    'DOP': CurrencyInfo('RD\$', 'Peso Dominicano (DOP)', 2, Icons.attach_money),
   };
 
   /// Moneda de cada plaza donde opera dLocal.
@@ -21,9 +27,14 @@ class CurrencyHelper {
   /// de Paraguay que no tocara configuraciones creaba su primer evento en
   /// guaraníes, y recién lo notaba al ver los precios.
   ///
-  /// Los países sin moneda propia en la lista de arriba —México, Centroamérica,
-  /// Asia— caen en USD a propósito: mostrar un símbolo que no sabemos formatear
-  /// sería peor que mostrar dólares, que se entienden en todos lados.
+  /// Ecuador y Panamá NO están, y no es un olvido: **usan el dólar**. Ecuador
+  /// está dolarizado desde 2000, y en Panamá el balboa va a la par y el dólar
+  /// circula como moneda de curso legal. Para ellos USD es la moneda correcta,
+  /// no un reemplazo por no saber la suya.
+  ///
+  /// El resto de las plazas donde dLocal cobra sí están. Faltaban México, Costa
+  /// Rica, Guatemala y República Dominicana, así que un cliente mexicano tenía
+  /// que ponerle precio a sus entradas en dólares o en guaraníes.
   static const Map<String, String> _monedaPorPais = {
     'PY': 'PYG',
     'AR': 'ARS',
@@ -33,6 +44,10 @@ class CurrencyHelper {
     'BO': 'BOB',
     'CO': 'COP',
     'PE': 'PEN',
+    'MX': 'MXN',
+    'CR': 'CRC',
+    'GT': 'GTQ',
+    'DO': 'DOP',
   };
 
   /// Moneda que le corresponde a un país. USD cuando no se conoce.

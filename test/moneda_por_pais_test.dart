@@ -22,13 +22,35 @@ void main() {
       expect(CurrencyHelper.monedaDePais('BO'), 'BOB');
       expect(CurrencyHelper.monedaDePais('CO'), 'COP');
       expect(CurrencyHelper.monedaDePais('PE'), 'PEN');
+      expect(CurrencyHelper.monedaDePais('MX'), 'MXN');
+      expect(CurrencyHelper.monedaDePais('CR'), 'CRC');
+      expect(CurrencyHelper.monedaDePais('GT'), 'GTQ');
+      expect(CurrencyHelper.monedaDePais('DO'), 'DOP');
+    });
+
+    test('Ecuador y Panamá reciben USD porque ES su moneda', () {
+      // No es un reemplazo por desconocimiento: Ecuador está dolarizado desde
+      // 2000 y en Panamá el dólar es moneda de curso legal. Si algún día
+      // alguien "arregla" esto agregándoles una moneda propia, rompe.
+      expect(CurrencyHelper.monedaDePais('EC'), 'USD');
+      expect(CurrencyHelper.monedaDePais('PA'), 'USD');
+    });
+
+    test('todas las plazas donde dLocal cobra tienen moneda', () {
+      // Los 14 países verificados contra la API. Ninguno debería quedar sin
+      // una moneda que la app sepa formatear.
+      for (final pais in ['PY','AR','UY','BR','CL','BO','CO','PE',
+                          'EC','PA','DO','CR','GT','MX']) {
+        final m = CurrencyHelper.monedaDePais(pais);
+        expect(CurrencyHelper.currencies.containsKey(m), isTrue,
+            reason: '$pais -> $m no se sabe formatear');
+      }
     });
 
     test('las plazas sin moneda propia en la lista caen en USD', () {
-      // Son países donde dLocal opera pero cuya moneda no sabemos formatear.
-      // Mostrar dólares es preferible a mostrar un símbolo desconocido.
-      for (final pais in ['MX', 'US', 'ES', 'CR', 'GT', 'PA', 'DO', 'EC',
-                          'NG', 'KE', 'IN', 'ID', 'MY', 'PH', 'VN']) {
+      // Plazas de dLocal fuera de Latinoamérica, más EEUU y España. Mostrar
+      // dólares es preferible a mostrar un símbolo que no sabemos formatear.
+      for (final pais in ['US', 'ES', 'NG', 'KE', 'IN', 'ID', 'MY', 'PH', 'VN']) {
         expect(CurrencyHelper.monedaDePais(pais), 'USD', reason: pais);
       }
     });
@@ -62,9 +84,10 @@ void main() {
       // no podía cobrar en soles aunque el formateador los soporte. Ahora sale
       // de `currencies`, y este test lo fija: si alguien vuelve a escribir una
       // lista a mano más corta, falla.
-      expect(CurrencyHelper.currencies.length, greaterThanOrEqualTo(10));
+      expect(CurrencyHelper.currencies.length, greaterThanOrEqualTo(14));
       for (final esperada in ['PYG', 'USD', 'ARS', 'CLP', 'COP', 'PEN',
-                              'UYU', 'BOB', 'VES', 'BRL']) {
+                              'UYU', 'BOB', 'VES', 'BRL',
+                              'MXN', 'CRC', 'GTQ', 'DOP']) {
         expect(CurrencyHelper.currencies.containsKey(esperada), isTrue,
             reason: 'falta $esperada');
       }
