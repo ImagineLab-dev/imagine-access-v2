@@ -90,12 +90,27 @@
       ';path=/;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
   }
 
+  /* Cuál clic de anuncio trajo a esta persona, PERSISTIDO.
+   *
+   * Igual que en la landing y por el mismo motivo: es el parámetro más valioso
+   * para la atribución, y hasta ahora salía en 0% desde el servidor porque el
+   * `fbclid` solo vive en la URL de la landing. Al llegar acá —la app— ya no
+   * está, y el evento que importa, CompleteRegistration, se disparaba sin fbc.
+   *
+   * Guardar `_fbc` con `path=/` la primera vez que se lo ve hace que sobreviva
+   * de la landing a la app, que comparten host, y ate el clic hasta la
+   * conversión. */
   function clicDeAnuncio() {
     var c = cookie('_fbc');
     if (c) return c;
     try {
       var fbclid = new URLSearchParams(location.search).get('fbclid');
-      if (fbclid) return 'fb.1.' + Date.now() + '.' + fbclid;
+      if (!fbclid) return null;
+      var valor = 'fb.1.' + Date.now() + '.' + fbclid;
+      var vence = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = '_fbc=' + valor + ';expires=' + vence +
+        ';path=/;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
+      return valor;
     } catch (_) { /* sin fbc */ }
     return null;
   }

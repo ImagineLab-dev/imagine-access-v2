@@ -110,20 +110,33 @@
 
   /* De qué clic de anuncio viene esta visita.
    *
-   * Es el dato más valioso del envío por servidor: sin él la conversión llega
-   * anónima y Meta no la puede atribuir a ninguna campaña.
+   * Es el dato MÁS valioso para la atribución: sin él la conversión llega
+   * anónima y Meta no la puede ligar a ninguna campaña. Su panel lo pone en
+   * primer lugar ("hasta 100% más de conversiones registradas").
    *
-   * Se lee la cookie `_fbc`, pero en la PRIMERA visita todavía no existe —el
-   * píxel la escribe después de cargar— así que se arma a mano desde `fbclid`
-   * de la URL, que es justamente el caso que importa: alguien que acaba de
-   * llegar desde el anuncio. Formato de Meta: fb.<subdominio>.<ms>.<fbclid>,
-   * y el 1 corresponde a un dominio de dos partes como el nuestro. */
+   * La clave está en PERSISTIRLO, y es la corrección sobre la versión anterior.
+   * Antes se leía la cookie o, si no existía, se armaba desde el `fbclid` de la
+   * URL — pero no se guardaba. El `fbclid` solo está en la URL de la landing,
+   * cuando alguien recién llega del anuncio. Al pasar a la app para
+   * registrarse, esa URL ya no lo tiene, así que el evento que de verdad
+   * importa —CompleteRegistration— salía SIN fbc. Meta lo confirmó: fbc al 0%
+   * desde el servidor, contra 80% de fbp, que sí se escribe.
+   *
+   * Ahora, la primera vez que se ve un `fbclid`, se guarda `_fbc` con `path=/`,
+   * así sobrevive de la landing a la app y el clic queda atado hasta la
+   * conversión. Formato de Meta: fb.<subdominio>.<ms>.<fbclid>, con 1 para un
+   * dominio de dos partes como el nuestro. */
   function clicDeAnuncio() {
     var c = cookie('_fbc');
     if (c) return c;
     try {
       var fbclid = new URLSearchParams(location.search).get('fbclid');
-      if (fbclid) return 'fb.1.' + Date.now() + '.' + fbclid;
+      if (!fbclid) return null;
+      var valor = 'fb.1.' + Date.now() + '.' + fbclid;
+      var vence = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = '_fbc=' + valor + ';expires=' + vence +
+        ';path=/;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
+      return valor;
     } catch (_) { /* URLSearchParams no soportado: se va sin fbc */ }
     return null;
   }
