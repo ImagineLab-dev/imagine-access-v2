@@ -145,13 +145,23 @@ export async function enviarEventoMeta(evento: EventoMeta): Promise<void> {
 
         const texto = await res.text();
         if (!res.ok) {
-            console.error('[meta] rechazado', res.status, texto.slice(0, 300));
+            // Con el event_id: si Meta rechaza, hay que poder cruzarlo con el
+            // que mandó el navegador.
+            console.error('[meta] rechazado', evento.nombre, evento.eventId,
+                res.status, texto.slice(0, 300));
             return;
         }
-        console.log('[meta] evento enviado', evento.nombre, texto.slice(0, 200));
+        // El event_id se registra a propósito. Es la clave con la que Meta une
+        // este envío de servidor con el del navegador para NO contarlos dos
+        // veces. Desde acá no se puede ver la cobertura de deduplicación —eso
+        // vive en el administrador de eventos— pero al menos queda el
+        // identificador para cotejar un evento puntual cuando haga falta.
+        console.log('[meta] evento enviado', evento.nombre, evento.eventId,
+            texto.slice(0, 200));
     } catch (e) {
         // Se traga a propósito. Que Meta esté caído no puede impedir que se
         // acredite una suscripción que el cliente ya pagó.
-        console.error('[meta] fallo al enviar', evento.nombre, String(e));
+        console.error('[meta] fallo al enviar', evento.nombre, evento.eventId,
+            String(e));
     }
 }
