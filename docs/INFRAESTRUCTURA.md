@@ -135,6 +135,42 @@ distintos.
 DNS del dominio: MX a Hostinger, SPF, DKIM en los selectores `hostingermail-a/b/c`, y
 DMARC en `p=none`. Subir DMARC a `quarantine` cuando haya historial de envíos limpio.
 
+## Runbook — "la app carga pero no trae datos"
+
+Síntoma: el sitio abre y el login anda, pero nada que lea datos responde. En la
+consola del navegador, peticiones a `api.imaginecloud.digital/rest/...` que
+cuelgan o terminan en 504. `/auth/...` funciona.
+
+Es la firma de **PostgREST inalcanzable por el bridge de Docker**. La causa
+raíz que ya pasó una vez (04/08/2026): una regla de firewall que descarta
+`tcp dport 3000` para todo salvo `lo`, y como PostgREST escucha internamente en
+el 3000, se come el tráfico interno Kong → PostgREST.
+
+Diagnóstico en 2 minutos (no repetir el via crucis de 30 pasos):
+
+```bash
+# 1. ¿El servidor está sano y es solo /rest/?  (auth rápido, rest cuelga)
+curl -s -m8 -o /dev/null -w "auth  %{http_code} %{time_total}s\n" https://api.imaginecloud.digital/auth/v1/health
+curl -s -m8 -o /dev/null -w "rest  %{http_code} %{time_total}s\n" -H "apikey: $ANON" \
+  "https://api.imaginecloud.digital/rest/v1/organizations?select=id&limit=1"
+
+# 2. ¿PostgREST está bien en sí?  loopback responde 200 => el proceso está OK,
+#    el problema es la RED para llegarle.
+docker run --rm --network container:supabase-rest curlimages/curl -s -m6 \
+  -o /dev/null -w "loopback %{http_code}\n" -H "apikey: $ANON" \
+  "http://localhost:3000/organizations?select=id&limit=1"
+
+# 3. LA REGLA. Si el DROP tiene paquetes contados, es esto:
+iptables -L DOCKER-USER -n -v --line-numbers | grep 3000
+```
+
+Arreglo (restaura el tráfico interno, deja bloqueado el externo):
+
+```bash
+iptables -I DOCKER-USER 2 -i br+ -p tcp -m tcp --dport 3000 -j RETURN
+iptables-save > /etc/iptables/rules.v4   # persistir para el reboot
+```
+
 ## Pendientes conocidos
 
 - **El dump diario no sale del VPS.** Los backups de Hostinger son semanales y de la
@@ -143,6 +179,11 @@ DMARC en `p=none`. Subir DMARC a `quarantine` cuando haya historial de envíos l
 - **`crm.imaginecloud.digital` da 502**, y es previo a esta migración: Easypanel lo rutea a
   `crm_imagine-crm`, un servicio que no existe — el CRM corre como `imagine_app`.
 - **Sin monitoreo.** Nadie se entera si Postgres se cae en medio de un evento.
+- **Colisión de puerto 3000 con Easypanel.** Un servicio de Easypanel usa el 3000 y su
+  regla de firewall (DROP en `DOCKER-USER`) tumbó a PostgREST el 04/08/2026. El fix del
+  runbook de arriba lo restaura, pero si Easypanel regenera `rules.v4` vuelve a romper. Fix
+  permanente: que ese servicio use otro puerto, o que el DROP sea específico a `eth0` en vez
+  de a todas las interfaces.
 - **CORS de origen único.** `_shared/cors.ts` acepta un solo `ALLOWED_ORIGIN`, así que
   producción y `localhost` no conviven.
 - **Roboto se baja de `fonts.gstatic.com`.** Permitido en la CSP; el fix real es
