@@ -153,7 +153,42 @@
 
   window.imagineMeta = { evento: evento };
 
+  /* ¿Ya hay una sesión iniciada en este navegador?
+   *
+   * Sirve para NO mandar el PageView de marketing cuando quien abre la app ya
+   * es cliente. Un operador de puerta que abre la app cada noche, o un admin
+   * que entra al panel a diario, no son prospectos: mandar su PageView a Meta
+   * le enseña al optimizador a buscar gente que YA te compró, justo lo
+   * contrario de traer clientes nuevos.
+   *
+   * Se escanea `localStorage` en vez de buscar una clave fija: Supabase guarda
+   * la sesión bajo `sb-<ref>-auth-token`, y el `<ref>` depende del proyecto.
+   * Buscar por 'auth-token' + 'access_token' funciona sin acoplarse al nombre.
+   *
+   * Corre antes de que Flutter arranque, pero la sesión de una visita anterior
+   * ya está persistida en `localStorage`, así que se detecta igual. */
+  function haySesion() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('auth-token') !== -1) {
+          var raw = localStorage.getItem(k);
+          if (raw && raw.indexOf('access_token') !== -1) return true;
+        }
+      }
+    } catch (_) { /* localStorage bloqueado: se asume prospecto */ }
+    return false;
+  }
+
   asegurarFbp();
+  // El píxel se inicializa SIEMPRE: la app dispara ViewContent,
+  // InitiateCheckout y CompleteRegistration desde Dart y necesitan `fbq`.
   fbq('init', PIXEL_ID);
-  evento('PageView');
+
+  // Pero el PageView solo para quien todavía no inició sesión: es el prospecto
+  // que llega del anuncio o de la landing. El cliente que ya usa la app no
+  // vuelve a contarse como una visita de marketing en cada apertura.
+  if (!haySesion()) {
+    evento('PageView');
+  }
 })();

@@ -22,11 +22,26 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 }
 
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Ver los planes es el paso previo a contratar. Se manda una sola vez al
-    // abrir la pantalla, no en cada reconstrucción.
+  /// Que ViewContent se mande una sola vez, aunque la pantalla se reconstruya.
+  bool _viewContentEnviado = false;
+
+  /// Marca a Meta que alguien miró los planes: es el paso previo a contratar.
+  ///
+  /// NO se dispara para un cliente que ya paga y está al día. Entra a esta
+  /// pantalla a ver su estado o su fecha de renovación, no a comprar, y mandar
+  /// ese evento le enseña al optimizador de la campaña a buscar gente que ya
+  /// es cliente. Un trial, un vencido o un cancelado SÍ son señal: están a un
+  /// paso de pagar.
+  ///
+  /// Va acá y no en `initState` porque el estado de la suscripción carga
+  /// asíncrono: en `initState` todavía no se sabe si es cliente pago.
+  void _marcarVistaDePlanes(Subscription sub) {
+    if (_viewContentEnviado) return;
+    _viewContentEnviado = true;
+
+    final esClientePagoAlDia = !sub.enPrueba && sub.isActive && !sub.cancelada;
+    if (esClientePagoAlDia) return;
+
     eventoMeta('ViewContent', valor: 25, moneda: 'USD');
   }
 
@@ -42,6 +57,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
         error: (_, _) => Center(child: Text(l10n.errorGeneric)),
         data: (sub) {
           if (sub == null) return Center(child: Text(l10n.errorGeneric));
+
+          // Recién acá se sabe si es cliente pago o prospecto.
+          _marcarVistaDePlanes(sub);
 
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(subscriptionProvider),
