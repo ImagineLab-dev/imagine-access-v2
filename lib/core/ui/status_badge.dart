@@ -81,15 +81,23 @@ class StatusBadge extends StatelessWidget {
             Icon(icon, size: 12, color: texto),
             const SizedBox(width: 5),
           ],
-          Text(
-            text.toUpperCase(),
-            style: TextStyle(
-              fontFamily: AppTheme.fontMono,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-              height: 1.2,
-              color: texto,
+          // `Flexible` y no `Text` a secas: con un estado largo —"PENDIENTE DE
+          // PAGO"— en un teléfono de 320 px la etiqueta se pasaba del ancho y
+          // rompía la fila entera. Una etiqueta de estado nunca puede ser lo que
+          // desarma el layout: se recorta ella y deja pasar al resto.
+          Flexible(
+            child: Text(
+              text.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: AppTheme.fontMono,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+                height: 1.2,
+                color: texto,
+              ),
             ),
           ),
         ],

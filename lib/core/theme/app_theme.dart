@@ -77,11 +77,24 @@ class AppTheme {
   static const Color lightCardElevated = Color(0xFFFAFAF8);
   static const Color lightInput = Color(0xFFEDEDEA);
   static const Color lightHover = Color(0xFFE6E6E1);
-  static const Color lightBorder = Color(0xFFD2D2CE);
-  static const Color lightBorderSoft = Color(0xFFE2E2DE);
+  /// Se oscureció desde `#D2D2CE`, que contra el fondo de página daba 1,38:1
+  /// —prácticamente invisible—. Todo este sistema son rectángulos con un borde
+  /// de un píxel: un borde que no se ve deja los paneles disueltos sobre el
+  /// fondo y la pantalla entera se lee lavada. Este valor iguala la presencia
+  /// que tiene el borde del modo oscuro (1,9:1 sobre su panel).
+  static const Color lightBorder = Color(0xFFBDBDB7);
+  /// Separador interno: notablemente más tenue que [lightBorder], pero visible.
+  static const Color lightBorderSoft = Color(0xFFD8D8D2);
   static const Color lightText = Color(0xFF131315);
   static const Color lightTextSecondary = Color(0xFF5B5B5F);
-  static const Color lightTextDisabled = Color(0xFF8A8A8E);
+  /// 5,0:1 en su peor fondo (el relleno de hover).
+  ///
+  /// Estaba en `#8A8A8E` y ahí daba 2,93:1: por debajo del mínimo incluso para
+  /// texto grande. Como es el color de las pistas de los formularios y del
+  /// texto deshabilitado, era literalmente "no se entiende lo que dice" en modo
+  /// claro. No es un gris elegido a ojo: es el más claro que pasa el umbral
+  /// contra los cuatro fondos donde puede aparecer.
+  static const Color lightTextDisabled = Color(0xFF606064);
 
   // ---------------------------------------------------------------- SEMÁNTICA
 
@@ -92,7 +105,10 @@ class AppTheme {
   static const Color accentYellow = Color(0xFFFFC107);
 
   /// Denegado / destructivo. Rojo que funciona como relleno en los dos modos.
-  static const Color accentOrange = Color(0xFFE5484D);
+  ///
+  /// Se oscureció desde `#E5484D`, que con texto blanco encima daba 3,91:1 —el
+  /// botón de suspender una organización, justo el que conviene leer bien—.
+  static const Color accentOrange = Color(0xFFCC3339);
 
   /// Fondo del cartel DENEGADO a pantalla completa (salmón claro).
   static const Color peligroSuave = Color(0xFFFFB4AB);
