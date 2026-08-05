@@ -284,6 +284,7 @@ class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: _loading ? null : () => _export(ref),
@@ -298,17 +299,21 @@ class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_loading)
-              const SizedBox(
+              SizedBox(
                 width: 18, height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText),
               )
             else
-              const Icon(Icons.download_outlined, color: Colors.white, size: 20),
+              Icon(Icons.download_outlined,
+                  color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  size: 20),
             const SizedBox(width: 10),
             Text(
               _loading ? l10n.reportGenerating : l10n.downloadReport.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 letterSpacing: 1.2,

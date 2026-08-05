@@ -159,8 +159,8 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
             constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               children: [
-                const Icon(Icons.mark_email_read_outlined,
-                        size: 72, color: Colors.white)
+                Icon(Icons.mark_email_read_outlined,
+                        size: 72, color: textColor)
                     .animate()
                     .scale(duration: 400.ms, curve: Curves.easeOutBack),
                 const SizedBox(height: 24),

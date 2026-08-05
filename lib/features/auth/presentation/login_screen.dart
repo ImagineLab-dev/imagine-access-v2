@@ -228,8 +228,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               children: [
-                const Icon(Icons.qr_code_scanner_rounded,
-                        size: 72, color: Colors.white)
+                Icon(Icons.qr_code_scanner_rounded,
+                        size: 72, color: textColor)
                     .animate()
                     .scale(duration: 400.ms, curve: Curves.easeOutBack),
                 const SizedBox(height: 24),

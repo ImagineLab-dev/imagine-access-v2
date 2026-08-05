@@ -1001,8 +1001,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       },
                       child: Row(
                         children: [
-                          const Icon(Icons.access_time,
-                              size: 16, color: Colors.white70),
+                          Icon(Icons.access_time,
+                              size: 16,
+                              color: theme.brightness == Brightness.dark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.lightTextSecondary),
                           const SizedBox(width: 8),
                           Text(
                               _invitationValidUntil == null
@@ -1010,7 +1013,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                 : l10n.validUntilTime(_invitationValidUntil!.format(context)),
                               style: TextStyle(
                                   color: _invitationValidUntil == null
-                                      ? Colors.white54
+                                      ? (theme.brightness == Brightness.dark
+                                          ? AppTheme.darkTextSecondary
+                                          : AppTheme.lightTextSecondary)
                                       : Colors.purpleAccent,
                                   fontWeight: _invitationValidUntil == null
                                       ? FontWeight.normal
@@ -1029,12 +1034,18 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.timer_outlined,
-                              size: 16, color: Colors.white70),
+                          Icon(Icons.timer_outlined,
+                              size: 16,
+                              color: theme.brightness == Brightness.dark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.lightTextSecondary),
                           const SizedBox(width: 8),
                           Text(l10n.toleranceMinutesLabel,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 13)),
+                              style: TextStyle(
+                                  color: theme.brightness == Brightness.dark
+                                      ? AppTheme.darkTextSecondary
+                                      : AppTheme.lightTextSecondary,
+                                  fontSize: 13)),
                           const SizedBox(width: 8),
                           DropdownButton<int>(
                             value: _invitationToleranceMinutes,
@@ -1082,12 +1093,18 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                     // Price field
                     Row(
                       children: [
-                        const Icon(Icons.attach_money,
-                            size: 16, color: Colors.white70),
+                        Icon(Icons.attach_money,
+                            size: 16,
+                            color: theme.brightness == Brightness.dark
+                                ? AppTheme.darkTextSecondary
+                                : AppTheme.lightTextSecondary),
                         const SizedBox(width: 8),
                         Text(l10n.promoPrice,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 13)),
+                            style: TextStyle(
+                                color: theme.brightness == Brightness.dark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.lightTextSecondary,
+                                fontSize: 13)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextFormField(
@@ -1104,8 +1121,10 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               hintStyle:
                                   const TextStyle(color: Colors.white38),
                               suffixText: _currency,
-                              suffixStyle:
-                                  const TextStyle(color: Colors.white54),
+                              suffixStyle: TextStyle(
+                                  color: theme.brightness == Brightness.dark
+                                      ? AppTheme.darkTextSecondary
+                                      : AppTheme.lightTextSecondary),
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 8),
@@ -1127,12 +1146,18 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                     // Quantity dropdown
                     Row(
                       children: [
-                        const Icon(Icons.confirmation_number,
-                            size: 16, color: Colors.white70),
+                        Icon(Icons.confirmation_number,
+                            size: 16,
+                            color: theme.brightness == Brightness.dark
+                                ? AppTheme.darkTextSecondary
+                                : AppTheme.lightTextSecondary),
                         const SizedBox(width: 8),
                         Text(l10n.promoQty,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 13)),
+                            style: TextStyle(
+                                color: theme.brightness == Brightness.dark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.lightTextSecondary,
+                                fontSize: 13)),
                         const SizedBox(width: 8),
                         DropdownButton<int>(
                           value: _promoQty,
