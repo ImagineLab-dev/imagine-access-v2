@@ -194,17 +194,15 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
   }
 
   void _showSuccessDialog() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
     showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-              backgroundColor: isDark ? AppTheme.surfaceColor : Colors.white,
+              backgroundColor: AppTheme.panel(context),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                   side: BorderSide(
                       color: AppTheme.successColor.withValues(alpha: 0.5))),
               title: Column(
@@ -214,13 +212,13 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
                   const SizedBox(height: 16),
                   Text(l10n.ticketCreated,
                       style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87)),
+                          color: AppTheme.texto(context))),
                 ],
               ),
               content: Text(l10n.pdfGeneratedDesc,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54)),
+                      color: AppTheme.textoSecundario(context))),
               actions: [
                 TextButton(
                     onPressed: () => context.go('/dashboard'),
@@ -283,12 +281,12 @@ class _CreateTicketWizardState extends ConsumerState<CreateTicketWizard> {
               children: [
                 _StepIndicator(
                     index: 0, current: _currentStep, label: l10n.ticketType),
-                const Expanded(child: Divider(color: Colors.grey)),
+                const Expanded(child: Divider(color: AppTheme.accentPurple)),
                 _StepIndicator(
                     index: 1,
                     current: _currentStep,
                     label: l10n.details), // Fallback to details if not in l10n
-                const Expanded(child: Divider(color: Colors.grey)),
+                const Expanded(child: Divider(color: AppTheme.accentPurple)),
                 _StepIndicator(
                     index: 2, current: _currentStep, label: l10n.confirm),
               ],
@@ -371,12 +369,11 @@ class _StepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index <= current;
     final isCompleted = index < current;
     final color = isActive
         ? AppTheme.primaryColor
-        : (isDark ? Colors.white24 : Colors.black12);
+        : (AppTheme.borde(context));
 
     return Column(
       children: [
@@ -386,7 +383,6 @@ class _StepIndicator extends StatelessWidget {
           decoration: BoxDecoration(
                 color:
                   isActive ? color.withValues(alpha: 0.2) : Colors.transparent,
-              shape: BoxShape.circle,
               border: Border.all(color: color, width: 2)),
           child: Center(
               child: isCompleted
@@ -432,18 +428,18 @@ class _StepOneType extends ConsumerWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              color: AppTheme.texto(context),
             )),
         const SizedBox(height: 20),
         ticketTypesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => Text(l10n.error,
-              style: const TextStyle(color: Colors.red)),
+              style: const TextStyle(color: AppTheme.accentOrange)),
           data: (types) {
             if (types.isEmpty) {
               return Text(l10n.noTicketTypesAvailable,
                   style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54));
+                      color: AppTheme.textoSecundario(context)));
             }
 
             // Permission Filter
@@ -516,7 +512,7 @@ class _StepOneType extends ConsumerWidget {
                 if (standardTypes.isNotEmpty) ...[
                   Text(l10n.ticketType,
                       style: TextStyle(
-                          color: isDark ? Colors.white60 : Colors.black54,
+                          color: AppTheme.textoSecundario(context),
                           fontSize: 14,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
@@ -669,7 +665,7 @@ class _TypeChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     // Use the passed color as the base
-    final baseColor = enabled ? color : Colors.grey.withValues(alpha: 0.3);
+    final baseColor = enabled ? color : AppTheme.accentPurple.withValues(alpha: 0.3);
 
     return GestureDetector(
       onTap: enabled
@@ -690,11 +686,11 @@ class _TypeChip extends StatelessWidget {
                 : (isDark
                   ? Colors.white.withValues(alpha: 0.05)
                   : Colors.black.withValues(alpha: 0.05)),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
             border: Border.all(
                 color: selected
                     ? baseColor
-                    : (isDark ? Colors.white10 : Colors.black12),
+                    : (AppTheme.bordeSuave(context)),
                 width: selected ? 2 : 1),
             boxShadow: selected
                 ? [
@@ -709,27 +705,27 @@ class _TypeChip extends StatelessWidget {
           children: [
             if (icon != null) ...[
               Icon(icon,
-                  color: enabled ? baseColor : Colors.grey,
+                  color: enabled ? baseColor : AppTheme.accentPurple,
                   size: 24), // Reduced from 28
               const SizedBox(height: 6), // Reduced from 8
             ],
             Text(label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: AppTheme.texto(context),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     overflow: TextOverflow.ellipsis)),
             const SizedBox(height: 4),
             Text(price == 0 ? l10n.free : CurrencyHelper.format(price, currency),
                 style: TextStyle(
-                    color: isDark ? Colors.white60 : Colors.black54,
+                    color: AppTheme.textoSecundario(context),
                     fontSize: 12)),
             if (subtitle != null) ...[
               const SizedBox(height: 4),
               Text(subtitle!,
                   style: TextStyle(
-                      color: enabled ? baseColor : Colors.red,
+                      color: enabled ? baseColor : AppTheme.accentOrange,
                       fontSize: 10,
                       fontWeight: FontWeight.bold)),
             ]
@@ -757,7 +753,6 @@ class _StepTwoDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final typeData = ref.watch(ticketTypeDataProvider);
     final selectedEvent = ref.watch(selectedEventProvider);
     final isPromo = typeData?['category'] == 'promo';
@@ -812,7 +807,7 @@ class _StepTwoDetails extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF97316).withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                   border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.4)),
                 ),
                 child: Row(
@@ -823,7 +818,7 @@ class _StepTwoDetails extends ConsumerWidget {
                       child: Text(
                         '$n ${l10n.tickets}  ·  ${CurrencyHelper.format(packPrice, currency)}',
                         style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: AppTheme.texto(context),
                             fontWeight: FontWeight.w600,
                             fontSize: 13),
                       ),
@@ -855,56 +850,83 @@ class _StepThreeConfirm extends StatelessWidget {
     final price = ref.watch(ticketPriceProvider);
     final selectedEvent = ref.watch(selectedEventProvider);
     final typeData = ref.watch(ticketTypeDataProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     final isPromo = typeData?['category'] == 'promo';
     final promoQty = isPromo ? ((typeData?['promo_qty'] as num?)?.toInt() ?? 1) : 1;
     final currency = selectedEvent?['currency']?.toString() ?? 'PYG';
 
+    // Último paso antes de emitir. Se presenta como una hoja de confirmación
+    // con dos bloques —qué se emite y para quién— porque son las dos cosas
+    // distintas que hay que revisar antes de apretar.
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Icon(Icons.receipt_long, size: 60, color: AppTheme.accentPurple),
+        Text(l10n.reviewDetails.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: AppTheme.titular(context, size: 18)),
         const SizedBox(height: 20),
-        Text(l10n.reviewDetails,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
-            )),
-        const SizedBox(height: 24),
-        _rowInfo(l10n.event, selectedEvent?['name'] ?? 'N/A', isDark),
-        _rowInfo(l10n.ticketType, type ?? 'N/A', isDark),
-        // For promo packs: show tickets included and the pack price (NOT qty × price)
-        if (isPromo && promoQty > 1)
-          _rowInfo(l10n.quantity, '$promoQty ${l10n.tickets}', isDark),
-        _rowInfo(l10n.price, CurrencyHelper.format(price, currency), isDark,
-            bold: isPromo),
-        const Divider(height: 32),
-        _rowInfo(l10n.guest, name, isDark),
-        _rowInfo(l10n.email, email, isDark),
-        if (phone.isNotEmpty) _rowInfo(l10n.phoneNumber, phone, isDark),
-        if (doc.isNotEmpty) _rowInfo(l10n.idNumber, doc, isDark),
+        GlassCard(
+          etiqueta: l10n.ticketType,
+          child: Column(
+            children: [
+              _rowInfo(context, l10n.event, selectedEvent?['name'] ?? 'N/A'),
+              _rowInfo(context, l10n.ticketType, type ?? 'N/A'),
+              // For promo packs: show tickets included and the pack price
+              // (NOT qty × price)
+              if (isPromo && promoQty > 1)
+                _rowInfo(context, l10n.quantity, '$promoQty ${l10n.tickets}'),
+              _rowInfo(context, l10n.price,
+                  CurrencyHelper.format(price, currency),
+                  bold: true),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        GlassCard(
+          etiqueta: l10n.guest,
+          child: Column(
+            children: [
+              _rowInfo(context, l10n.guest, name),
+              _rowInfo(context, l10n.email, email),
+              if (phone.isNotEmpty) _rowInfo(context, l10n.phoneNumber, phone),
+              if (doc.isNotEmpty) _rowInfo(context, l10n.idNumber, doc),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _rowInfo(String label, String value, bool isDark,
+  /// Fila del resumen: qué dice a la izquierda, el dato a la derecha en mono.
+  Widget _rowInfo(BuildContext context, String label, String value,
       {bool bold = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(width: 8),
           Expanded(
-            child: Text(value,
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 14)),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppTheme.fontBody,
+                fontSize: 12.5,
+                color: AppTheme.textoSecundario(context),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.dato(
+                context,
+                size: 12.5,
+                color: bold ? AppTheme.acentoTexto(context) : null,
+              ),
+            ),
           ),
         ],
       ),

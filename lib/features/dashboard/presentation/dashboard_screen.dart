@@ -10,7 +10,6 @@ import '../../events/presentation/event_state.dart';
 import '../../events/data/event_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/dashboard_repository.dart';
-import '../../profile/data/profile_repository.dart';
 import 'widgets/admin_dashboard_view.dart';
 import 'widgets/rrpp_dashboard_view.dart';
 import 'widgets/door_dashboard_view.dart';
@@ -21,8 +20,6 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     final role = ref.watch(userRoleProvider);
     final isDevice = ref.watch(deviceProvider) != null;
@@ -42,11 +39,7 @@ class DashboardScreen extends ConsumerWidget {
       // Ahora el título tiene la barra entera y el selector baja al cuerpo,
       // como una tarjeta fina de borde a borde: se lee el nombre completo del
       // evento y se toca más fácil.
-      appBar: AppBar(
-        title: Text(l10n.dashboard),
-        centerTitle: false,
-      ),
-      drawer: _buildDrawer(context, ref, isDark),
+      titulo: l10n.navPanel,
       body: RefreshIndicator(
         onRefresh: () async {
           final refresh = ref.refresh(dashboardMetricsProvider.future);
@@ -61,7 +54,7 @@ class DashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Selector de evento, de borde a borde.
-              _SelectorDeEvento(isDark: isDark),
+              const _SelectorDeEvento(),
               const SizedBox(height: 16),
 
               // Aviso de suscripción. Se dibuja solo si hay algo que decir
@@ -114,11 +107,8 @@ class DashboardScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.recentActivity,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    l10n.recentActivity.toUpperCase(),
+                    style: AppTheme.titular(context, size: 16),
                   ),
                   const SizedBox.shrink(),
                 ],
@@ -133,159 +123,6 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, WidgetRef ref, bool isDark) {
-    final l10n = AppLocalizations.of(context);
-    final role = ref.watch(userRoleProvider);
-    final isDevice = ref.watch(deviceProvider) != null;
-    final isDoor = isDevice || role == AppRoles.door;
-
-    return Drawer(
-      backgroundColor: isDark ? const Color(0xFF0B1220) : Colors.white,
-      child: Column(
-        children: [
-          DrawerHeader(
-            decoration:
-                BoxDecoration(color: AppTheme.neonBlue.withValues(alpha: 0.1)),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Foto del usuario si la cargó; si no, el rayo de la marca.
-                  // Los dispositivos de puerta entran con alias y PIN, sin
-                  // cuenta de usuario, así que nunca tienen foto.
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final avatar = ref
-                          .watch(profileProvider)
-                          .valueOrNull
-                          ?.avatarUrl;
-
-                      if (avatar == null || avatar.isEmpty) {
-                        return const Icon(Icons.flash_on,
-                            size: 48, color: AppTheme.neonBlue);
-                      }
-
-                      return GestureDetector(
-                        onTap: () {
-                          context.pop();
-                          context.push('/profile');
-                        },
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor:
-                              AppTheme.neonBlue.withValues(alpha: 0.2),
-                          backgroundImage: NetworkImage(avatar),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final org = ref.watch(userOrganizationProvider);
-                      if (org == null) return const SizedBox.shrink();
-                      return Text(
-                        org.name,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.dashboard,
-                color: isDark ? Colors.white70 : Colors.black87),
-            title: Text(l10n.dashboard,
-                style:
-                    TextStyle(color: isDark ? Colors.white : Colors.black87)),
-            onTap: () => context.pop(),
-          ),
-          if (!isDoor) ...[
-            // Solo para superadmin: administra el conjunto de organizaciones,
-            // no una en particular.
-            if (AppRoles.isSuperadmin(role))
-              ListTile(
-                leading: Icon(Icons.admin_panel_settings_outlined,
-                    color: AppTheme.neonBlue),
-                title: Text(l10n.superAdmin,
-                    style: TextStyle(
-                        color: AppTheme.neonBlue,
-                        fontWeight: FontWeight.bold)),
-                onTap: () {
-                  context.pop();
-                  context.push('/super-admin');
-                },
-              ),
-            ListTile(
-              leading: Icon(Icons.person_outline,
-                  color: isDark ? Colors.white70 : Colors.black87),
-              title: Text(l10n.profile,
-                  style:
-                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
-              onTap: () {
-                context.pop();
-                context.push('/profile');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.credit_card_outlined,
-                  color: isDark ? Colors.white70 : Colors.black87),
-              title: Text(l10n.subscription,
-                  style:
-                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
-              onTap: () {
-                context.pop();
-                context.push('/subscription');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.event,
-                  color: isDark ? Colors.white70 : Colors.black87),
-              title: Text(l10n.events,
-                  style:
-                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
-              onTap: () {
-                context.pop();
-                context.push('/events');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings,
-                  color: isDark ? Colors.white70 : Colors.black87),
-              title: Text(l10n.settings,
-                  style:
-                      TextStyle(color: isDark ? Colors.white : Colors.black87)),
-              onTap: () {
-                context.pop();
-                context.push('/settings');
-              },
-            ),
-          ],
-          const Spacer(),
-          const Divider(),
-          ListTile(
-            leading:
-                Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
-            title: Text(l10n.logout,
-                style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            onTap: () async {
-              await ref.read(authControllerProvider.notifier).logout();
-              if (context.mounted) context.go('/welcome');
-            },
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
 }
 
 class _ErrorView extends StatelessWidget {
@@ -305,7 +142,7 @@ class _ErrorView extends StatelessWidget {
               color: Theme.of(context).colorScheme.error, size: 40),
           const SizedBox(height: 8),
           Text(l10n.error),
-          Text(error, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Text(error, style: const TextStyle(fontSize: 10, color: AppTheme.accentPurple)),
           TextButton(onPressed: onRetry, child: Text(l10n.retry)),
         ],
       ),
@@ -324,7 +161,7 @@ class _ErrorBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(message.isNotEmpty ? message : l10n.error,
-          style: const TextStyle(color: Colors.red)),
+          style: const TextStyle(color: AppTheme.accentOrange)),
     );
   }
 }
@@ -340,14 +177,11 @@ class _ErrorBanner extends StatelessWidget {
 /// Sigue siendo una fila fina —una línea de alto— para no robarle espacio a las
 /// métricas, que son lo que se viene a mirar.
 class _SelectorDeEvento extends ConsumerWidget {
-  const _SelectorDeEvento({required this.isDark});
-
-  final bool isDark;
+  const _SelectorDeEvento();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
 
     ref.watch(eventsProvider); // Dispara la carga de eventos.
     final selectedEvent = ref.watch(selectedEventProvider);
@@ -363,53 +197,67 @@ class _SelectorDeEvento extends ConsumerWidget {
     );
 
     final hayEvento = selectedEvent != null;
-    final acento = theme.colorScheme.primary;
-    final colorTexto =
-        hayEvento ? acento : (isDark ? Colors.white70 : Colors.black54);
 
-    return Material(
-      color: hayEvento
-          ? acento.withValues(alpha: 0.08)
-          : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04)),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => context.push('/events'),
-        child: Container(
-          // 48 px de alto: fila fina, pero por encima del objetivo táctil.
-          constraints: const BoxConstraints(minHeight: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: hayEvento
-                  ? acento.withValues(alpha: 0.45)
-                  : (isDark ? Colors.white24 : Colors.black12),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.calendar_today, size: 17, color: colorTexto),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Text(
-                  selectedEvent?['name'] ?? l10n.selectEvent,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colorTexto,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14.5,
-                  ),
+    // Selector de evento: la caja recta con chevron del diseño. El nombre va
+    // en mono porque es el dato sobre el que opera todo el resto del panel, y
+    // sin evento elegido el borde queda apagado para que se note que falta.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.selectEvent.toUpperCase(),
+          style: AppTheme.etiqueta(context, size: 10),
+        ),
+        const SizedBox(height: 6),
+        Material(
+          color: AppTheme.panel(context),
+          child: InkWell(
+            onTap: () => context.push('/events'),
+            splashFactory: NoSplash.splashFactory,
+            highlightColor: AppTheme.hover(context),
+            child: Container(
+              // 48 px de alto: fila fina, pero por encima del objetivo táctil.
+              constraints: const BoxConstraints(minHeight: 48),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: hayEvento
+                      ? AppTheme.borde(context)
+                      : AppTheme.bordeSuave(context),
                 ),
               ),
-              // Indica que se toca para cambiar. Sin esto la fila se lee como
-              // una etiqueta y no como un control.
-              Icon(Icons.unfold_more, size: 18, color: colorTexto.withValues(alpha: .7)),
-            ],
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today,
+                      size: 15,
+                      color: hayEvento
+                          ? AppTheme.acentoTexto(context)
+                          : AppTheme.textoApagado(context)),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Text(
+                      selectedEvent?['name'] ?? l10n.selectEvent,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTheme.dato(
+                        context,
+                        size: 13,
+                        color: hayEvento
+                            ? AppTheme.texto(context)
+                            : AppTheme.textoApagado(context),
+                      ),
+                    ),
+                  ),
+                  // Indica que se toca para cambiar. Sin esto la fila se lee
+                  // como una etiqueta y no como un control.
+                  Icon(Icons.expand_more,
+                      size: 18, color: AppTheme.textoSecundario(context)),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

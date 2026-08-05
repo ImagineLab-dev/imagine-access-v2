@@ -12,9 +12,38 @@
   "required": "Required",
   "logout": "Logout",
   "dashboard": "Dashboard",
+  "navPanel": "Panel",
+  "@navPanel": {
+    "description": "Bottom-nav label for the dashboard. Must fit one short word."
+  },
+  "navDocument": "ID",
+  "@navDocument": {
+    "description": "Bottom-nav label for document lookup. Must fit one short word."
+  },
   "totalTickets": "Total Tickets",
   "checkedIn": "Checked In",
   "scanned": "Scanned",
+  "attendance": "Attendance",
+  "@attendance": {
+    "description": "Dashboard hero card: how many issued tickets have entered"
+  },
+  "breakdownByCategory": "Breakdown by category",
+  "@breakdownByCategory": {
+    "description": "Heading of the per-category table on the dashboard"
+  },
+  "enteredOfIssued": "entered / issued",
+  "@enteredOfIssued": {
+    "description": "Column header of the breakdown table. Said ONCE instead of repeating \"(IN/TOT)\" on every row."
+  },
+  "ticketsNotEntered": "{count} not entered yet",
+  "@ticketsNotEntered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "Sub-line under attendance"
+  },
   "sales": "Sales",
   "capacity": "Capacity",
   "createTicket": "Create Ticket",
@@ -145,6 +174,10 @@
   "usedCaps": "USED",
   "voidCaps": "VOID",
   "readyToScan": "Ready to Scan",
+  "alignQrInFrame": "Align the QR code inside the frame",
+  "@alignQrInFrame": {
+    "description": "Instruction shown under the scanner viewfinder"
+  },
   "firstEntry": "FIRST ENTRY:",
   "tapToDismiss": "TAP TO DISMISS",
   "newEvent": "New Event",
@@ -305,6 +338,18 @@
   "manualUpper": "MANUAL",
   "systemUser": "System",
   "activityByLine": "{buyer} • by {validator}",
+  "activityMethodLine": "{method} • by {validator}",
+  "@activityMethodLine": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      },
+      "validator": {
+        "type": "String"
+      }
+    },
+    "description": "Sub-line of a scan row: how it was scanned and by whom"
+  },
   "@activityByLine": {
     "placeholders": {
       "buyer": {

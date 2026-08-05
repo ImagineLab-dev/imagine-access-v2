@@ -172,6 +172,18 @@ abstract class AppLocalizations {
   /// **'Dashboard'**
   String get dashboard;
 
+  /// Bottom-nav label for the dashboard. Must fit one short word.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel'**
+  String get navPanel;
+
+  /// Bottom-nav label for document lookup. Must fit one short word.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get navDocument;
+
   /// No description provided for @totalTickets.
   ///
   /// In en, this message translates to:
@@ -189,6 +201,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scanned'**
   String get scanned;
+
+  /// Dashboard hero card: how many issued tickets have entered
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendance;
+
+  /// Heading of the per-category table on the dashboard
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown by category'**
+  String get breakdownByCategory;
+
+  /// Column header of the breakdown table. Said ONCE instead of repeating "(IN/TOT)" on every row.
+  ///
+  /// In en, this message translates to:
+  /// **'entered / issued'**
+  String get enteredOfIssued;
+
+  /// Sub-line under attendance
+  ///
+  /// In en, this message translates to:
+  /// **'{count} not entered yet'**
+  String ticketsNotEntered(int count);
 
   /// No description provided for @sales.
   ///
@@ -970,6 +1006,12 @@ abstract class AppLocalizations {
   /// **'Ready to Scan'**
   String get readyToScan;
 
+  /// Instruction shown under the scanner viewfinder
+  ///
+  /// In en, this message translates to:
+  /// **'Align the QR code inside the frame'**
+  String get alignQrInFrame;
+
   /// No description provided for @firstEntry.
   ///
   /// In en, this message translates to:
@@ -1635,6 +1677,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{buyer} • by {validator}'**
   String activityByLine(String buyer, String validator);
+
+  /// Sub-line of a scan row: how it was scanned and by whom
+  ///
+  /// In en, this message translates to:
+  /// **'{method} • by {validator}'**
+  String activityMethodLine(String method, String validator);
 
   /// No description provided for @sentByLine.
   ///

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_roles.dart';
 import '../platform/host.dart';
+import '../ui/app_shell.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
@@ -153,9 +154,73 @@ final routerProvider = Provider<GoRouter>((ref) {
           return LoginScreen(initialTabIndex: initialTabIndex);
         },
       ),
-      GoRoute(
-        path: '/subscription',
-        builder: (context, state) => const SubscriptionScreen(),
+      // --- Pantallas CON armazón (cabecera global + barra inferior) ---
+      //
+      // Son los destinos a los que se vuelve todo el tiempo durante un evento.
+      // Van dentro de un ShellRoute para que la cabecera y la barra inferior se
+      // construyan UNA vez y no se desmonten al cambiar de destino: si cada
+      // pantalla las dibujara por su cuenta, al tocar la barra se vería
+      // parpadear la propia barra.
+      //
+      // Lo que queda AFUERA es lo que se abre encima y se cierra: el asistente
+      // de ticket, crear evento, las estadísticas y los enlaces profundos.
+      // Esas traen su propia barra con el botón de volver, que es lo que
+      // corresponde a una pantalla de la que se sale.
+      ShellRoute(
+        builder: (context, state, child) =>
+            AppShell(ubicacion: state.matchedLocation, child: child),
+        routes: [
+          GoRoute(
+            path: '/dashboard',
+            builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/events',
+            builder: (context, state) => const EventSelectorScreen(),
+          ),
+          GoRoute(
+            path: '/scanner',
+            builder: (context, state) => const ScannerScreen(),
+          ),
+          GoRoute(
+            path: '/tickets',
+            builder: (context, state) => const TicketListScreen(),
+          ),
+          GoRoute(
+            path: '/document_search',
+            builder: (context, state) => const DocumentSearchScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/subscription',
+            builder: (context, state) => const SubscriptionScreen(),
+          ),
+          GoRoute(
+            path: '/super-admin',
+            builder: (context, state) => const SuperAdminScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            builder: (context, state) => const SettingsScreen(),
+            routes: [
+              GoRoute(
+                path: 'users',
+                builder: (context, state) => const UserManagementScreen(),
+              ),
+              GoRoute(
+                path: 'devices',
+                builder: (context, state) => const DeviceManagementScreen(),
+              ),
+              GoRoute(
+                path: 'legal',
+                builder: (context, state) => const LegalScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/verify-email',
@@ -180,28 +245,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ResetPasswordScreen(),
       ),
       GoRoute(
-        path: '/events',
-        builder: (context, state) => const EventSelectorScreen(),
-      ),
-      GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
-      ),
-      GoRoute(
         path: '/create_ticket',
         builder: (context, state) => const CreateTicketWizard(),
-      ),
-      GoRoute(
-        path: '/scanner',
-        builder: (context, state) => const ScannerScreen(),
-      ),
-      GoRoute(
-        path: '/document_search',
-        builder: (context, state) => const DocumentSearchScreen(),
-      ),
-      GoRoute(
-        path: '/tickets',
-        builder: (context, state) => const TicketListScreen(),
       ),
       GoRoute(
         path: '/ticket/:ticketId',
@@ -234,32 +279,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/event_staff',
         builder: (context, state) => const EventStaffScreen(),
-      ),
-      GoRoute(
-        path: '/super-admin',
-        builder: (context, state) => const SuperAdminScreen(),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
-        routes: [
-          GoRoute(
-            path: 'users',
-            builder: (context, state) => const UserManagementScreen(),
-          ),
-          GoRoute(
-            path: 'devices',
-            builder: (context, state) => const DeviceManagementScreen(),
-          ),
-          GoRoute(
-            path: 'legal',
-            builder: (context, state) => const LegalScreen(),
-          ),
-        ],
       ),
     ],
   );

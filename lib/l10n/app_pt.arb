@@ -12,9 +12,15 @@
   "required": "Obrigatório",
   "logout": "Sair",
   "dashboard": "Painel de Controle",
+  "navPanel": "Painel",
+  "navDocument": "Documento",
   "totalTickets": "Total de Ingressos",
   "checkedIn": "Check-in Feito",
   "scanned": "Escaneados",
+  "attendance": "Presença",
+  "breakdownByCategory": "Detalhe por categoria",
+  "enteredOfIssued": "entraram / emitidos",
+  "ticketsNotEntered": "{count} sem entrar",
   "sales": "Vendas",
   "capacity": "Capacidade",
   "createTicket": "Criar Ingresso",
@@ -143,6 +149,7 @@
   "usedCaps": "USADO",
   "voidCaps": "ANULADO",
   "readyToScan": "Pronto para Digitalizar",
+  "alignQrInFrame": "Alinhe o código QR dentro da moldura",
   "firstEntry": "PRIMEIRA ENTRADA:",
   "tapToDismiss": "TOQUE PARA FECHAR",
   "newEvent": "Novo Evento",
@@ -277,6 +284,7 @@
   "manualUpper": "MANUAL",
   "systemUser": "Sistema",
   "activityByLine": "{buyer} • por {validator}",
+  "activityMethodLine": "{method} • por {validator}",
   "@activityByLine": {
     "placeholders": {
       "buyer": {

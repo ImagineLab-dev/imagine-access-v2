@@ -45,6 +45,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboard => 'Panel de Control';
 
   @override
+  String get navPanel => 'Panel';
+
+  @override
+  String get navDocument => 'Documento';
+
+  @override
   String get totalTickets => 'Tickets Totales';
 
   @override
@@ -52,6 +58,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scanned => 'Escaneados';
+
+  @override
+  String get attendance => 'Asistencia';
+
+  @override
+  String get breakdownByCategory => 'Desglose por categoría';
+
+  @override
+  String get enteredOfIssued => 'ingresaron / emitidos';
+
+  @override
+  String ticketsNotEntered(int count) {
+    return '$count sin ingresar';
+  }
 
   @override
   String get sales => 'Ventas';
@@ -449,6 +469,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get readyToScan => 'Listo para Escanear';
 
   @override
+  String get alignQrInFrame => 'Alineá el código QR dentro del marco';
+
+  @override
   String get firstEntry => 'PRIMERA ENTRADA:';
 
   @override
@@ -799,6 +822,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String activityByLine(String buyer, String validator) {
     return '$buyer • por $validator';
+  }
+
+  @override
+  String activityMethodLine(String method, String validator) {
+    return '$method • por $validator';
   }
 
   @override

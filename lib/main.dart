@@ -96,7 +96,7 @@ Future<void> main({
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   'Error initializing app:\n$e',
-                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                  style: const TextStyle(color: AppTheme.accentOrange, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -155,7 +155,7 @@ class ImagineAccessApp extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   'Init Error: $err',
-                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                  style: const TextStyle(color: AppTheme.accentOrange, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ),

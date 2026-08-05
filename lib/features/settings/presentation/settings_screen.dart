@@ -27,7 +27,7 @@ class SettingsScreen extends ConsumerWidget {
     final role = ref.watch(userRoleProvider);
 
     return GlassScaffold(
-      appBar: AppBar(title: Text(l10n.settings)),
+      titulo: l10n.settings,
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -43,9 +43,8 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 Text(l10n.defaultCurrency),
                 Consumer(builder: (ctx, ref, _) {
-                  final isDark = theme.brightness == Brightness.dark;
-                  final dropdownColor = isDark ? Colors.black87 : Colors.white;
-                  final textColor = isDark ? Colors.white : Colors.black87;
+                  final dropdownColor = AppTheme.panelElevado(context);
+                  final textColor = AppTheme.texto(context);
                   final currentValue = currencyAsync.value ?? 'PYG';
 
                   return DropdownButton<String>(
@@ -56,7 +55,7 @@ class SettingsScreen extends ConsumerWidget {
                       style: TextStyle(color: textColor, fontSize: 14),
                       underline: const SizedBox(),
                       iconEnabledColor:
-                          isDark ? Colors.white70 : Colors.black87,
+                          AppTheme.textoSecundario(context),
                       items: CurrencyHelper.currencies.entries
                           .map((e) => DropdownMenuItem(
                                 value: e.key,
@@ -158,7 +157,7 @@ class SettingsScreen extends ConsumerWidget {
                 }),
                 backgroundColor: resultado == ResultadoActualizacion.nueva
                     ? AppTheme.neonBlue
-                    : Colors.green,
+                    : AppTheme.lima,
               ));
             },
           ),
@@ -212,11 +211,11 @@ class _SettingsTile extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.bold, color: color)),
                 Text(subtitle,
                     style: theme.textTheme.bodySmall
-                        ?.copyWith(color: Colors.grey)),
+                        ?.copyWith(color: AppTheme.accentPurple)),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey)
+          const Icon(Icons.chevron_right, color: AppTheme.accentPurple)
         ],
       ),
     );

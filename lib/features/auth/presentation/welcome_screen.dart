@@ -5,444 +5,257 @@ import 'package:go_router/go_router.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/neon_button.dart';
 
+/// Portada.
+///
+/// Era el ejemplo de manual de pantalla generada: dos orbes de colores
+/// latiendo detrás, el título con degradado por `ShaderMask`, cuatro funciones
+/// cada una con SU color de acento y su resplandor, y radios de 34, 26, 18 y 10
+/// conviviendo en la misma vista.
+///
+/// Ahora es una ficha técnica: retícula de fondo, el logo, un panel con
+/// escuadras en las esquinas, y las cuatro funciones en una grilla donde el
+/// único color es el lima. Que las cuatro compartan acento es deliberado —
+/// cuatro colores distintos no aportaban ninguna información, solo ruido.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
-    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final secondaryText = isDark
-        ? AppTheme.darkTextSecondary
-        : AppTheme.lightTextSecondary;
 
     return GlassScaffold(
       body: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final frameHeight = constraints.maxHeight > 820
-                ? 820.0
-                : constraints.maxHeight;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 430),
-                child: Container(
-                  constraints: BoxConstraints(minHeight: frameHeight),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(34),
-                    color: (isDark ? Colors.black : Colors.white)
-                        .withValues(alpha: isDark ? 0.2 : 0.55),
-                    border: Border.all(
-                      color: (isDark ? Colors.white : Colors.black)
-                          .withValues(alpha: 0.09),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
-                        blurRadius: 26,
-                        spreadRadius: -14,
-                        offset: const Offset(0, 14),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      const Positioned.fill(
-                        child: IgnorePointer(
-                          child: _BackgroundOrbs(),
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 130,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(34),
-                            ),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: isDark ? 0.25 : 0.07),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(
-                              bottom: Radius.circular(34),
-                            ),
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: isDark ? 0.24 : 0.06),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 22,
-                        ),
-                        child: Column(
-                          children: [
-                            SvgPicture.asset(
-                              'assets/logos/shield_qr_final_v2.svg',
-                              width: 100,
-                              height: 100,
-                            ).animate().scale(
-                                  duration: 400.ms,
-                                  curve: Curves.easeOutBack,
-                                ),
-                            const SizedBox(height: 8),
-                            ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: isDark
-                                    ? [
-                                        Colors.white,
-                                        Colors.white.withValues(alpha: 0.7),
-                                      ]
-                                    : [
-                                        textColor,
-                                        textColor.withValues(alpha: 0.7),
-                                      ],
-                              ).createShader(bounds),
-                              child: Text(
-                                l10n.appTitle,
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.2,
-                                  color: Colors.white,
-                                  fontSize: 40,
-                                  height: 1.05,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ).animate().fade().slideY(begin: 0.2, end: 0),
-                            const SizedBox(height: 10),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 270),
-                              child: Text(
-                                l10n.welcomeTagline,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: secondaryText,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 13.5,
-                                ),
-                              ),
-                            ).animate().fade(delay: 120.ms),
-                            const SizedBox(height: 22),
-                            GlassCard(
-                              borderRadius: BorderRadius.circular(26),
-                              padding: const EdgeInsets.all(18),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          l10n.welcomeMainFeatures,
-                                          style: theme.textTheme.labelLarge?.copyWith(
-                                            color: secondaryText,
-                                            fontSize: 11,
-                                            letterSpacing: 1,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 34,
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(20),
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              AppTheme.accentBlue,
-                                              AppTheme.accentPurple,
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  GridView.count(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    childAspectRatio: 1.18,
-                                    children: [
-                                      _FeatureTile(
-                                        icon: Icons.confirmation_number_outlined,
-                                        text: l10n.createTicket,
-                                        accent: AppTheme.accentBlue,
-                                      ),
-                                      _FeatureTile(
-                                        icon: Icons.qr_code_scanner,
-                                        text: l10n.scanner,
-                                        accent: AppTheme.accentPurple,
-                                      ),
-                                      _FeatureTile(
-                                        icon: Icons.bar_chart_rounded,
-                                        text: l10n.reports,
-                                        accent: AppTheme.accentGreen,
-                                      ),
-                                      _FeatureTile(
-                                        icon: Icons.group_outlined,
-                                        text: l10n.manageTeam,
-                                        accent: AppTheme.accentOrange,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ).animate().fade(delay: 180.ms).slideY(begin: 0.08, end: 0),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              height: 56,
-                              child: NeonButton(
-                                text: l10n.adminRRPP,
-                                icon: Icons.shield_outlined,
-                                onPressed: () => context.go('/login?mode=admin'),
-                              ),
-                            ).animate().fade(delay: 220.ms),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              height: 54,
-                              child: NeonButton(
-                                text: l10n.doorAccess,
-                                icon: Icons.meeting_room_outlined,
-                                isSecondary: true,
-                                onPressed: () => context.go('/login?mode=door'),
-                              ),
-                            ).animate().fade(delay: 260.ms),
-                            const SizedBox(height: 14),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const _PulsingDot(
-                                  width: 8,
-                                  height: 8,
-                                  color: AppTheme.accentGreen,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.systemOnline,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: secondaryText,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.15,
-                                  ),
-                                ),
-                              ],
-                            ).animate().fade(delay: 300.ms),
-                            const SizedBox(height: 2),
-                          ],
-                        ),
-                      ),
-                    ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // --- Encabezado ---
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/logos/shield_qr_final_v2.svg',
+                    width: 84,
+                    height: 84,
                   ),
                 ),
-              ),
-            );
-          },
+                const SizedBox(height: 14),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 5),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: AppTheme.lima, width: 2),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.appTitle.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: AppTheme.titular(context, size: 30),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 290),
+                    child: Text(
+                      l10n.welcomeTagline,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontBody,
+                        fontSize: 13,
+                        height: 1.55,
+                        color: AppTheme.textoSecundario(context),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 26),
+
+                // --- Funciones ---
+                _PanelConEscuadras(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        l10n.welcomeMainFeatures.toUpperCase(),
+                        style: AppTheme.etiqueta(context),
+                      ),
+                      const SizedBox(height: 14),
+                      GridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: 1.55,
+                        children: [
+                          _Funcion(
+                            icono: Icons.confirmation_number_outlined,
+                            texto: l10n.createTicket,
+                          ),
+                          _Funcion(
+                            icono: Icons.qr_code_scanner,
+                            texto: l10n.scanner,
+                          ),
+                          _Funcion(
+                            icono: Icons.bar_chart_rounded,
+                            texto: l10n.reports,
+                          ),
+                          _Funcion(
+                            icono: Icons.group_outlined,
+                            texto: l10n.manageTeam,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ).animate().fade(delay: 120.ms),
+
+                const SizedBox(height: 22),
+
+                // --- Entradas al sistema ---
+                NeonButton(
+                  text: l10n.adminRRPP,
+                  icon: Icons.shield_outlined,
+                  onPressed: () => context.go('/login?mode=admin'),
+                ).animate().fade(delay: 180.ms),
+                const SizedBox(height: 10),
+                NeonButton(
+                  text: l10n.doorAccess,
+                  icon: Icons.meeting_room_outlined,
+                  isSecondary: true,
+                  onPressed: () => context.go('/login?mode=door'),
+                ).animate().fade(delay: 220.ms),
+
+                const SizedBox(height: 20),
+                const Center(child: TestigoDeSistema()),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _BackgroundOrbs extends StatelessWidget {
-  const _BackgroundOrbs();
+/// Panel con escuadras lima en las dos esquinas de arriba.
+///
+/// Es el gesto que el diseño usa para marcar el bloque principal de una
+/// pantalla, en lugar de agrandarlo o ponerle sombra.
+class _PanelConEscuadras extends StatelessWidget {
+  const _PanelConEscuadras({required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned(
-          top: 40,
-          left: -40,
-          child: _Orb(
-            size: 180,
-            color: AppTheme.accentBlue.withValues(alpha: 0.14),
-            durationMs: 4200,
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppTheme.panel(context),
+            border: Border.all(color: AppTheme.borde(context)),
           ),
+          child: child,
         ),
-        Positioned(
-          bottom: 170,
-          right: -35,
-          child: _Orb(
-            size: 160,
-            color: AppTheme.accentPurple.withValues(alpha: 0.10),
-            durationMs: 5000,
-          ),
-        ),
+        const Positioned(top: 0, left: 0, child: _Escuadra(izquierda: true)),
+        const Positioned(top: 0, right: 0, child: _Escuadra(izquierda: false)),
       ],
     );
   }
 }
 
-class _Orb extends StatelessWidget {
-  final double size;
-  final Color color;
-  final int durationMs;
+class _Escuadra extends StatelessWidget {
+  const _Escuadra({required this.izquierda});
 
-  const _Orb({
-    required this.size,
-    required this.color,
-    required this.durationMs,
-  });
+  final bool izquierda;
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.94, end: 1.06),
-      duration: Duration(milliseconds: durationMs),
-      curve: Curves.easeInOut,
-      builder: (context, value, child) {
-        return Transform.scale(scale: value, child: child);
-      },
-      onEnd: () {},
-      child: Container(
-        width: size,
-        height: size,
+    const lado = BorderSide(color: AppTheme.lima, width: 2);
+    return SizedBox(
+      width: 16,
+      height: 16,
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color, Colors.transparent],
+          border: Border(
+            top: lado,
+            left: izquierda ? lado : BorderSide.none,
+            right: izquierda ? BorderSide.none : lado,
           ),
         ),
       ),
-    ).animate(onPlay: (controller) => controller.repeat(reverse: true));
+    );
   }
 }
 
-class _PulsingDot extends StatelessWidget {
-  final double width;
-  final double height;
-  final Color color;
+class _Funcion extends StatelessWidget {
+  const _Funcion({required this.icono, required this.texto});
 
-  const _PulsingDot({
-    required this.width,
-    required this.height,
-    required this.color,
-  });
+  final IconData icono;
+  final String texto;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.55),
-            blurRadius: 8,
-            spreadRadius: -2,
+        color: AppTheme.campo(context),
+        border: Border.all(color: AppTheme.borde(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(icono, size: 19, color: AppTheme.acentoTexto(context)),
+          Text(
+            texto.toUpperCase(),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTheme.etiqueta(
+              context,
+              size: 10,
+              color: AppTheme.texto(context),
+            ),
           ),
         ],
       ),
-    )
-        .animate(onPlay: (controller) => controller.repeat(reverse: true))
-        .scaleXY(begin: 0.85, end: 1.1, duration: 900.ms)
-        .fade(begin: 0.7, end: 1.0, duration: 900.ms);
+    );
   }
 }
 
-class _FeatureTile extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final Color accent;
-
-  const _FeatureTile({
-    required this.icon,
-    required this.text,
-    required this.accent,
-  });
+/// Testigo de "sistema en línea": un cuadrado lima que late y una línea en
+/// mono. Cuadrado y no círculo — en esta identidad no hay nada redondo.
+class TestigoDeSistema extends StatelessWidget {
+  const TestigoDeSistema({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.04),
-        border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: isDark ? 0.14 : 0.08),
-            blurRadius: 16,
-            spreadRadius: -12,
-            offset: const Offset(0, 10),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 7, height: 7, color: AppTheme.lima)
+            .animate(onPlay: (c) => c.repeat(reverse: true))
+            .fade(begin: 0.3, end: 1, duration: 950.ms),
+        const SizedBox(width: 8),
+        Text(
+          l10n.systemOnline.toUpperCase(),
+          style: AppTheme.dato(
+            context,
+            size: 10.5,
+            color: AppTheme.textoSecundario(context),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(13),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: accent.withValues(alpha: 0.16),
-              ),
-              child: Icon(icon, size: 18, color: accent),
-            ),
-            const Spacer(),
-            Text(
-              text,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white.withValues(alpha: 0.92) : null,
-                fontSize: 13,
-                height: 1.2,
-              ),
-            ),
-          ],
         ),
-      ),
+      ],
     );
   }
 }

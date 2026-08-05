@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +8,8 @@ import '../../../events/presentation/event_state.dart';
 import '../../../settings/data/settings_repository.dart';
 import '../../data/event_report_service.dart';
 import '../../../../core/ui/glass_card.dart';
+import '../../../../core/ui/carrusel_metricas.dart';
+import '../../../../core/ui/neon_button.dart';
 import 'dashboard_components.dart';
 
 class AdminDashboardView extends ConsumerWidget {
@@ -21,148 +22,138 @@ class AdminDashboardView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final defaultCurrency = ref.watch(defaultCurrencyProvider).value ?? 'PYG';
 
+    // Los números del evento, en tres niveles de jerarquía.
+    //
+    // Antes eran OCHO tarjetas idénticas en una grilla de 2x4, más ventas
+    // aparte. Ocho cajas del mismo tamaño, con el mismo peso, cada una con su
+    // ícono de un color distinto: "6 TICKETS TOTALES" ocupaba exactamente lo
+    // mismo que "0 / 0 PROMO". Cuando todo pesa igual, nada pesa: hay que leer
+    // las ocho para encontrar la que importa. Y la mitad decían "0 / 0".
+    //
+    // Ahora:
+    //   1. VENTAS, que es la única cifra de dinero, arriba y grande.
+    //   2. ASISTENCIA, que es la pregunta que se hace durante el evento
+    //      —cuántos entraron de los que compraron—, con barra de avance.
+    //   3. El desglose por categoría como TABLA, no como tarjetas. Cinco filas
+    //      de una línea ocupan menos que dos tarjetas, se comparan de arriba
+    //      abajo (que es como se comparan números) y las categorías vacías se
+    //      apagan en vez de gritar igual que las demás.
+    //
+    // "Tickets totales", "válido" y "escaneados" eran tres tarjetas para tres
+    // números que son el mismo dato: total = escaneados + sin ingresar. Ahora
+    // es una sola línea que lo dice entero.
+    final total = (metrics['total_sold'] as num? ?? 0).toInt();
+    final escaneados = (metrics['scanned'] as num? ?? 0).toInt();
+    final sinIngresar = (total - escaneados).clamp(0, total);
+
+    int n(String clave) => (metrics[clave] as num? ?? 0).toInt();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GridView.count(
-          shrinkWrap: true,
-          crossAxisCount: Responsive.columnas(context),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: Responsive.proporcionTarjeta(context),
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            MetricCard(
-              title: l10n.totalTickets,
-              value: (metrics['total_sold'] ?? 0).toString(),
-              icon: Icons.confirmation_number_outlined,
-              color: AppTheme.accentBlue,
-              delay: 0,
+        _PanelVentas(
+          monto: CurrencyHelper.format(
+              (metrics['revenue'] as num? ?? 0).toDouble(), defaultCurrency),
+          titulo: l10n.sales,
+        ),
+        const SizedBox(height: 12),
+
+        // Las ocho métricas, en carrusel.
+        //
+        // Antes eran ocho tarjetas iguales en una grilla de 2x4: ninguna
+        // destacaba y la mitad decía "0 / 0". Acá pasa una por vez, grande y
+        // con su barra de avance, y las vecinas quedan asomando a los costados
+        // para que se vea que hay más y se puedan comparar de a tres.
+        //
+        // Ventas NO entra: es la única cifra de dinero y va fija arriba.
+        CarruselMetricas(
+          tarjetas: [
+            TarjetaCarrusel(
+              etiqueta: l10n.attendance,
+              valor: '$escaneados / $total',
+              icono: Icons.qr_code_scanner,
+              avance: proporcion(escaneados, total),
             ),
-            MetricCard(
-              title: l10n.valid,
-              value: (metrics['valid'] ?? 0).toString(),
-              icon: Icons.check_circle_outline,
-              color: AppTheme.accentGreen,
-              delay: 100,
+            TarjetaCarrusel(
+              etiqueta: l10n.totalTickets,
+              valor: '$total',
+              icono: Icons.confirmation_number_outlined,
+              detalle: l10n.ticketsNotEntered(sinIngresar),
             ),
-            MetricCard(
-              title: l10n.scanned,
-              value: (metrics['scanned'] ?? 0).toString(),
-              icon: Icons.qr_code_scanner,
-              color: AppTheme.accentPurple,
-              delay: 200,
+            TarjetaCarrusel(
+              etiqueta: l10n.valid,
+              valor: '${n('valid')}',
+              icono: Icons.check_circle_outline,
             ),
-            // Ventas NO va acá: se dibuja a ancho completo debajo de la grilla.
-            // Ver el comentario de `_TarjetaVentas` más abajo.
-            MetricCard(
-              title: "${l10n.staff} (IN/TOT)",
-              value:
-                  "${metrics['staff_entered'] ?? 0} / ${metrics['staff_created'] ?? 0}",
-              icon: Icons.badge_outlined,
-              color: Colors.orangeAccent,
-              delay: 400,
+            TarjetaCarrusel(
+              etiqueta: l10n.staff,
+              valor: "${n('staff_entered')} / ${n('staff_created')}",
+              icono: Icons.badge_outlined,
+              avance: proporcion(n('staff_entered'), n('staff_created')),
             ),
-            MetricCard(
-              title: "${l10n.guests} (IN/TOT)",
-              value:
-                  "${metrics['guest_entered'] ?? 0} / ${metrics['guest_created'] ?? 0}",
-              icon: Icons.star_border,
-              color: Colors.pinkAccent,
-              delay: 500,
+            TarjetaCarrusel(
+              etiqueta: l10n.guests,
+              valor: "${n('guest_entered')} / ${n('guest_created')}",
+              icono: Icons.star_border,
+              avance: proporcion(n('guest_entered'), n('guest_created')),
             ),
-            MetricCard(
-              title: "${l10n.normal} (IN/TOT)",
-              value:
-                  "${metrics['standard_entered'] ?? 0} / ${metrics['standard_created'] ?? 0}",
-              icon: Icons.people_outline,
-              color: Colors.cyanAccent,
-              delay: 600,
+            TarjetaCarrusel(
+              etiqueta: l10n.normal,
+              valor: "${n('standard_entered')} / ${n('standard_created')}",
+              icono: Icons.people_outline,
+              avance: proporcion(n('standard_entered'), n('standard_created')),
             ),
-            MetricCard(
-              title: "${l10n.guestEntry} (IN/TOT)",
-              value:
-                  "${metrics['invitations_scanned'] ?? 0} / ${metrics['invitations_total'] ?? 0}",
-              icon: Icons.mail_outline,
-              color: Colors.deepPurpleAccent,
-              delay: 650,
+            TarjetaCarrusel(
+              etiqueta: l10n.guestEntry,
+              valor:
+                  "${n('invitations_scanned')} / ${n('invitations_total')}",
+              icono: Icons.mail_outline,
+              avance:
+                  proporcion(n('invitations_scanned'), n('invitations_total')),
             ),
-            MetricCard(
-              title: "Promo (IN/TOT)",
-              value:
-                  "${metrics['promo_entered'] ?? 0} / ${metrics['promo_created'] ?? 0}",
-              icon: Icons.local_offer,
-              color: Colors.orangeAccent,
-              delay: 700,
+            TarjetaCarrusel(
+              etiqueta: 'Promo',
+              valor: "${n('promo_entered')} / ${n('promo_created')}",
+              icono: Icons.local_offer_outlined,
+              avance: proporcion(n('promo_entered'), n('promo_created')),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
-        // Ventas, de borde a borde.
+        // Los dos van con contorno, ninguno macizo.
         //
-        // Estaba dentro de la grilla y eran NUEVE tarjetas en dos columnas: la
-        // última fila quedaba con una sola y el bloque entero se veía torcido.
-        // Sacándola quedan ocho, que son cuatro filas de dos exactas.
-        //
-        // Y es el lugar que le corresponde por jerarquía: de los nueve números
-        // es el único que es dinero. A ancho completo se lee de un vistazo sin
-        // competir con los conteos, y queda pegada al botón de Estadísticas, que
-        // es a donde va quien está mirando la plata.
-        _TarjetaVentas(
-          monto: CurrencyHelper.format(
-              (metrics['revenue'] as num? ?? 0).toDouble(), defaultCurrency),
-          icono: CurrencyHelper.getIcon(defaultCurrency),
-          titulo: l10n.sales,
-        ),
-        const SizedBox(height: 16),
-
-        GestureDetector(
-          onTap: () {
+        // "Estadísticas" era un bloque lima a todo lo ancho: lo más ruidoso de
+        // la pantalla, más que la cifra de ventas. Pero no es la acción
+        // principal del panel —esa es emitir un ticket—, así que no le
+        // corresponde el color macizo.
+        NeonButton(
+          text: l10n.statistics,
+          icon: Icons.analytics_outlined,
+          isSecondary: true,
+          onPressed: () {
             final selectedEvent = ref.read(selectedEventProvider);
             final eventId = selectedEvent?['id'] as String?;
             if (eventId != null && eventId.isNotEmpty) {
               context.push('/stats/$eventId');
             }
           },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              color: AppTheme.accentBlue,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.analytics_outlined, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Text(
-                  l10n.statistics.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         _DownloadReportButton(metrics: metrics),
-        const SizedBox(height: 32),
+        const SizedBox(height: 30),
         QuickActions(
           actions: [
-            ActionItem(l10n.newTicket, Icons.confirmation_number, '/create_ticket',
+            // Acá va solo lo que no se puede alcanzar desde otro lado.
+            //
+            // "Escáner" y "Ver todos los tickets" salieron porque son dos de
+            // los cuatro botones de la barra de abajo. "Crear evento" salió
+            // porque vive en la pantalla de Eventos —el botón + de su cabecera—
+            // que es el segundo botón de esa misma barra.
+            ActionItem(l10n.newTicket, Icons.confirmation_number,
+                '/create_ticket',
                 isPrimary: true),
-            ActionItem(l10n.manageTeam, Icons.groups, '/event_staff',
-                color: Colors.blueAccent),
-            ActionItem(l10n.scanner, Icons.qr_code_scanner, '/scanner',
-                color: Colors.purpleAccent),
-            ActionItem(l10n.viewAllTickets, Icons.list_alt, '/tickets',
-                color: Colors.orangeAccent),
+            ActionItem(l10n.manageTeam, Icons.groups, '/event_staff'),
           ],
           onActionBeforeNavigate: (action) =>
               _checkEventSelected(context, ref, action.route),
@@ -189,79 +180,47 @@ class AdminDashboardView extends ConsumerWidget {
   }
 }
 
-/// Tarjeta de ventas, de borde a borde.
+/// Ventas: la cifra que manda en el panel.
 ///
-/// No usa `MetricCard` porque no cumple la misma función. Las otras ocho son
-/// conteos que se comparan entre sí, y por eso conviene que sean todas iguales y
-/// del mismo tamaño. Esta es la única cifra de dinero: se lee sola, no se
-/// compara con nada, y tiene que destacarse.
-///
-/// El monto va a la DERECHA y el rótulo a la izquierda, alineados en la misma
-/// línea. Con el número al final del renglón, la coma decimal cae siempre en el
-/// mismo lugar aunque cambie el largo de la cifra, y el ojo no tiene que
-/// recorrer el ancho de la pantalla para unir la etiqueta con su valor.
-class _TarjetaVentas extends StatelessWidget {
-  const _TarjetaVentas({
-    required this.monto,
-    required this.icono,
-    required this.titulo,
-  });
+/// Es la única que es dinero, así que no comparte tamaño con los conteos. El
+/// rótulo va arriba en chico y el número abajo en grande —no al costado— porque
+/// una cifra larga ("Gs 12.500.000") necesita el ancho entero: alineada a la
+/// derecha junto a una etiqueta, se encogía hasta volverse ilegible.
+class _PanelVentas extends StatelessWidget {
+  const _PanelVentas({required this.monto, required this.titulo});
 
   final String monto;
-  final IconData icono;
   final String titulo;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return GlassCard(
-      // Un poco mas alta que las de la grilla (74 px) porque el numero es mas
-      // grande, pero sin llegar al doble: sigue siendo una linea de contenido.
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      // Rótulo a la izquierda, monto a la derecha, en la misma línea.
+      //
+      // Con el número al final del renglón la cifra termina siempre en el mismo
+      // borde, así que dos lecturas seguidas se comparan sin que el ojo tenga
+      // que buscar dónde empieza. Apilado quedaba más grande, pero el monto
+      // arrancaba en un lugar distinto según su largo.
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppTheme.accentYellow.withValues(alpha: 0.13),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icono, color: AppTheme.accentYellow, size: 21),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Text(
-              titulo.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.9,
-                color: isDark ? Colors.white60 : Colors.black54,
-              ),
+          Text(
+            titulo.toUpperCase(),
+            style: AppTheme.etiqueta(
+              context,
+              size: 12,
+              color: AppTheme.acentoTexto(context),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           // FittedBox para que una cifra larga se encoja en vez de desbordar:
-          // "Gs 12.500.000" ocupa mas del doble que "Gs 0".
-          Flexible(
+          // "Gs 12.500.000" ocupa más del doble que "Gs 0".
+          Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
-              child: Text(
-                monto,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  height: 1,
-                  letterSpacing: -0.5,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
+              child: Text(monto, style: AppTheme.titular(context, size: 34)),
             ),
           ),
         ],
@@ -293,7 +252,7 @@ class _DownloadReportButtonState extends ConsumerState<_DownloadReportButton> {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.6)),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusCard),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

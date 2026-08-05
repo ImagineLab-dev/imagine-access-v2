@@ -1,70 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
-import 'dart:ui';
+
 import '../theme/app_theme.dart';
 
 final loadingProvider = StateProvider<bool>((ref) => false);
 
+/// Velo de "procesando".
+///
+/// Antes difuminaba toda la pantalla con un `BackdropFilter` y le pasaba un
+/// brillo en bucle al recuadro. Dos animaciones infinitas y un desenfoque de
+/// pantalla completa para decir "esperá" —justo en el momento en que el
+/// dispositivo está ocupado haciendo otra cosa—.
+///
+/// Ahora es lo que usa un instrumento: la pantalla se apaga detrás de un velo
+/// plano y aparece una barra de progreso. El movimiento es uno solo y significa
+/// algo: mientras se mueve, el sistema está trabajando.
 class LoadingOverlay extends ConsumerWidget {
-  final Widget child;
   const LoadingOverlay({super.key, required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(loadingProvider);
-    final theme = Theme.of(context);
-    
+    final cargando = ref.watch(loadingProvider);
+
     return Stack(
       children: [
         child,
-        if (isLoading)
+        if (cargando)
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.6),
-                child: Center(
+            child: Container(
+              color: AppTheme.darkBg.withValues(alpha: 0.86),
+              child: Center(
+                child: Container(
+                  width: 260,
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: AppTheme.darkCardElevated,
+                    border: Border.all(color: AppTheme.darkBorder),
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
+                      Row(
+                        children: [
+                          // El punto que late es el único indicador de "vivo"
+                          // que el diseño usa. Acá cumple la misma función.
+                          Container(
+                            width: 7,
+                            height: 7,
+                            color: AppTheme.lima,
                           ),
-                        ),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 3,
-                          color: AppTheme.neonBlue,
-                        ),
-                      )
-                          .animate(onPlay: (controller) => controller.repeat())
-                          .shimmer(
-                            duration: 1500.ms,
-                            color: AppTheme.neonBlue.withValues(alpha: 0.3),
+                          const SizedBox(width: 9),
+                          Text(
+                            AppLocalizations.of(context).processing.toUpperCase(),
+                            style: const TextStyle(
+                              fontFamily: AppTheme.fontDisplay,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.6,
+                              color: AppTheme.darkText,
+                            ),
                           ),
-                      const SizedBox(height: 24),
-                      Text(
-                        AppLocalizations.of(context).processing,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 4,
-                        ),
-                      ).animate()
-                       .fadeIn(duration: 400.ms)
-                       .scale(begin: const Offset(0.9, 0.9)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const LinearProgressIndicator(
+                        minHeight: 3,
+                        color: AppTheme.lima,
+                        backgroundColor: AppTheme.darkInput,
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-          ).animate().fadeIn(duration: 200.ms),
+          ),
       ],
     );
   }

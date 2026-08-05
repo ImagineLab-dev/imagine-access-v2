@@ -20,16 +20,14 @@ class UserManagementScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     return GlassScaffold(
-      appBar: AppBar(
-        title: Text(l10n.teamMembers),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add),
-            onPressed: () => _showAddUserDialog(context, ref),
-            tooltip: l10n.addMember,
-          ),
-        ],
-      ),
+      titulo: l10n.teamMembers,
+      acciones: [
+        IconButton(
+          icon: const Icon(Icons.person_add),
+          onPressed: () => _showAddUserDialog(context, ref),
+          tooltip: l10n.addMember,
+        ),
+      ],
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) =>
@@ -49,8 +47,6 @@ class UserManagementScreen extends ConsumerWidget {
               final currentUserId = ref.read(userProvider)?.id;
               final isSelf = user['user_id'] == currentUserId;
 
-              final theme = Theme.of(context);
-              final isDark = theme.brightness == Brightness.dark;
 
               return GlassCard(
                 padding: const EdgeInsets.all(16),
@@ -68,7 +64,7 @@ class UserManagementScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: AppTheme.texto(context),
                         ),
                       ),
                     ),
@@ -79,7 +75,7 @@ class UserManagementScreen extends ConsumerWidget {
                         child: Text(
                           AppRoles.label(role),
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            color: AppTheme.textoSecundario(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -90,7 +86,7 @@ class UserManagementScreen extends ConsumerWidget {
                         child: Text(
                           AppRoles.label(role),
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            color: AppTheme.textoSecundario(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -98,28 +94,28 @@ class UserManagementScreen extends ConsumerWidget {
                     else
                       DropdownButton<String>(
                         value: role,
-                        dropdownColor: isDark ? Colors.black87 : Colors.white,
+                        dropdownColor: AppTheme.panelElevado(context),
                         underline: const SizedBox(),
                         items: [
                           DropdownMenuItem(
                             value: AppRoles.admin,
                             child: Text(
                               AppRoles.label(AppRoles.admin),
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                              style: TextStyle(color: AppTheme.texto(context)),
                             ),
                           ),
                           DropdownMenuItem(
                             value: AppRoles.rrpp,
                             child: Text(
                               AppRoles.label(AppRoles.rrpp),
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                              style: TextStyle(color: AppTheme.texto(context)),
                             ),
                           ),
                           DropdownMenuItem(
                             value: AppRoles.door,
                             child: Text(
                               AppRoles.label(AppRoles.door),
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                              style: TextStyle(color: AppTheme.texto(context)),
                             ),
                           ),
                         ],
@@ -151,7 +147,7 @@ class UserManagementScreen extends ConsumerWidget {
                     if (!isSelf) ...[
                       const SizedBox(width: 8),
                       IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                          icon: const Icon(Icons.delete_outline, color: AppTheme.accentOrange),
                           onPressed: () => _confirmDelete(context, ref, user),
                         ),
                     ],
@@ -168,13 +164,13 @@ class UserManagementScreen extends ConsumerWidget {
   Color _getRoleColor(String role) {
     switch (role) {
       case AppRoles.admin:
-        return Colors.redAccent;
+        return AppTheme.accentOrange;
       case AppRoles.rrpp:
         return AppTheme.neonBlue;
       case AppRoles.door:
         return AppTheme.accentGreen;
       default:
-        return Colors.grey;
+        return AppTheme.accentPurple;
     }
   }
 
@@ -211,7 +207,7 @@ class UserManagementScreen extends ConsumerWidget {
                 }
               }
             },
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppTheme.accentOrange)),
           ),
         ],
       ),
@@ -220,8 +216,6 @@ class UserManagementScreen extends ConsumerWidget {
 
   void _showAddUserDialog(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     final emailCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
@@ -233,10 +227,10 @@ class UserManagementScreen extends ConsumerWidget {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: isDark ? AppTheme.surfaceColor : Colors.white,
+          backgroundColor: AppTheme.panel(context),
           title: Text(
             l10n.addTeamMember,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+            style: TextStyle(color: AppTheme.texto(context)),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -245,38 +239,38 @@ class UserManagementScreen extends ConsumerWidget {
                 TextField(
                   controller: emailCtrl,
                   decoration: InputDecoration(labelText: l10n.email),
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                  style: TextStyle(color: AppTheme.texto(context)),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: nameCtrl,
                   decoration: InputDecoration(labelText: l10n.displayName),
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                  style: TextStyle(color: AppTheme.texto(context)),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: selectedRole,
-                  dropdownColor: isDark ? Colors.black87 : Colors.white,
+                  dropdownColor: AppTheme.panelElevado(context),
                   items: [
                     DropdownMenuItem(
                       value: AppRoles.admin,
                       child: Text(
                         AppRoles.label(AppRoles.admin),
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        style: TextStyle(color: AppTheme.texto(context)),
                       ),
                     ),
                     DropdownMenuItem(
                       value: AppRoles.rrpp,
                       child: Text(
                         AppRoles.label(AppRoles.rrpp),
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        style: TextStyle(color: AppTheme.texto(context)),
                       ),
                     ),
                     DropdownMenuItem(
                       value: AppRoles.door,
                       child: Text(
                         AppRoles.label(AppRoles.door),
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        style: TextStyle(color: AppTheme.texto(context)),
                       ),
                     ),
                   ],
@@ -338,7 +332,11 @@ class UserManagementScreen extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(l10n.error),
-                              backgroundColor: Colors.red,
+                              backgroundColor: AppTheme.panelElevado(context),
+                              shape: Border(
+                                  left: BorderSide(
+                                      color: AppTheme.peligroTexto(context),
+                                      width: 4)),
                             ),
                           );
                         }
@@ -366,7 +364,7 @@ class UserManagementScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 28),
+            const Icon(Icons.check_circle, color: AppTheme.lima, size: 28),
             const SizedBox(width: 8),
             Expanded(child: Text(l10n.userCreatedTitle, style: const TextStyle(fontSize: 18))),
           ],
@@ -379,14 +377,14 @@ class UserManagementScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               l10n.temporaryPassword,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppTheme.accentPurple),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.campo(context),
+                borderRadius: BorderRadius.circular(AppTheme.radiusCard),
               ),
               child: Row(
                 children: [
@@ -416,7 +414,7 @@ class UserManagementScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             Text(
               '⚠️ ${l10n.savePasswordWarning}',
-              style: const TextStyle(color: Colors.amber, fontSize: 12),
+              style: const TextStyle(color: AppTheme.accentYellow, fontSize: 12),
             ),
           ],
         ),

@@ -40,9 +40,9 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
 
   static const List<Color> _presetColors = [
     Color(0xFF4F46E5), // Indigo (Default)
-    Color(0xFFEF4444), // Red
+    AppTheme.accentOrange, // Red
     Color(0xFF10B981), // Emerald
-    Color(0xFFF59E0B), // Amber
+    AppTheme.accentYellow, // Amber
     Color(0xFFEC4899), // Pink
   ];
 
@@ -88,7 +88,6 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                 height: 40,
                 decoration: BoxDecoration(
                     color: color,
-                    shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
                       width: 2,
@@ -148,7 +147,7 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                 // cual se falla el toque con el teléfono en una mano.
                 minimumSize: const Size(0, 44),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                   side: BorderSide(color: AppTheme.neonBlue.withValues(alpha: .45)),
                 ),
               ),
@@ -160,7 +159,7 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(l10n.noTicketTypesAdded,
-                style: const TextStyle(color: Colors.grey)),
+                style: const TextStyle(color: AppTheme.accentPurple)),
           ),
         ..._types.asMap().entries.map((entry) {
           final index = entry.key;
@@ -193,9 +192,8 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                           height: 20,
                           decoration: BoxDecoration(
                               color: typeColor,
-                              shape: BoxShape.circle,
                               border:
-                                  Border.all(color: Colors.white24, width: 1.5),
+                                  Border.all(color: AppTheme.borde(context), width: 1.5),
                               boxShadow: [
                                 BoxShadow(
                                   color: typeColor.withValues(alpha: 0.5),
@@ -229,7 +227,7 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                   const SizedBox(width: 8),
                   IconButton(
                     onPressed: () => _removeType(index),
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: AppTheme.accentOrange),
                     visualDensity: VisualDensity.compact,
                   )
                 ],

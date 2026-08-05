@@ -228,59 +228,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               children: [
-                Icon(Icons.qr_code_scanner_rounded,
-                        size: 72, color: textColor)
-                    .animate()
-                    .scale(duration: 400.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 24),
-                Text(l10n.appTitle,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                            letterSpacing: 0.5))
-                    .animate()
-                    .fade()
-                    .slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 32),
+                Icon(Icons.shield_outlined,
+                    size: 40, color: AppTheme.acentoTexto(context)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppTheme.lima, width: 2),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.appTitle.toUpperCase(),
+                    style: AppTheme.titular(context, size: 26),
+                  ),
+                ),
+                const SizedBox(height: 26),
                 GlassCard(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: EdgeInsets.zero,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Cabecera de formulario técnico: dice en qué modo está
+                      // el sistema. Reemplaza al título suelto que había, que
+                      // no distinguía entrar de registrarse.
                       Container(
-                        height: 40,
-                        padding: const EdgeInsets.all(4),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 9),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TabBar(
-                          controller: _tabController,
-                          indicator: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(16),
+                          color: AppTheme.campo(context),
+                          border: Border(
+                            bottom: BorderSide(color: AppTheme.borde(context)),
                           ),
-                          labelColor: Colors.white,
-                            unselectedLabelColor:
-                              textColor.withValues(alpha: 0.6),
-                          labelStyle: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Inter',
-                              fontSize: 13),
-                          dividerColor: Colors.transparent,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          tabs: [
-                            Tab(text: l10n.adminRRPP),
-                            Tab(text: l10n.doorAccess),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _isRegistering
+                                    ? 'REGISTRO_NUEVO_USUARIO'
+                                    : 'SEC_AUTH_REQ',
+                                style: AppTheme.dato(
+                                  context,
+                                  size: 10.5,
+                                  color: AppTheme.textoSecundario(context),
+                                ),
+                              ),
+                            ),
+                            Icon(Icons.lock_outline,
+                                size: 14,
+                                color: AppTheme.acentoTexto(context)),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      // Segmentos rectos: el activo se marca con una línea lima
+                      // abajo, no con una píldora de color.
+                      Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: AppTheme.borde(context)),
+                          ),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicatorWeight: 2,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: Colors.transparent,
+                          overlayColor:
+                              WidgetStateProperty.all(Colors.transparent),
+                          tabs: [
+                            Tab(text: l10n.adminRRPP.toUpperCase()),
+                            Tab(text: l10n.doorAccess.toUpperCase()),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: _tabController.index == 0
@@ -479,39 +507,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ),
                               ),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.wb_sunny_rounded,
-                              size: 18,
-                              color: isDark
-                                  ? textColor.withValues(alpha: 0.3)
-                                  : AppTheme.accentOrange),
-                          const SizedBox(width: 12),
-                          Switch(
-                            value: isDark,
-                            onChanged: (v) {
-                              HapticFeedback.selectionClick();
-                              ref
-                                  .read(themeNotifierProvider.notifier)
-                                  .toggleTheme();
-                            },
-                            activeThumbColor: AppTheme.accentBlue,
-                            activeTrackColor:
-                                AppTheme.accentBlue.withValues(alpha: 0.2),
-                            inactiveThumbColor: AppTheme.accentOrange,
-                            inactiveTrackColor:
-                                AppTheme.accentOrange.withValues(alpha: 0.2),
-                          ),
-                          const SizedBox(width: 12),
-                          Icon(Icons.nightlight_round,
-                              size: 18,
-                              color: isDark
-                                  ? AppTheme.accentBlue
-                                  : textColor.withValues(alpha: 0.3)),
-                        ],
-                      ).animate().fade(delay: 200.ms),
+                            const SizedBox(height: 22),
+                            // Claro / oscuro. Antes eran un sol naranja y una
+                            // luna azul con un interruptor de dos colores más:
+                            // cuatro colores para una preferencia. Ahora el
+                            // icono dice el modo y el acento marca cuál está
+                            // puesto.
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.light_mode_outlined,
+                                    size: 16,
+                                    color: isDark
+                                        ? AppTheme.textoApagado(context)
+                                        : AppTheme.acentoTexto(context)),
+                                const SizedBox(width: 10),
+                                Switch(
+                                  value: isDark,
+                                  onChanged: (v) {
+                                    HapticFeedback.selectionClick();
+                                    ref
+                                        .read(themeNotifierProvider.notifier)
+                                        .toggleTheme();
+                                  },
+                                ),
+                                const SizedBox(width: 10),
+                                Icon(Icons.dark_mode_outlined,
+                                    size: 16,
+                                    color: isDark
+                                        ? AppTheme.acentoTexto(context)
+                                        : AppTheme.textoApagado(context)),
+                              ],
+                            ).animate().fade(delay: 200.ms),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ).animate().fade(delay: 100.ms).slideY(begin: 0.1, end: 0),
@@ -544,24 +574,39 @@ class _PasswordStrengthIndicator extends StatelessWidget {
     final hasNumber = password.contains(RegExp(r'[0-9]'));
     final hasSpecial = password.contains(RegExp(r'[!@#\$%\^&\*\.\-_]'));
 
+    // Cada requisito es una casilla cuadrada que se rellena de lima al
+    // cumplirse. La lista entera se lee como una checklist de sistema, y el
+    // avance se ve de un vistazo sin tener que leer regla por regla.
     Widget rule(String text, bool met) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 2.5),
         child: Row(
           children: [
-            Icon(
-              met ? Icons.check_circle : Icons.circle_outlined,
-              size: 14,
-              color: met ? Colors.greenAccent : (isDark ? Colors.white38 : Colors.black38),
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: met ? AppTheme.lima : Colors.transparent,
+                border: Border.all(
+                  color: met ? AppTheme.lima : AppTheme.borde(context),
+                  width: 1.2,
+                ),
+              ),
+              child: met
+                  ? const Icon(Icons.check,
+                      size: 9, color: AppTheme.limaTinta)
+                  : null,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 9),
             Text(
               text,
               style: TextStyle(
-                fontSize: 11,
+                fontFamily: AppTheme.fontMono,
+                fontSize: 10.5,
+                height: 1.3,
                 color: met
-                    ? (isDark ? Colors.white70 : Colors.black87)
-                    : (isDark ? Colors.white38 : Colors.black38),
+                    ? AppTheme.texto(context)
+                    : AppTheme.textoApagado(context),
               ),
             ),
           ],
@@ -591,9 +636,8 @@ class _TermsCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final linkColor = AppTheme.neonBlue;
-    final textColor = isDark ? Colors.white70 : Colors.black54;
+    final linkColor = AppTheme.acentoTexto(context);
+    final textColor = AppTheme.textoSecundario(context);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -604,7 +648,6 @@ class _TermsCheckbox extends StatelessWidget {
           child: Checkbox(
             value: accepted,
             onChanged: (v) => onChanged(v ?? false),
-            activeColor: linkColor,
           ),
         ),
         const SizedBox(width: 8),
@@ -613,7 +656,11 @@ class _TermsCheckbox extends StatelessWidget {
             onTap: () => onChanged(!accepted),
             child: Text.rich(
               TextSpan(
-                style: TextStyle(fontSize: 12, color: textColor),
+                style: TextStyle(
+                    fontFamily: AppTheme.fontBody,
+                    fontSize: 12,
+                    height: 1.45,
+                    color: textColor),
                 children: [
                   TextSpan(text: l10n.acceptTermsPrefix),
                   TextSpan(

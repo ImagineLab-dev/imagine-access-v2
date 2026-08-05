@@ -10,7 +10,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/platform/camara.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/glass_card.dart';
 import '../data/scanner_repository.dart';
 import '../../events/presentation/event_state.dart';
 import '../../../core/utils/device_id_service.dart';
@@ -171,45 +170,74 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              backgroundColor: Colors.grey[900],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              icon: const Icon(Icons.cancel, color: Colors.red, size: 56),
-              title: Text(l10nDialog.invalidEntry,
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              // El borde va en rojo y no en el lima del tema: este diálogo
+              // siempre trae un rechazo.
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+                side: const BorderSide(color: AppTheme.accentOrange),
+              ),
+              icon: Icon(Icons.cancel,
+                  color: AppTheme.peligroTexto(ctx), size: 44),
+              title: Text(
+                l10nDialog.invalidEntry.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: AppTheme.titular(ctx,
+                    size: 19, color: AppTheme.peligroTexto(ctx)),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     l10nDialog.entryNoLongerValid,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 15),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontBody,
+                      fontSize: 14,
+                      height: 1.5,
+                      color: AppTheme.textoSecundario(ctx),
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                      color: AppTheme.campo(ctx),
+                      border: Border(
+                        left: BorderSide(
+                            color: AppTheme.peligroTexto(ctx), width: 4),
+                        top: BorderSide(color: AppTheme.borde(ctx)),
+                        right: BorderSide(color: AppTheme.borde(ctx)),
+                        bottom: BorderSide(color: AppTheme.borde(ctx)),
+                      ),
                     ),
                     child: Text(
-                      l10nDialog.validOnlyUntil(result['valid_until']?.toString() ?? '-'),
+                      l10nDialog
+                          .validOnlyUntil(result['valid_until']?.toString() ?? '-'),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: AppTheme.dato(ctx, size: 12.5),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     l10nDialog.ticketMarkedVoid,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white38, fontSize: 12),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontBody,
+                      fontSize: 11.5,
+                      color: AppTheme.textoApagado(ctx),
+                    ),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(l10nDialog.closeAction, style: const TextStyle(color: Colors.red)),
+                  child: Text(
+                    l10nDialog.closeAction.toUpperCase(),
+                    style: TextStyle(color: AppTheme.peligroTexto(ctx)),
+                  ),
                 ),
               ],
             ),
@@ -264,7 +292,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.darkBg,
       body: Stack(
         children: [
           MobileScanner(
@@ -272,71 +300,80 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             onDetect: _onDetect,
           ),
 
-          // Header / Back Button
+          // Sin botón de volver propio: la cabecera del armazón ya lo trae, y
+          // la barra de abajo permite salir a cualquier destino. Dos formas de
+          // volver en la misma pantalla es una de más.
+
+          // Testigo de sistema activo. El punto que late es la única señal de
+          // que la cámara está leyendo: sin él, un encuadre que no encuentra
+          // nada y un escáner colgado se ven exactamente igual.
           Positioned(
-            top: 50,
-            left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-              onPressed: () => context.pop(),
-            ).animate().fade(),
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
+                border: Border.all(color: AppTheme.darkBorder),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(width: 7, height: 7, color: AppTheme.lima)
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .fade(begin: 0.25, end: 1, duration: 900.ms),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.readyToScan.toUpperCase(),
+                    style: const TextStyle(
+                      fontFamily: AppTheme.fontMono,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      color: AppTheme.darkText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
 
           // Sin botón de linterna: en web mobile_scanner devuelve hasTorch:false
           // de forma fija (barcode_reader.dart:73-75), así que el control nunca
           // podría encender nada.
 
-          // Scanner Frame Overlay (Interactive UI)
-          Center(
-              child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-                border: Border.all(
-                color: AppTheme.primaryColor.withValues(alpha: 0.5), width: 2),
-                borderRadius: BorderRadius.circular(24)),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _Corner(isTop: true, isLeft: true),
-                      _Corner(isTop: true, isLeft: false)
-                    ]),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _Corner(isTop: false, isLeft: true),
-                      _Corner(isTop: false, isLeft: false)
-                    ]),
-              ],
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true))),
+          // Mira: cuatro escuadras y una línea de barrido. Antes era un marco
+          // cerrado con esquinas redondeadas que latía entero; la escuadra
+          // abierta deja ver el QR mientras se encuadra, que es para lo que
+          // sirve una mira.
+          const Center(child: _Mira()),
 
-          // Footer Status
+          // Instrucción al pie
           Positioned(
-            bottom: 60,
+            bottom: 16,
             left: 20,
             right: 20,
-            child: GlassCard(
+            child: Center(
+              child: Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.qr_code_scanner,
-                        color: AppTheme.primaryColor),
-                    const SizedBox(width: 12),
-                    Text(l10n.readyToScan,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)),
-                  ],
-                )).animate().slideY(begin: 1, end: 0),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
+                  border: Border.all(color: AppTheme.darkBorder),
+                ),
+                child: Text(
+                  l10n.alignQrInFrame.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: AppTheme.fontMono,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: AppTheme.darkText,
+                  ),
+                ),
+              ),
+            ),
           ),
 
           // Overlay de latencia para el spike de rendimiento en dispositivos
@@ -358,7 +395,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                   'med=${(_detectionLatencies.reduce((a, b) => a + b) / _detectionLatencies.length).round()}ms  '
                   'máx=${_detectionLatencies.reduce((a, b) => a > b ? a : b)}ms',
                   style: const TextStyle(
-                    color: Colors.greenAccent,
+                    color: AppTheme.lima,
                     fontSize: 11,
                     fontFamily: 'monospace',
                   ),
@@ -371,44 +408,76 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   }
 }
 
-class _Corner extends StatelessWidget {
-  final bool isTop;
-  final bool isLeft;
-  const _Corner({required this.isTop, required this.isLeft});
+/// Mira del escáner: cuatro escuadras y una línea de barrido.
+class _Mira extends StatelessWidget {
+  const _Mira();
+
+  static const double _lado = 268;
+  static const double _escuadra = 44;
+  static const double _grosor = 4;
 
   @override
   Widget build(BuildContext context) {
-    const double size = 30;
-    const double thickness = 4;
-    const color = AppTheme.primaryColor;
+    return SizedBox(
+      width: _lado,
+      height: _lado,
+      child: Stack(
+        children: [
+          const Positioned(top: 0, left: 0, child: _Escuadra(arriba: true, izquierda: true)),
+          const Positioned(top: 0, right: 0, child: _Escuadra(arriba: true, izquierda: false)),
+          const Positioned(bottom: 0, left: 0, child: _Escuadra(arriba: false, izquierda: true)),
+          const Positioned(bottom: 0, right: 0, child: _Escuadra(arriba: false, izquierda: false)),
 
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-          border: Border(
-            top: isTop
-                ? const BorderSide(color: color, width: thickness)
-                : BorderSide.none,
-            bottom: !isTop
-                ? const BorderSide(color: color, width: thickness)
-                : BorderSide.none,
-            left: isLeft
-                ? const BorderSide(color: color, width: thickness)
-                : BorderSide.none,
-            right: !isLeft
-                ? const BorderSide(color: color, width: thickness)
-                : BorderSide.none,
+          // Barrido. Recorre el encuadre de arriba a abajo: dice "estoy
+          // mirando" sin tapar el código, que es lo que hacía el marco cerrado.
+          Positioned(
+            left: _escuadra * 0.35,
+            right: _escuadra * 0.35,
+            top: 0,
+            child: Container(
+              height: 2,
+              decoration: BoxDecoration(
+                color: AppTheme.lima,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.lima.withValues(alpha: 0.55),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+            )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .moveY(begin: 6, end: _lado - 8, duration: 2200.ms, curve: Curves.easeInOut),
           ),
-          borderRadius: BorderRadius.only(
-            topLeft: isTop && isLeft ? const Radius.circular(16) : Radius.zero,
-            topRight:
-                isTop && !isLeft ? const Radius.circular(16) : Radius.zero,
-            bottomLeft:
-                !isTop && isLeft ? const Radius.circular(16) : Radius.zero,
-            bottomRight:
-                !isTop && !isLeft ? const Radius.circular(16) : Radius.zero,
-          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _Escuadra extends StatelessWidget {
+  const _Escuadra({required this.arriba, required this.izquierda});
+
+  final bool arriba;
+  final bool izquierda;
+
+  @override
+  Widget build(BuildContext context) {
+    const lado = BorderSide(color: AppTheme.lima, width: _Mira._grosor);
+
+    return SizedBox(
+      width: _Mira._escuadra,
+      height: _Mira._escuadra,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: arriba ? lado : BorderSide.none,
+            bottom: arriba ? BorderSide.none : lado,
+            left: izquierda ? lado : BorderSide.none,
+            right: izquierda ? BorderSide.none : lado,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -438,6 +507,24 @@ String _horaLegible(dynamic valor, AppLocalizations l10n) {
   return '$dd/$mo  $hh:$mm';
 }
 
+/// Los tres veredictos posibles en la puerta.
+///
+/// Antes eran dos —pasa o no pasa— y "ya usado" se pintaba igual que un código
+/// falso. No son lo mismo: un código falso es alguien que no tiene entrada, y
+/// uno ya usado es alguien que SÍ la tenía y entró antes. Quien está en la
+/// puerta resuelve cada caso distinto, así que tienen que verse distinto.
+enum _Veredicto {
+  /// Adelante. Lima a sangre.
+  validado,
+
+  /// No pasa. Salmón a sangre.
+  denegado,
+
+  /// Ojo: esta entrada ya se usó. Ámbar sobre oscuro, para que no se confunda
+  /// con las otras dos ni de reojo.
+  yaUsado,
+}
+
 class _ResultOverlay extends StatelessWidget {
   final Map<String, dynamic> scanResult;
   final VoidCallback onDismiss;
@@ -448,120 +535,149 @@ class _ResultOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final allowed = (scanResult['allowed'] as bool?) ??
-      (scanResult['success'] as bool?) ??
-      false;
-    final color = allowed ? AppTheme.accentGreen : AppTheme.errorColor;
-    final icon = allowed ? Icons.check_circle : Icons.cancel;
+        (scanResult['success'] as bool?) ??
+        false;
     final ticket = scanResult['ticket'];
     final resultCode = scanResult['result']?.toString();
-    final titleText = resultCode == 'wrong_event'
+
+    final veredicto = allowed
+        ? _Veredicto.validado
+        : (resultCode == 'already_used'
+            ? _Veredicto.yaUsado
+            : _Veredicto.denegado);
+
+    // fondo, tinta, borde. El borde solo lo usa "ya usado": al ir sobre
+    // oscuro necesita un marco que lo haga inconfundible desde lejos.
+    final (Color fondo, Color tinta, Color? marco) = switch (veredicto) {
+      _Veredicto.validado => (AppTheme.lima, AppTheme.limaTinta, null),
+      _Veredicto.denegado => (AppTheme.peligroSuave, AppTheme.peligroTinta, null),
+      _Veredicto.yaUsado => (
+          AppTheme.darkBorderSoft,
+          AppTheme.accentYellow,
+          AppTheme.accentYellow
+        ),
+    };
+
+    final icono = switch (veredicto) {
+      _Veredicto.validado => Icons.check_circle,
+      _Veredicto.denegado => Icons.cancel,
+      _Veredicto.yaUsado => Icons.warning_rounded,
+    };
+
+    final titulo = resultCode == 'wrong_event'
         ? l10n.wrongEvent
         : (scanResult['message']?.toString() ??
-            (allowed ? l10n.accessGranted : l10n.accessDenied));
+            switch (veredicto) {
+              _Veredicto.validado => l10n.accessGranted,
+              _Veredicto.denegado => l10n.accessDenied,
+              _Veredicto.yaUsado => l10n.alreadyUsed,
+            });
+
+    // Datos del ticket, en mono y bajo una regla: es la "letra chica" del
+    // pase. Antes iban en una tarjeta blanca redondeada flotando sobre el
+    // color, que partía la pantalla en dos y le robaba fuerza al veredicto.
+    final lineas = <(String, String)>[
+      if ((ticket?['buyer_name']) != null)
+        (l10n.name.toUpperCase(), ticket['buyer_name'].toString()),
+      if ((ticket?['type']) != null)
+        (l10n.ticketType.toUpperCase(), ticket['type'].toString()),
+      if (resultCode == 'wrong_event')
+        (
+          l10n.ticketBelongsTo,
+          (scanResult['event_name'] ?? l10n.unknown).toString()
+        ),
+      if (resultCode == 'already_used')
+        (l10n.firstEntry, _horaLegible(ticket?['scanned_at'], l10n)),
+    ];
 
     return Scaffold(
-      backgroundColor: color, // Full screen color flood
+      backgroundColor: fondo,
       body: SafeArea(
-        child: InkWell(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: onDismiss,
-          child: Stack(
-            children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, size: 120, color: Colors.white)
-                        .animate()
-                        .scale(duration: 300.ms, curve: Curves.elasticOut),
-                    const SizedBox(height: 30),
-                    Text(titleText.toUpperCase(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1))
-                        .animate()
-                        .fade()
-                        .slideY(begin: 0.2, end: 0),
-
-                    const SizedBox(height: 40),
-
-                    // Ticket Details Card
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 40),
-                      padding: const EdgeInsets.all(24),
+          child: Container(
+            width: double.infinity,
+            decoration: marco == null
+                ? null
+                : BoxDecoration(border: Border.all(color: marco, width: 8)),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icono, size: 108, color: tinta)
+                    .animate()
+                    .scale(duration: 220.ms, curve: Curves.easeOutBack),
+                const SizedBox(height: 18),
+                Text(
+                  titulo.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontDisplay,
+                    fontSize: 44,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -1.4,
+                    height: 1.0,
+                    color: tinta,
+                  ),
+                ).animate().fade(duration: 180.ms),
+                if (lineas.isNotEmpty) ...[
+                  const SizedBox(height: 26),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 340),
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 14),
                       decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 20,
-                                offset: Offset(0, 10))
-                          ]),
+                        border: Border(top: BorderSide(color: tinta, width: 2)),
+                      ),
                       child: Column(
                         children: [
-                            Text((ticket?['buyer_name'] ?? '-').toString(),
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Text((ticket?['type'] ?? '-').toString(),
-                                style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16)),
-                          ),
-                            if (!allowed && resultCode == 'wrong_event') ...[
-                            const Divider(height: 32),
-                            Text(l10n.ticketBelongsTo,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 12)),
-                            Text((scanResult['event_name'] ?? l10n.unknown).toString(),
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18)),
-                          ],
-                            if (!allowed && resultCode == 'already_used') ...[
-                            const Divider(height: 32),
-                            Text(l10n.firstEntry,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 12)),
-                            Text(_horaLegible(ticket?['scanned_at'], l10n),
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18)),
-                          ]
+                          for (final (etiqueta, valor) in lineas)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    etiqueta,
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontDisplay,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.2,
+                                      color: tinta.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    valor,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontMono,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: tinta,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
-                    ).animate().slideY(begin: 0.5, end: 0, delay: 100.ms)
-                  ],
+                    ),
+                  ).animate().fade(delay: 90.ms),
+                ],
+                const SizedBox(height: 34),
+                Text(
+                  '[ ${l10n.tapToDismiss.toUpperCase()} ]',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontMono,
+                    fontSize: 11,
+                    letterSpacing: 0.8,
+                    color: tinta.withValues(alpha: 0.65),
+                  ),
                 ),
-              ),
-              Positioned(
-                bottom: 40,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Text(l10n.tapToDismiss,
-                          style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                              letterSpacing: 2))
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .fade(begin: 0.5, end: 1),
-                ),
-              )
-            ],
+              ],
+            ),
           ),
         ),
       ),

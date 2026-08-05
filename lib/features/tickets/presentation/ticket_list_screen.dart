@@ -10,9 +10,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../data/ticket_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/custom_input.dart';
+import '../../../core/ui/pase_ticket.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../events/presentation/event_state.dart';
 
@@ -167,15 +169,12 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
     ref.watch(ticketsRealtimeProvider);
 
     return GlassScaffold(
-      appBar: AppBar(
-        title: Text(l10n.guestList,
-            style: const TextStyle(letterSpacing: 2, fontSize: 16)),
-        actions: [
-          IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () => ref.refresh(ticketsProvider)),
-        ],
-      ),
+      titulo: l10n.guestList,
+      acciones: [
+        IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.refresh(ticketsProvider)),
+      ],
       body: Column(
         children: [
           _buildSearchAndFilter(theme, isDark, l10n),
@@ -353,7 +352,7 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
               height: 50,
               decoration: BoxDecoration(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusCard),
               ),
               child: Icon(Icons.confirmation_num_outlined,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
@@ -387,8 +386,7 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                           height: 4,
                           decoration: BoxDecoration(
                               color:
-                                theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                              shape: BoxShape.circle)),
+                                theme.colorScheme.onSurface.withValues(alpha: 0.3))),
                       const SizedBox(width: 8),
                       Expanded(
                           child: Text(id.toString(),
@@ -435,47 +433,56 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
           final status = ticket['status'] ?? 'valid';
           final isVoid = status == 'void';
 
+          final fondoHoja = AppTheme.fondo(context);
+
           return Container(
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
+              color: fondoHoja,
+              border: Border(
+                top: BorderSide(color: AppTheme.borde(context)),
+              ),
             ),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2),
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 34),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tirador. Rectangular, como todo lo demás.
+                  Center(
+                    child: Container(
+                      width: 34,
+                      height: 3,
+                      color: AppTheme.borde(context),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(l10n.ticketDetails,
-                    style: theme.textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                _detailRow(
-                  l10n.buyerInfo, ticket['buyer_name'] ?? l10n.guest, theme),
-                _detailRow(
-                  l10n.email, ticket['buyer_email'] ?? l10n.unknown, theme),
-                _detailRow(l10n.ticketType,
-                    (ticket['type'] ?? '').toString().toUpperCase(), theme),
-                _detailRow("ID", id.toString(), theme),
-                _detailRow(l10n.statusLabel, status.toString().toUpperCase(), theme),
-                if (ticket['events'] != null)
-                  _detailRow(l10n.event, ticket['events']['name'] ?? '', theme),
-                if (ticket['email_sent_at'] != null)
-                  _detailRow(l10n.emailSent,
-                      _formatDate(ticket['email_sent_at']), theme),
+                  const SizedBox(height: 20),
+                  Text(l10n.ticketDetails.toUpperCase(),
+                      style: AppTheme.titular(context, size: 17)),
+                  const SizedBox(height: 16),
 
-                const SizedBox(height: 32),
+                  // El pase en sí. Reemplaza a la lista de siete filas que
+                  // había: la misma información, pero con la forma del objeto
+                  // que la persona muestra en la puerta.
+                  PaseTicket(
+                    colorFondo: fondoHoja,
+                    anulado: isVoid,
+                    titulo: (ticket['events']?['name'] ?? l10n.event).toString(),
+                    subtitulo: (ticket['type'] ?? '').toString(),
+                    serial: id.toString(),
+                    // Sin traducir a propósito: "ID" se lee igual en los tres
+                    // idiomas y es lo que dice el correo del ticket.
+                    etiquetaSerial: 'ID',
+                    datos: [
+                      (l10n.buyerInfo, (ticket['buyer_name'] ?? l10n.guest).toString()),
+                      (l10n.statusLabel, status.toString().toUpperCase()),
+                      (l10n.email, (ticket['buyer_email'] ?? l10n.unknown).toString()),
+                      if (ticket['email_sent_at'] != null)
+                        (l10n.emailSent, _formatDate(ticket['email_sent_at'])),
+                    ],
+                  ),
+
+                  const SizedBox(height: 26),
 
                 // Actions
                 Row(
@@ -504,6 +511,14 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                           icon: const Icon(Icons.email_outlined),
                           label: Text(l10n.resendEmail),
                           onPressed: () async {
+                            // Los colores se leen ANTES del await, igual que
+                            // `parentMessenger`: después de cerrar la hoja este
+                            // `context` ya está desmontado y consultarle el tema
+                            // es leer un árbol que no existe.
+                            final fondo = AppTheme.panelElevado(context);
+                            final ok = AppTheme.acentoTexto(context);
+                            final mal = AppTheme.peligroTexto(context);
+
                             Navigator.pop(context);
                             try {
                               parentMessenger.showSnackBar(
@@ -511,15 +526,17 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                               await ref
                                   .read(ticketRepositoryProvider)
                                   .resendTicket(id);
-                              parentMessenger.showSnackBar(
-                                  SnackBar(
-                                      content: Text(l10n.emailResent),
-                                      backgroundColor: Colors.green));
+                              parentMessenger.showSnackBar(SnackBar(
+                                  content: Text(l10n.emailResent),
+                                  backgroundColor: fondo,
+                                  shape: Border(
+                                      left: BorderSide(color: ok, width: 4))));
                             } catch (e) {
-                              parentMessenger.showSnackBar(
-                                  SnackBar(
-                                      content: Text(l10n.resendCodeError),
-                                      backgroundColor: Colors.red));
+                              parentMessenger.showSnackBar(SnackBar(
+                                  content: Text(l10n.resendCodeError),
+                                  backgroundColor: fondo,
+                                  shape: Border(
+                                      left: BorderSide(color: mal, width: 4))));
                             }
                           },
                           style: OutlinedButton.styleFrom(
@@ -550,7 +567,7 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                                         TextButton(
                                             child: Text(l10n.confirm,
                                                 style: const TextStyle(
-                                                    color: Colors.red)),
+                                                    color: AppTheme.accentOrange)),
                                             onPressed: () async {
                                               Navigator.pop(ctx);
                                               Navigator.pop(context);
@@ -569,14 +586,14 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                                                         content: Text(l10n
                                                             .ticketVoided),
                                                         backgroundColor:
-                                                            Colors.green));
+                                                            AppTheme.lima));
                                               } catch (e) {
                                                 parentMessenger
                                                     .showSnackBar(SnackBar(
                                                         content:
                                                             Text(l10n.voidTicketError),
                                                         backgroundColor:
-                                                            Colors.red));
+                                                            AppTheme.accentOrange));
                                               }
                                             }),
                                       ],
@@ -589,32 +606,13 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
                         ),
                       ),
                     ]
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         });
-  }
-
-  Widget _detailRow(String label, String value, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-              width: 100,
-              child: Text(label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)))),
-          Expanded(
-              child: Text(value,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold))),
-        ],
-      ),
-    );
   }
 
   String _formatDate(String isoString) {
@@ -661,7 +659,7 @@ class _FilterChip extends StatelessWidget {
             ? theme.colorScheme.primary
           : theme.colorScheme.onSurface.withValues(alpha: 0.1),
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
       showCheckmark: false,
     );
   }

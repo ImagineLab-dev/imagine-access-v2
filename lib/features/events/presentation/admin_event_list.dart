@@ -83,12 +83,12 @@ class AdminEventList extends ConsumerWidget {
                   if (isArchived)
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, 'restore'),
-                      child: Text(l10n.restoreEvent, style: const TextStyle(color: Colors.green)),
+                      child: Text(l10n.restoreEvent, style: const TextStyle(color: AppTheme.lima)),
                     ),
                   TextButton(
                     onPressed: () => Navigator.pop(ctx, 'delete'),
                     child: Text(l10n.delete.toUpperCase(),
-                        style: const TextStyle(color: Colors.red)),
+                        style: const TextStyle(color: AppTheme.accentOrange)),
                   ),
                 ],
               ),
@@ -132,7 +132,7 @@ class AdminEventList extends ConsumerWidget {
                     TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
                         child: Text(l10n.delete.toUpperCase(),
-                            style: const TextStyle(color: Colors.red))),
+                            style: const TextStyle(color: AppTheme.accentOrange))),
                   ],
                 ),
               );
@@ -163,8 +163,8 @@ class AdminEventList extends ConsumerWidget {
                   decoration: BoxDecoration(
                       color: isActive
                         ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                        : Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                        : AppTheme.accentPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                       border: Border.all(
                           color: isActive
                               ? AppTheme.accentGreen
@@ -221,7 +221,7 @@ class AdminEventList extends ConsumerWidget {
                         TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
                             child: Text(l10n.delete,
-                                style: const TextStyle(color: Colors.red))),
+                                style: const TextStyle(color: AppTheme.accentOrange))),
                       ],
                     ));
             if (confirmed != true) return false;
@@ -241,8 +241,8 @@ class AdminEventList extends ConsumerWidget {
           background: Container(
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 20),
-            color: Colors.red.withValues(alpha: 0.2),
-            child: const Icon(Icons.delete, color: Colors.red),
+            color: AppTheme.accentOrange.withValues(alpha: 0.2),
+            child: const Icon(Icons.delete, color: AppTheme.accentOrange),
           ),
           child: cardContent,
         );

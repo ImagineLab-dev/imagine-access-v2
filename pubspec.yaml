@@ -71,6 +71,30 @@ flutter:
   assets:
     - assets/logos/
 
+  # Fuentes de la marca, auto-hospedadas (no se bajan de Google Fonts: la CSP
+  # bloquea hosts externos, y una fuente que no carga deja la app con la de
+  # sistema —el look genérico que estamos justamente sacando—). Son variables:
+  # un solo archivo por familia cubre todos los pesos.
+  #
+  # Las tres tienen un rol distinto y no son intercambiables:
+  #
+  #   Space Grotesk  → titulares, etiquetas y botones. SIEMPRE en mayúsculas,
+  #                    es la voz de la marca.
+  #   Chivo          → texto corrido y descripciones. Legible en párrafo, cosa
+  #                    que la grotesca en caja alta no es.
+  #   JetBrains Mono → seriales, códigos, montos, horas y contadores. Todo lo
+  #                    que es "dato de ticket" y tiene que alinear en columna.
+  fonts:
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk.ttf
+    - family: Chivo
+      fonts:
+        - asset: assets/fonts/Chivo.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono.ttf
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

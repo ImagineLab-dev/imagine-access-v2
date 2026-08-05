@@ -132,7 +132,7 @@ class _Encabezado extends StatelessWidget {
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.1,
-            color: isDark ? Colors.white54 : Colors.black45,
+            color: AppTheme.textoApagado(context),
           ),
         ),
         const SizedBox(height: 6),
@@ -146,7 +146,7 @@ class _Encabezado extends StatelessWidget {
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
                 height: 1,
-                color: isDark ? Colors.white : Colors.black87,
+                color: AppTheme.texto(context),
               ),
             ),
             if (apoyo != null) ...[
@@ -188,13 +188,13 @@ class _SinDatos extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.bar_chart_outlined,
-              size: 16, color: isDark ? Colors.white24 : Colors.black26),
+              size: 16, color: AppTheme.borde(context)),
           const SizedBox(width: 8),
           Text(
             texto,
             style: TextStyle(
               fontSize: 12.5,
-              color: isDark ? Colors.white38 : Colors.black38,
+              color: AppTheme.textoApagado(context),
             ),
           ),
         ],
@@ -240,15 +240,16 @@ String _corto(double v) {
   return v.toStringAsFixed(0);
 }
 
-FlLine _lineaGuia(bool isDark) => FlLine(
-      color: (isDark ? Colors.white : Colors.black).withValues(alpha: .07),
+FlLine _lineaGuia(BuildContext context) => FlLine(
+      color: AppTheme.borde(context).withValues(alpha: .55),
       strokeWidth: 1,
     );
 
-TextStyle _estiloEje(bool isDark) => TextStyle(
-      fontSize: 10,
+TextStyle _estiloEje(BuildContext context) => TextStyle(
+      fontFamily: AppTheme.fontMono,
+      fontSize: 9.5,
       fontWeight: FontWeight.w500,
-      color: isDark ? Colors.white38 : Colors.black38,
+      color: AppTheme.textoApagado(context),
     );
 
 // ---------------------------------------------------------------------------
@@ -311,7 +312,7 @@ class _TarjetaIngresosPorHora extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     horizontalInterval: _intervaloAgradable(pico),
-                    getDrawingHorizontalLine: (_) => _lineaGuia(isDark),
+                    getDrawingHorizontalLine: (_) => _lineaGuia(context),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -325,7 +326,7 @@ class _TarjetaIngresosPorHora extends StatelessWidget {
                         getTitlesWidget: (valor, meta) {
                           if (valor < 0) return const SizedBox.shrink();
                           return Text(valor.toStringAsFixed(0),
-                              style: _estiloEje(isDark));
+                              style: _estiloEje(context));
                         },
                       ),
                     ),
@@ -345,7 +346,7 @@ class _TarjetaIngresosPorHora extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(h == null ? '-' : '${h}h',
-                                style: _estiloEje(isDark)),
+                                style: _estiloEje(context)),
                           );
                         },
                       ),
@@ -401,7 +402,7 @@ class _TarjetaRrpp extends StatelessWidget {
     AppTheme.accentPurple,
     AppTheme.accentGreen,
     AppTheme.accentYellow,
-    Colors.pinkAccent,
+    AppTheme.accentPurple,
   ];
 
   @override
@@ -466,7 +467,7 @@ class _TarjetaRrpp extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : Colors.black87,
+                              color: AppTheme.textoSecundario(context),
                             ),
                           ),
                         ),
@@ -483,11 +484,11 @@ class _TarjetaRrpp extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                       child: LinearProgressIndicator(
                         value: fraccion,
                         minHeight: 6,
-                        backgroundColor: (isDark ? Colors.white : Colors.black)
+                        backgroundColor: (AppTheme.texto(context))
                             .withValues(alpha: .07),
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
@@ -503,7 +504,7 @@ class _TarjetaRrpp extends StatelessWidget {
                   'y ${ordenados.length - 6} más',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: isDark ? Colors.white38 : Colors.black38,
+                    color: AppTheme.textoApagado(context),
                   ),
                 ),
               ),
@@ -571,7 +572,7 @@ class _TarjetaVentas extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     horizontalInterval: _intervaloAgradable(maximo),
-                    getDrawingHorizontalLine: (_) => _lineaGuia(isDark),
+                    getDrawingHorizontalLine: (_) => _lineaGuia(context),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -583,7 +584,7 @@ class _TarjetaVentas extends StatelessWidget {
                         interval: _intervaloAgradable(maximo),
                         getTitlesWidget: (valor, meta) {
                           if (valor < 0) return const SizedBox.shrink();
-                          return Text(_corto(valor), style: _estiloEje(isDark));
+                          return Text(_corto(valor), style: _estiloEje(context));
                         },
                       ),
                     ),
@@ -601,7 +602,7 @@ class _TarjetaVentas extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(dia.substring(dia.length - 2),
-                                style: _estiloEje(isDark)),
+                                style: _estiloEje(context)),
                           );
                         },
                       ),

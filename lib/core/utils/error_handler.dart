@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../theme/app_theme.dart';
 
 /// Tipos de errores de red
 enum NetworkErrorType {
@@ -235,37 +236,68 @@ class ErrorHandler {
     VoidCallback? onRetry,
     IconData icon = Icons.error_outline,
   }) {
-    final theme = Theme.of(context);
+    _mostrar(
+      context,
+      message: message,
+      icon: icon,
+      acento: AppTheme.peligroTexto(context),
+      duration: duration,
+      action: onRetry != null
+          ? SnackBarAction(
+              label: AppLocalizations.of(context).retryAction,
+              textColor: AppTheme.peligroTexto(context),
+              onPressed: onRetry,
+            )
+          : null,
+    );
+  }
+
+  /// Aviso del sistema: panel oscuro con una banda de color al costado.
+  ///
+  /// Antes cada aviso se pintaba entero del color de su estado —verde, naranja,
+  /// rojo— y el texto encima quedaba a suerte: sobre el verde claro apenas se
+  /// leia. Acá el fondo es siempre el panel del tema (contraste garantizado en
+  /// los dos modos) y el color lo lleva la banda izquierda y el ícono, que es
+  /// donde alcanza para reconocer el estado de reojo.
+  static void _mostrar(
+    BuildContext context, {
+    required String message,
+    required IconData icon,
+    required Color acento,
+    required Duration duration,
+    SnackBarAction? action,
+  }) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              icon,
-              color: theme.colorScheme.onError,
-              size: 20,
-            ),
+            Icon(icon, color: acento, size: 19),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: TextStyle(color: theme.colorScheme.onError),
+                style: TextStyle(
+                  fontFamily: AppTheme.fontBody,
+                  fontSize: 13,
+                  height: 1.4,
+                  color: AppTheme.texto(context),
+                ),
               ),
             ),
           ],
         ),
-        backgroundColor: theme.colorScheme.error,
+        backgroundColor: AppTheme.panelElevado(context),
+        shape: Border(
+          left: BorderSide(color: acento, width: 4),
+          top: BorderSide(color: AppTheme.borde(context)),
+          right: BorderSide(color: AppTheme.borde(context)),
+          bottom: BorderSide(color: AppTheme.borde(context)),
+        ),
         behavior: SnackBarBehavior.floating,
         duration: duration,
-        action: onRetry != null
-            ? SnackBarAction(
-                label: AppLocalizations.of(context).retryAction,
-                textColor: theme.colorScheme.onError,
-                onPressed: onRetry,
-              )
-            : null,
+        action: action,
       ),
     );
   }
@@ -310,29 +342,12 @@ class ErrorHandler {
     String message, {
     Duration duration = const Duration(seconds: 2),
   }) {
-    final theme = Theme.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.check_circle_outline,
-              color: theme.colorScheme.onPrimary,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              message,
-              style: TextStyle(color: theme.colorScheme.onPrimary),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade700,
-        behavior: SnackBarBehavior.floating,
-        duration: duration,
-      ),
+    _mostrar(
+      context,
+      message: message,
+      icon: Icons.check_circle_outline,
+      acento: AppTheme.acentoTexto(context),
+      duration: duration,
     );
   }
 
@@ -343,35 +358,15 @@ class ErrorHandler {
     Duration duration = const Duration(seconds: 3),
     SnackBarAction? action,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: isDark ? Colors.black87 : Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: isDark ? Colors.black87 : Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.orange.shade800,
-        behavior: SnackBarBehavior.floating,
-        duration: duration,
-        action: action,
-      ),
+    _mostrar(
+      context,
+      message: message,
+      icon: Icons.info_outline,
+      acento: AppTheme.esOscuro(context)
+          ? AppTheme.accentYellow
+          : const Color(0xFF8A5A00),
+      duration: duration,
+      action: action,
     );
   }
 

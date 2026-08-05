@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../features/billing/data/subscription_repository.dart';
 import '../platform/abrir_url.dart';
+import '../theme/app_theme.dart';
 
 /// Aviso del estado de la suscripción.
 ///
@@ -28,49 +29,67 @@ class SubscriptionBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final (mensaje, color, icono) = switch (sub) {
+    final (mensaje, esGrave, icono) = switch (sub) {
       _ when sub.suspendida => (
           l10n.organizationSuspended,
-          const Color(0xFFEF4444),
+          true,
           Icons.block_outlined,
         ),
       _ when sub.vencida => (
           l10n.subscriptionExpired,
-          const Color(0xFFEF4444),
+          true,
           Icons.error_outline,
         ),
       _ when sub.cupoAgotado => (
           l10n.freeTicketsExhausted,
-          const Color(0xFFEF4444),
+          true,
           Icons.confirmation_number_outlined,
         ),
       _ when (sub.freeTicketsLeft ?? 99) <= _avisarDesdeTickets => (
           l10n.freeTicketsLeft(sub.freeTicketsLeft!),
-          const Color(0xFFF59E0B),
+          false,
           Icons.confirmation_number_outlined,
         ),
-      _ => (null, Colors.transparent, Icons.info_outline),
+      _ => (null, false, Icons.info_outline),
     };
 
     if (mensaje == null) return const SizedBox.shrink();
 
+    // Grave = rojo, por venir = ámbar. Lo importante no es el matiz sino que la
+    // barra vertical izquierda marque la severidad de un vistazo: es el mismo
+    // gesto que usan las listas de acceso para decir activa o cerrada.
+    final color = esGrave
+        ? AppTheme.peligroTexto(context)
+        : (AppTheme.esOscuro(context)
+            ? AppTheme.accentYellow
+            : const Color(0xFF8A5A00));
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.panel(context),
+        border: Border(
+          top: BorderSide(color: AppTheme.borde(context)),
+          right: BorderSide(color: AppTheme.borde(context)),
+          bottom: BorderSide(color: AppTheme.borde(context)),
+          left: BorderSide(color: color, width: 4),
+        ),
       ),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       child: Row(
         children: [
-          Icon(icono, color: color, size: 20),
-          const SizedBox(width: 12),
+          Icon(icono, color: color, size: 18),
+          const SizedBox(width: 11),
           Expanded(
             child: Text(
               mensaje,
-              style: TextStyle(color: color, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontFamily: AppTheme.fontBody,
+                fontSize: 13,
+                height: 1.4,
+                color: AppTheme.texto(context),
+              ),
             ),
           ),
           // La suspensión manual no se resuelve pagando: la levanta el
@@ -80,8 +99,7 @@ class SubscriptionBanner extends ConsumerWidget {
             const SizedBox(width: 8),
             TextButton(
               onPressed: () => _mostrarPlanes(context, ref, l10n),
-              child: Text(l10n.subscribeNow,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+              child: Text(l10n.subscribeNow.toUpperCase()),
             ),
           ],
         ],

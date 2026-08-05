@@ -25,7 +25,7 @@ class LegalScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GlassScaffold(
-      appBar: AppBar(title: Text(l10n.legalInfo)),
+      titulo: l10n.legalInfo,
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -43,7 +43,7 @@ class LegalScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: AppTheme.neonBlue)),
                 ),
-                const Icon(Icons.copy, color: Colors.grey, size: 20),
+                const Icon(Icons.copy, color: AppTheme.accentPurple, size: 20),
               ],
             ),
           ),
@@ -62,7 +62,7 @@ class LegalScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: AppTheme.neonBlue)),
                 ),
-                const Icon(Icons.copy, color: Colors.grey, size: 20),
+                const Icon(Icons.copy, color: AppTheme.accentPurple, size: 20),
               ],
             ),
           ),
@@ -70,7 +70,7 @@ class LegalScreen extends StatelessWidget {
           Text(
             'Imagine Access v1.0.0\n© 2026 Imagine Lab',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            style: theme.textTheme.bodySmall?.copyWith(color: AppTheme.accentPurple),
           ),
         ],
       ),

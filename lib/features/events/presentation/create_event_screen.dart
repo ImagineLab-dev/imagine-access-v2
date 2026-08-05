@@ -570,7 +570,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
         actions: [
           if (widget.eventId != null)
             IconButton(
-              icon: const Icon(Icons.archive, color: Colors.amber),
+              icon: const Icon(Icons.archive, color: AppTheme.accentYellow),
               onPressed: () async {
                 try {
                   await ref.read(eventRepositoryProvider).archiveEvent(widget.eventId!);
@@ -591,7 +591,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
             ),
           if (widget.eventId != null)
             IconButton(
-              icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+              icon: const Icon(Icons.delete_forever, color: AppTheme.accentOrange),
               onPressed: () async {
                 final l10n = AppLocalizations.of(context);
                 final confirm = await showDialog<bool>(
@@ -606,7 +606,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text(l10n.delete.toUpperCase(),
-                              style: const TextStyle(color: Colors.red))),
+                              style: const TextStyle(color: AppTheme.accentOrange))),
                     ],
                   ),
                 );
@@ -731,53 +731,15 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                           padding: const EdgeInsets.only(left: 4, bottom: 8),
                           child: Text(
                             l10n.currencyLabel,
-                            style: TextStyle(
-                              color: theme.brightness == Brightness.dark
-                                  ? Colors.white70
-                                  : Colors.black54,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
+                            style: AppTheme.etiqueta(context),
                           ),
                         ),
                         DropdownButtonFormField<String>(
                           key: ValueKey(_currency),
                           initialValue: _currency,
-                          dropdownColor: theme.brightness == Brightness.dark
-                              ? Colors.black87
-                              : Colors.white,
-                          style: TextStyle(
-                            color: theme.brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.black87,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                          ),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 16),
-                            fillColor: theme.brightness == Brightness.dark
-                              ? AppTheme.surfaceColor.withValues(alpha: 0.5)
-                                : AppTheme.lightInput,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                  color: (theme.brightness == Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                  .withValues(alpha: 0.1)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                  color: (theme.brightness == Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                  .withValues(alpha: 0.1)),
-                            ),
-                          ),
+                          dropdownColor: AppTheme.panelElevado(context),
+                          style: AppTheme.dato(context, size: 14, peso: FontWeight.w500),
+                          
                           // Salen de `CurrencyHelper` y no de una lista a mano.
                           //
                           // Acá estaban escritas PYG y USD nada más, así que un
@@ -810,14 +772,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text(
                   l10n.eventArtwork.toUpperCase(),
-                  style: TextStyle(
-                    color: theme.brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
+                  style: AppTheme.etiqueta(context),
                 ),
               ),
               Row(
@@ -825,7 +780,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 children: [
                   if (_imageUrl != null && _imageUrl!.isNotEmpty)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                       child: Image.network(
                         _imageUrl!,
                         width: 88,
@@ -842,12 +797,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: (theme.brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black)
-                                .withValues(alpha: 0.12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+                        border: Border.all(color: AppTheme.borde(context)),
                       ),
                       child: Icon(Icons.image_outlined,
                           color: theme.hintColor, size: 28),
@@ -899,29 +850,14 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   'ZONA HORARIA',
-                  style: TextStyle(
-                    color: theme.brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
+                  style: AppTheme.etiqueta(context),
                 ),
               ),
               DropdownButtonFormField<String>(
                 key: ValueKey(_timezone),
                 initialValue: _timezone,
-                dropdownColor: theme.brightness == Brightness.dark
-                    ? Colors.black87
-                    : Colors.white,
-                style: TextStyle(
-                  color: theme.brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black87,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
+                dropdownColor: AppTheme.panelElevado(context),
+                          style: AppTheme.dato(context, size: 14, peso: FontWeight.w500),
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 16),
@@ -930,7 +866,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       : AppTheme.lightInput,
                   filled: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                     borderSide: BorderSide(
                         color: (theme.brightness == Brightness.dark
                                 ? Colors.white
@@ -938,7 +874,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             .withValues(alpha: 0.1)),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                     borderSide: BorderSide(
                         color: (theme.brightness == Brightness.dark
                                 ? Colors.white
@@ -977,7 +913,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 title: l10n.professionalAccessStaff,
                 subtitle: l10n.createsStaffAccessTicket,
                 icon: Icons.badge,
-                color: Colors.blueAccent,
+                color: AppTheme.lima,
                 value: _hasStaffTicket,
                 onChanged: (v) => setState(() => _hasStaffTicket = v),
               ),
@@ -986,7 +922,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 title: l10n.enableInvitationsNormal,
                 subtitle: l10n.createsInvitationTicketForQuotas,
                 icon: Icons.mail,
-                color: Colors.purpleAccent,
+                color: AppTheme.accentPurple,
                 value: _hasInvitationTicket,
                 onChanged: (v) => setState(() => _hasInvitationTicket = v),
                 child: Column(
@@ -1016,14 +952,14 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                       ? (theme.brightness == Brightness.dark
                                           ? AppTheme.darkTextSecondary
                                           : AppTheme.lightTextSecondary)
-                                      : Colors.purpleAccent,
+                                      : AppTheme.accentPurple,
                                   fontWeight: _invitationValidUntil == null
                                       ? FontWeight.normal
                                       : FontWeight.bold)),
                           if (_invitationValidUntil != null)
                             IconButton(
                               icon: const Icon(Icons.clear,
-                                  size: 16, color: Colors.red),
+                                  size: 16, color: AppTheme.accentOrange),
                               onPressed: () =>
                                   setState(() => _invitationValidUntil = null),
                             )
@@ -1049,9 +985,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                           const SizedBox(width: 8),
                           DropdownButton<int>(
                             value: _invitationToleranceMinutes,
-                            dropdownColor: Colors.grey[900],
+                            dropdownColor: AppTheme.darkCardElevated,
                             style: const TextStyle(
-                                color: Colors.purpleAccent,
+                                color: AppTheme.accentPurple,
                                 fontWeight: FontWeight.bold),
                             underline: const SizedBox.shrink(),
                             items: [0, 5, 10, 15, 20, 30, 45, 60]
@@ -1076,7 +1012,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 title: l10n.enableVipGuestList,
                 subtitle: l10n.createsVipGuestTicketForQuotas,
                 icon: Icons.star,
-                color: Colors.pinkAccent,
+                color: AppTheme.accentPurple,
                 value: _hasGuestTicket,
                 onChanged: (v) => setState(() => _hasGuestTicket = v),
               ),
@@ -1085,7 +1021,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 title: l10n.enablePromoPack,
                 subtitle: l10n.promoPackSubtitle,
                 icon: Icons.local_offer,
-                color: Colors.orangeAccent,
+                color: AppTheme.accentYellow,
                 value: _hasPromoTicket,
                 onChanged: (v) => setState(() => _hasPromoTicket = v),
                 child: Column(
@@ -1114,12 +1050,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             keyboardType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             style: const TextStyle(
-                                color: Colors.orangeAccent,
+                                color: AppTheme.accentYellow,
                                 fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: '0',
                               hintStyle:
-                                  const TextStyle(color: Colors.white38),
+                                  TextStyle(color: AppTheme.textoApagado(context)),
                               suffixText: _currency,
                               suffixStyle: TextStyle(
                                   color: theme.brightness == Brightness.dark
@@ -1128,12 +1064,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 8),
-                              enabledBorder: const UnderlineInputBorder(
+                              enabledBorder: UnderlineInputBorder(
                                   borderSide:
-                                      BorderSide(color: Colors.white24)),
+                                      BorderSide(color: AppTheme.borde(context))),
                               focusedBorder: const UnderlineInputBorder(
                                   borderSide:
-                                      BorderSide(color: Colors.orangeAccent)),
+                                      BorderSide(color: AppTheme.accentYellow)),
                             ),
                             onChanged: (v) {
                               _promoPrice = double.tryParse(v) ?? 0;
@@ -1161,9 +1097,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                         const SizedBox(width: 8),
                         DropdownButton<int>(
                           value: _promoQty,
-                          dropdownColor: Colors.grey[900],
+                          dropdownColor: AppTheme.darkCardElevated,
                           style: const TextStyle(
-                              color: Colors.orangeAccent,
+                              color: AppTheme.accentYellow,
                               fontWeight: FontWeight.bold),
                           underline: const SizedBox.shrink(),
                           items: List.generate(20, (i) => i + 1)
@@ -1189,9 +1125,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               if (widget.eventId != null)
                 TextButton.icon(
                   onPressed: _deleteEvent,
-                  icon: const Icon(Icons.delete_forever, color: Colors.red),
+                  icon: const Icon(Icons.delete_forever, color: AppTheme.accentOrange),
                   label: Text(l10n.delete,
-                      style: const TextStyle(color: Colors.red)),
+                      style: const TextStyle(color: AppTheme.accentOrange)),
                 ),
               const SizedBox(height: 40),
             ],
@@ -1213,7 +1149,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               onPressed: () => Navigator.pop(c, false), child: Text(l10n.no)),
           TextButton(
               onPressed: () => Navigator.pop(c, true),
-              child: Text(l10n.yes, style: const TextStyle(color: Colors.red))),
+              child: Text(l10n.yes, style: const TextStyle(color: AppTheme.accentOrange))),
         ],
       ),
     );
@@ -1284,7 +1220,7 @@ class _PricingCard extends StatelessWidget {
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4, left: 28),
               child: Text(subtitle,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  style: const TextStyle(fontSize: 12, color: AppTheme.accentPurple)),
             ),
             value: value,
             activeThumbColor: color,

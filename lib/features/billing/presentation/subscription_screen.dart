@@ -51,7 +51,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final estado = ref.watch(subscriptionProvider);
 
     return GlassScaffold(
-      appBar: AppBar(title: Text(l10n.subscription)),
+      titulo: l10n.subscription,
       body: estado.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(child: Text(l10n.errorGeneric)),
@@ -98,15 +98,15 @@ class _Estado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (texto, color) = switch (sub) {
-      _ when sub.suspendida => (l10n.statusSuspended, const Color(0xFFEF4444)),
-      _ when sub.vencida => (l10n.statusExpired, const Color(0xFFEF4444)),
-      _ when sub.cupoAgotado => (l10n.statusQuotaExhausted, const Color(0xFFEF4444)),
-      _ when sub.enPrueba => (l10n.statusTrial, const Color(0xFFF59E0B)),
+      _ when sub.suspendida => (l10n.statusSuspended, AppTheme.accentOrange),
+      _ when sub.vencida => (l10n.statusExpired, AppTheme.accentOrange),
+      _ when sub.cupoAgotado => (l10n.statusQuotaExhausted, AppTheme.accentOrange),
+      _ when sub.enPrueba => (l10n.statusTrial, AppTheme.accentYellow),
       // Antes de "activa": una suscripción dada de baja SIGUE vigente hasta el
       // vencimiento, así que el estado verde sería cierto y engañoso a la vez.
       // Lo que la persona necesita saber es que no se renueva.
-      _ when sub.cancelada => (l10n.subscriptionCancelled, const Color(0xFFF59E0B)),
-      _ => (l10n.statusActive, const Color(0xFF22C55E)),
+      _ when sub.cancelada => (l10n.subscriptionCancelled, AppTheme.accentYellow),
+      _ => (l10n.statusActive, AppTheme.lima),
     };
 
     return GlassCard(
@@ -118,7 +118,7 @@ class _Estado extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: color),
               ),
               const SizedBox(width: 10),
               Text(texto,
@@ -170,13 +170,13 @@ class _Cupo extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
             child: LinearProgressIndicator(
               value: limite == 0 ? 1 : usados / limite,
               minHeight: 8,
-              backgroundColor: Colors.white24,
+              backgroundColor: AppTheme.borde(context),
               valueColor: AlwaysStoppedAnimation(
-                usados >= limite ? const Color(0xFFEF4444) : AppTheme.neonBlue,
+                usados >= limite ? AppTheme.accentOrange : AppTheme.neonBlue,
               ),
             ),
           ),
@@ -301,18 +301,18 @@ class _OpcionPlan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borde = destacado ? AppTheme.neonBlue : Colors.white24;
+    final borde = destacado ? AppTheme.neonBlue : AppTheme.borde(context);
 
     return Opacity(
       opacity: deshabilitado && !cargando ? 0.5 : 1,
       child: InkWell(
         onTap: deshabilitado ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             border: Border.all(color: borde, width: destacado ? 1.6 : 1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
           ),
           child: Row(
             children: [
@@ -388,7 +388,7 @@ class _BajaDeSuscripcionState extends State<_BajaDeSuscripcion> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.cancelSubscriptionAction,
-                style: const TextStyle(color: Color(0xFFEF4444))),
+                style: const TextStyle(color: AppTheme.accentOrange)),
           ),
         ],
       ),
@@ -435,7 +435,7 @@ class _BajaDeSuscripcionState extends State<_BajaDeSuscripcion> {
         TextButton(
           onPressed: _enviando ? null : _confirmar,
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFFEF4444),
+            foregroundColor: AppTheme.accentOrange,
             padding: const EdgeInsets.symmetric(horizontal: 4),
           ),
           child: _enviando

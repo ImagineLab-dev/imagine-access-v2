@@ -23,15 +23,13 @@ class DeviceManagementScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     return GlassScaffold(
-      appBar: AppBar(
-        title: Text(l10n.devices),
-        actions: [
-          IconButton(
-            onPressed: () => _showAddDeviceDialog(context, ref, currentDeviceAsync.valueOrNull),
-            icon: const Icon(Icons.add_circle_outline),
-          )
-        ],
-      ),
+      titulo: l10n.devices,
+      acciones: [
+        IconButton(
+          onPressed: () => _showAddDeviceDialog(context, ref, currentDeviceAsync.valueOrNull),
+          icon: const Icon(Icons.add_circle_outline),
+        )
+      ],
       body: Column(
         children: [
           Expanded(
@@ -58,7 +56,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.mobile_friendly,
-                            color: isEnabled ? Colors.green : Colors.grey,
+                            color: isEnabled ? AppTheme.lima : AppTheme.accentPurple,
                             size: 30,
                           ),
                           const SizedBox(width: 16),
@@ -73,7 +71,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                                 Text(
                                   isEnabled ? l10n.active : l10n.disabled,
                                   style: TextStyle(
-                                    color: isEnabled ? Colors.green : Colors.grey,
+                                    color: isEnabled ? AppTheme.lima : AppTheme.accentPurple,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -83,7 +81,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: AppTheme.neonBlue.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                                     ),
                                     child: Text(
                                       l10n.thisDevice,
@@ -97,7 +95,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                                 if (!isEnabled)
                                   Text(
                                     '(${l10n.disabled})',
-                                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                                    style: const TextStyle(color: AppTheme.accentOrange, fontSize: 12),
                                   ),
                               ],
                             ),
@@ -123,7 +121,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                             },
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete, color: AppTheme.accentOrange),
                             onPressed: () => _confirmDelete(
                               context,
                               ref,
@@ -155,7 +153,7 @@ class DeviceManagementScreen extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.accentOrange),
             onPressed: () async {
               Navigator.pop(ctx);
               try {
@@ -222,7 +220,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: AppTheme.campo(context), borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
                     child: Column(
                       children: [
                         Row(
@@ -254,7 +252,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           l10n.savePinWarning,
-                          style: const TextStyle(color: Colors.amber, fontSize: 12),
+                          style: const TextStyle(color: AppTheme.accentYellow, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                       ],

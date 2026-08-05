@@ -81,7 +81,7 @@ class _CreateEventDialogState extends ConsumerState<CreateEventDialog> {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
             color: theme.scaffoldBackgroundColor.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
             border: Border.all(color: AppTheme.neonBlue.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
@@ -143,8 +143,8 @@ class _CreateEventDialogState extends ConsumerState<CreateEventDialog> {
                     width: 100,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white24),
-                        borderRadius: BorderRadius.circular(12)),
+                        border: Border.all(color: AppTheme.borde(context)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _currency,
@@ -178,8 +178,8 @@ class _CreateEventDialogState extends ConsumerState<CreateEventDialog> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white24),
-                      borderRadius: BorderRadius.circular(12)),
+                      border: Border.all(color: AppTheme.borde(context)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
                   child: Row(
                     children: [
                       const Icon(Icons.calendar_today,

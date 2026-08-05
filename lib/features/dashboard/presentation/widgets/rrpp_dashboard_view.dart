@@ -59,7 +59,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: paidCount.toString(),
               subValue: "${l10n.today}: $paidToday",
               icon: Icons.confirmation_number_outlined,
-              color: AppTheme.accentBlue,
+              color: AppTheme.textoApagado(context),
               delay: 0,
             ),
             EliteMetricCard(
@@ -67,7 +67,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: totalIssued.toString(),
               subValue: "${l10n.paidShort}: $paidCount ${l10n.inviteShort}: $invitesCount",
               icon: Icons.all_inbox,
-              color: Colors.indigoAccent,
+              color: AppTheme.textoApagado(context),
               delay: 100,
             ),
             EliteMetricCard(
@@ -75,9 +75,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: "$quotaStdUsed / $quotaStd",
               subValue: "${l10n.remaining}: $quotaStdRem",
               icon: Icons.people_outline,
-              color: Colors.tealAccent,
               progress: stdProgress,
-              progressColor: Colors.tealAccent,
               delay: 200,
             ),
             EliteMetricCard(
@@ -85,9 +83,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: "$quotaGuestUsed / $quotaGuest",
               subValue: "${l10n.remaining}: $quotaGuestRem",
               icon: Icons.star_border,
-              color: AppTheme.accentPurple,
               progress: guestProgress,
-              progressColor: AppTheme.accentPurple,
               delay: 300,
             ),
             EliteMetricCard(
@@ -95,7 +91,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: totalEntered.toString(),
               subValue: enteredPercent,
               icon: Icons.qr_code_scanner,
-              color: AppTheme.accentGreen,
+              color: AppTheme.textoApagado(context),
               delay: 400,
             ),
             EliteMetricCard(
@@ -103,7 +99,7 @@ class RrppDashboardView extends ConsumerWidget {
               value: toEnter.toString(),
               subValue: "${l10n.remaining}: $toEnter",
               icon: Icons.hourglass_empty_rounded,
-              color: AppTheme.accentYellow,
+              color: AppTheme.textoApagado(context),
               delay: 500,
             ),
           ],
@@ -111,17 +107,13 @@ class RrppDashboardView extends ConsumerWidget {
         const SizedBox(height: 32),
         QuickActions(
           actions: [
+            // "Ver todos los tickets" salió: es el cuarto botón de la barra
+            // de abajo. Emitir es lo único que la barra no puede hacer.
             ActionItem(
               l10n.newTicketInvitation.toUpperCase(),
               Icons.confirmation_number,
               '/create_ticket',
               isPrimary: true,
-            ),
-            ActionItem(
-              l10n.viewAllTickets,
-              Icons.list_alt,
-              '/tickets',
-              color: Colors.orangeAccent,
             ),
           ],
           onActionBeforeNavigate: (action) =>

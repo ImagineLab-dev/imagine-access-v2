@@ -4,6 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../offline/connectivity_provider.dart';
 import '../offline/offline_queue_service.dart';
+import '../theme/app_theme.dart';
+
+/// Tinta sobre el ámbar. El blanco sobre ámbar da ~1,9:1 y no se lee.
+const Color _tinta = Color(0xFF3A2A00);
 
 class OfflineSyncBanner extends ConsumerStatefulWidget {
   const OfflineSyncBanner({super.key});
@@ -32,7 +36,7 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(l10n.offlineOpsDropped(result.dropped)),
-          backgroundColor: Colors.red.shade700,
+          backgroundColor: AppTheme.accentOrange,
           duration: const Duration(seconds: 5),
         ));
       }
@@ -61,25 +65,32 @@ class _OfflineSyncBannerState extends ConsumerState<OfflineSyncBanner> {
         final count = queueCount.valueOrNull ?? 0;
         final l10n = AppLocalizations.of(context);
 
+        // Banda ámbar a sangre: sin conexión es un estado del sistema, no un
+        // aviso al pasar. Va en mono porque lo que importa es el contador de
+        // operaciones pendientes.
         return SafeArea(
           bottom: false,
           child: Material(
-            color: Colors.orange.shade700,
+            color: AppTheme.accentYellow,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               child: Row(
                 children: [
-                  const Icon(Icons.wifi_off, color: Colors.white, size: 18),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.wifi_off, color: _tinta, size: 16),
+                  const SizedBox(width: 9),
                   Expanded(
                     child: Text(
-                      count > 0
-                          ? l10n.offlinePendingOps(count)
-                          : l10n.offlineWillSync,
+                      (count > 0
+                              ? l10n.offlinePendingOps(count)
+                              : l10n.offlineWillSync)
+                          .toUpperCase(),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontFamily: AppTheme.fontMono,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color: _tinta,
                       ),
                     ),
                   ),

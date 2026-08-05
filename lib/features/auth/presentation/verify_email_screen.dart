@@ -210,16 +210,16 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                               color: textColor.withValues(alpha: 0.3),
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                               borderSide: BorderSide(
                                 color: textColor.withValues(alpha: 0.2),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusCard),
                               borderSide: const BorderSide(
                                 color: AppTheme.primaryColor,
                                 width: 2,

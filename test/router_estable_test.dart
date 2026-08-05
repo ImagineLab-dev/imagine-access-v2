@@ -16,12 +16,36 @@
 // mismo router, sin volver al principio.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:imagine_access/core/router/app_router.dart';
 import 'package:imagine_access/features/auth/presentation/auth_controller.dart';
+import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Monta la app igual que `main.dart`, **con las localizaciones**.
+///
+/// Sin ellas `AppLocalizations.of(context)` devuelve null y toda pantalla que
+/// muestre un texto revienta al construirse. El test seguía pasando porque solo
+/// mira a dónde navega el router, y el `takeException()` del final se comía el
+/// error creyendo que era Supabase. O sea: estos tests navegaban por pantallas
+/// que en realidad no dibujaban nada, y no se enteraban.
+Widget _app(ProviderContainer contenedor, GoRouter router) =>
+    UncontrolledProviderScope(
+      container: contenedor,
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
+    );
 
 /// Un usuario mínimo. Solo interesa que sea una instancia distinta de la
 /// anterior, que es lo que dispara la reconstrucción.
@@ -108,10 +132,7 @@ void main() {
     final router = contenedor.read(routerProvider);
 
     await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: contenedor,
-        child: MaterialApp.router(routerConfig: router),
-      ),
+      _app(contenedor, router),
     );
     await tester.pump();
 
@@ -129,7 +150,20 @@ void main() {
     );
 
     // El panel intenta hablar con Supabase al montarse y acá no hay backend.
-    // Lo que se está probando es a dónde navega, no qué dibuja.
+    // Lo que se está probando es a dónde navega, no qué dibuja. Hay que
+    // drenarlo DESPUÉS de cada pump y no una sola vez: el panel se reconstruye
+    // en cada cuadro y vuelve a lanzar el mismo error.
+    tester.takeException();
+
+    // La bienvenida —por la que se pasó antes de entrar— arranca con
+    // animaciones diferidas, y cada `delay:` deja un temporizador programado.
+    // El arnés falla el test si queda alguno vivo al desmontar, así que se
+    // adelanta el reloj para que se consuman y recién ahí se baja el árbol.
+    await tester.pump(const Duration(seconds: 1));
+    tester.takeException();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
     tester.takeException();
   });
 
@@ -141,10 +175,7 @@ void main() {
     contenedor.read(userProvider.notifier).state = _usuario('u1', rol: 'admin');
 
     await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: contenedor,
-        child: MaterialApp.router(routerConfig: router),
-      ),
+      _app(contenedor, router),
     );
     await tester.pump();
     tester.takeException();
@@ -181,10 +212,7 @@ void main() {
     final router = contenedor.read(routerProvider);
 
     await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: contenedor,
-        child: MaterialApp.router(routerConfig: router),
-      ),
+      _app(contenedor, router),
     );
     await tester.pump();
     expect(router.state.matchedLocation, '/welcome');

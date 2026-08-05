@@ -67,7 +67,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     messenger.clearSnackBars();
     messenger.showSnackBar(SnackBar(
       content: Text(mensaje),
-      backgroundColor: error ? Colors.red.shade700 : null,
+      backgroundColor: error ? AppTheme.accentOrange : null,
     ));
   }
 
@@ -210,7 +210,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final esAdmin = AppRoles.isAdmin(ref.watch(userRoleProvider));
 
     return GlassScaffold(
-      appBar: AppBar(title: Text(l10n.profile)),
+      titulo: l10n.profile,
       body: perfilAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(child: Text(l10n.profileSaveError)),
@@ -288,13 +288,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _titulo(l10n.accountData, Icons.person_outline),
           Row(
             children: [
-              CircleAvatar(
-                radius: 34,
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: .15),
-                backgroundImage:
-                    _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
+              // Recuadro cuadrado con marco lima. Era el último círculo que
+              // quedaba en la app, y un avatar redondo sobre paneles todos
+              // rectos se lee como una pieza traída de otro lado.
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: AppTheme.campo(context),
+                  border: Border.all(color: AppTheme.lima, width: 2),
+                  image: _avatarUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(_avatarUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
                 child: _avatarUrl == null
-                    ? const Icon(Icons.person, size: 34)
+                    ? Icon(Icons.person_outline,
+                        size: 30, color: AppTheme.textoApagado(context))
                     : null,
               ),
               const SizedBox(width: 16),
@@ -397,10 +409,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(l10n.deleteAccount,
-                style: const TextStyle(color: Color(0xFFEF4444))),
+                style: const TextStyle(color: AppTheme.accentOrange)),
             subtitle: Text(l10n.deleteAccountHint),
             trailing: const Icon(Icons.chevron_right,
-                size: 20, color: Color(0xFFEF4444)),
+                size: 20, color: AppTheme.accentOrange),
             onTap: () => _confirmarBaja(l10n),
           ),
         ],
@@ -661,7 +673,7 @@ class _DialogoBajaState extends State<_DialogoBaja> {
                     '${r['escaneos'] ?? 0}',
                     '${r['miembros'] ?? 0}',
                   ),
-                  style: const TextStyle(color: Color(0xFFEF4444)),
+                  style: const TextStyle(color: AppTheme.accentOrange),
                 ),
               ],
               const SizedBox(height: 16),
@@ -693,7 +705,7 @@ class _DialogoBajaState extends State<_DialogoBaja> {
           onPressed: _coincide ? () => Navigator.pop(context, true) : null,
           child: Text(l10n.deleteAccountAction,
               style: TextStyle(
-                  color: _coincide ? const Color(0xFFEF4444) : null)),
+                  color: _coincide ? AppTheme.accentOrange : null)),
         ),
       ],
     );

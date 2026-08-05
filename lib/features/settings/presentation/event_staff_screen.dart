@@ -23,7 +23,6 @@ class EventStaffScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedEvent = ref.watch(selectedEventProvider);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final staffAsync = ref.watch(eventStaffProvider);
     final allUsersAsync = ref.watch(usersListProvider);
     final l10n = AppLocalizations.of(context);
@@ -131,7 +130,7 @@ class EventStaffScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: isDark ? Colors.white : Colors.black87,
+                                  color: AppTheme.texto(context),
                                 ),
                               ),
                               Text(
@@ -146,7 +145,7 @@ class EventStaffScreen extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                          icon: const Icon(Icons.edit, color: AppTheme.lima),
                           onPressed: () => _showEditQuotaDialog(
                             context,
                             ref,
@@ -155,7 +154,7 @@ class EventStaffScreen extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                          icon: const Icon(Icons.delete_outline, color: AppTheme.accentOrange),
                           onPressed: () => _confirmRemoveStaff(
                             context,
                             ref,
@@ -202,19 +201,17 @@ class EventStaffScreen extends ConsumerWidget {
   Color _getRoleColor(String role) {
     switch (role) {
       case AppRoles.admin:
-        return Colors.redAccent;
+        return AppTheme.accentOrange;
       case AppRoles.rrpp:
         return AppTheme.neonBlue;
       case AppRoles.door:
         return AppTheme.accentGreen;
       default:
-        return Colors.grey;
+        return AppTheme.accentPurple;
     }
   }
 
   void _showAddStaffDialog(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> allUsers) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
     String? selectedUserId;
@@ -224,10 +221,10 @@ class EventStaffScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: isDark ? AppTheme.surfaceColor : Colors.white,
+          backgroundColor: AppTheme.panel(context),
           title: Text(
             l10n.addStaffToEvent,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+            style: TextStyle(color: AppTheme.texto(context)),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -324,7 +321,7 @@ class EventStaffScreen extends ConsumerWidget {
                 }
               }
             },
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppTheme.accentOrange)),
           ),
         ],
       ),
@@ -337,8 +334,6 @@ class EventStaffScreen extends ConsumerWidget {
     Map<String, dynamic> staff,
     String userName,
   ) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
     final stdCtrl = TextEditingController(text: (staff['quota_standard'] ?? 0).toString());
@@ -348,10 +343,10 @@ class EventStaffScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppTheme.surfaceColor : Colors.white,
+        backgroundColor: AppTheme.panel(context),
         title: Text(
           l10n.editQuotasFor(userName),
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          style: TextStyle(color: AppTheme.texto(context)),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -360,21 +355,21 @@ class EventStaffScreen extends ConsumerWidget {
               controller: stdCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: l10n.standardTicketQuota),
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              style: TextStyle(color: AppTheme.texto(context)),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: guestCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: l10n.guestListQuotaVip),
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              style: TextStyle(color: AppTheme.texto(context)),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: invCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: l10n.invitationQuotaNormal),
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              style: TextStyle(color: AppTheme.texto(context)),
             )
           ],
         ),
@@ -440,7 +435,7 @@ class _QuotaBadge extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
             border: Border.all(color: color.withValues(alpha: 0.5)),
           ),
           child: Text(

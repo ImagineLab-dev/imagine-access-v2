@@ -10,6 +10,7 @@ import 'package:imagine_access/core/ui/glass_scaffold.dart';
 import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:imagine_access/features/superadmin/data/tenant_repository.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../../../core/ui/status_badge.dart';
 
 class SuperAdminScreen extends ConsumerStatefulWidget {
   const SuperAdminScreen({super.key});
@@ -27,7 +28,7 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
       ..clearSnackBars()
       ..showSnackBar(SnackBar(
         content: Text(mensaje),
-        backgroundColor: error ? Colors.red.shade700 : null,
+        backgroundColor: error ? AppTheme.accentOrange : null,
       ));
   }
 
@@ -60,7 +61,9 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(l10n.cancel)),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.accentOrange,
+                foregroundColor: Colors.white),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.tenantSuspend),
           ),
@@ -197,19 +200,17 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
     final tenantsAsync = ref.watch(tenantsProvider);
 
     return GlassScaffold(
-      appBar: AppBar(
-        title: Text(l10n.superAdmin),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: l10n.refresh,
-            onPressed: () {
-              ref.invalidate(tenantsProvider);
-              ref.invalidate(superadminAuditProvider);
-            },
-          ),
-        ],
-      ),
+      titulo: l10n.superAdmin,
+      acciones: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: l10n.refresh,
+          onPressed: () {
+            ref.invalidate(tenantsProvider);
+            ref.invalidate(superadminAuditProvider);
+          },
+        ),
+      ],
       body: tenantsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -284,10 +285,10 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
         dato(l10n.tenantActive, '$activas', AppTheme.primaryColor),
         const SizedBox(width: 10),
         dato(l10n.tenantSuspended, '${tenants.length - activas}',
-            Colors.orange.shade700),
+            AppTheme.accentYellow),
         const SizedBox(width: 10),
         if (!Responsive.esTelefono(context)) ...[
-          dato(l10n.expiresOn, '$vencidas', Colors.red.shade400),
+          dato(l10n.expiresOn, '$vencidas', AppTheme.accentOrange),
           const SizedBox(width: 10),
         ],
         dato(l10n.tenantTickets, '$tickets',
@@ -327,7 +328,7 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
                 ),
                 _chip(
                   t.suspendido ? l10n.tenantSuspended : l10n.tenantActive,
-                  t.suspendido ? Colors.orange.shade700 : Colors.green.shade600,
+                  t.suspendido ? BadgeStatus.warning : BadgeStatus.success,
                 ),
               ],
             ),
@@ -361,7 +362,7 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: dias != null && dias < 7
-                          ? Colors.red.shade400
+                          ? AppTheme.accentOrange
                           : theme.hintColor,
                     ),
                   ),
@@ -393,9 +394,9 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
                   TextButton.icon(
                     onPressed: () => _confirmarSuspension(t, l10n),
                     icon: Icon(Icons.block,
-                        size: 17, color: Colors.orange.shade700),
+                        size: 17, color: AppTheme.accentYellow),
                     label: Text(l10n.tenantSuspend,
-                        style: TextStyle(color: Colors.orange.shade700)),
+                        style: TextStyle(color: AppTheme.accentYellow)),
                   ),
               ],
             ),
@@ -405,16 +406,11 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
     );
   }
 
-  Widget _chip(String texto, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(texto,
-            style: TextStyle(
-                color: color, fontSize: 11, fontWeight: FontWeight.bold)),
-      );
+  /// Estado del inquilino. Usa el componente del sistema en lugar de pintar el
+  /// color al 15% de opacidad: sobre papel, el lima al 15% con texto lima
+  /// encima no se leia.
+  Widget _chip(String texto, BadgeStatus estado) =>
+      StatusBadge(text: texto, status: estado);
 
   Widget _metrica(String etiqueta, int valor) => Row(
         mainAxisSize: MainAxisSize.min,

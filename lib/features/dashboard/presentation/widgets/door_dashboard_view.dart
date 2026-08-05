@@ -3,7 +3,6 @@ import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../events/presentation/event_state.dart';
 import 'dashboard_components.dart';
 
 class DoorDashboardView extends ConsumerWidget {
@@ -30,28 +29,28 @@ class DoorDashboardView extends ConsumerWidget {
               title: l10n.totalTickets,
               value: (metrics['total_sold'] ?? 0).toString(),
               icon: Icons.confirmation_number_outlined,
-              color: AppTheme.accentBlue,
+              color: AppTheme.textoApagado(context),
               delay: 0,
             ),
             MetricCard(
               title: l10n.scanned.toUpperCase(),
               value: (metrics['scanned'] ?? 0).toString(),
               icon: Icons.qr_code_scanner,
-              color: AppTheme.accentPurple,
+              color: AppTheme.textoApagado(context),
               delay: 100,
             ),
             MetricCard(
               title: l10n.manualUpper,
               value: (metrics['scanned_manual'] ?? 0).toString(),
               icon: Icons.back_hand,
-              color: Colors.blueGrey,
+              color: AppTheme.textoApagado(context),
               delay: 150,
             ),
             MetricCard(
               title: l10n.toEnter.toUpperCase(),
               value: (metrics['valid'] ?? 0).toString(),
               icon: Icons.hourglass_empty_rounded,
-              color: AppTheme.accentYellow,
+              color: AppTheme.textoApagado(context),
               delay: 200,
             ),
             MetricCard(
@@ -59,7 +58,7 @@ class DoorDashboardView extends ConsumerWidget {
               value:
                   "${metrics['invitations_scanned'] ?? 0} / ${metrics['invitations_total'] ?? 0}",
               icon: Icons.people_outline_rounded,
-              color: AppTheme.accentGreen,
+              color: AppTheme.textoApagado(context),
               delay: 300,
             ),
             MetricCard(
@@ -67,7 +66,7 @@ class DoorDashboardView extends ConsumerWidget {
               value:
                   "${metrics['staff_entered'] ?? 0} / ${metrics['staff_created'] ?? 0}",
               icon: Icons.badge_outlined,
-              color: Colors.orangeAccent,
+              color: AppTheme.textoApagado(context),
               delay: 400,
             ),
             MetricCard(
@@ -75,7 +74,7 @@ class DoorDashboardView extends ConsumerWidget {
               value:
                   "${metrics['guest_entered'] ?? 0} / ${metrics['guest_created'] ?? 0}",
               icon: Icons.star_border,
-              color: Colors.pinkAccent,
+              color: AppTheme.textoApagado(context),
               delay: 500,
             ),
             MetricCard(
@@ -83,7 +82,7 @@ class DoorDashboardView extends ConsumerWidget {
               value:
                   "${metrics['standard_entered'] ?? 0} / ${metrics['standard_created'] ?? 0}",
               icon: Icons.people_outline,
-              color: Colors.cyanAccent,
+              color: AppTheme.textoApagado(context),
               delay: 600,
             ),
             MetricCard(
@@ -91,48 +90,18 @@ class DoorDashboardView extends ConsumerWidget {
               value:
                   "${metrics['promo_entered'] ?? 0} / ${metrics['promo_created'] ?? 0}",
               icon: Icons.local_offer,
-              color: Colors.orangeAccent,
+              color: AppTheme.textoApagado(context),
               delay: 700,
             ),
           ],
         ),
-        const SizedBox(height: 32),
-        QuickActions(
-          actions: [
-            ActionItem(
-              l10n.scanner,
-              Icons.qr_code_scanner,
-              '/scanner',
-              isPrimary: true,
-            ),
-            ActionItem(
-              l10n.searchTicketBtn.toUpperCase(),
-              Icons.search,
-              '/document_search',
-              color: Colors.blueAccent,
-            ),
-          ],
-          onActionBeforeNavigate: (action) =>
-              _checkEventSelected(context, ref, action.route),
-        ),
+        // Sin acciones rápidas.
+        //
+        // Las dos que había —escanear y buscar por documento— son exactamente
+        // los dos destinos que el dispositivo de puerta tiene en su barra de
+        // abajo, con el dedo encima. Repetirlas acá le hacía leer cuatro
+        // botones para elegir entre dos.
       ],
     );
-  }
-
-  bool _checkEventSelected(BuildContext context, WidgetRef ref, String route) {
-    if (route == '/tickets') {
-      return true;
-    }
-
-    final selectedEvent = ref.read(selectedEventProvider);
-    if (selectedEvent == null) {
-      final l10n = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseSelectEvent)),
-      );
-      return false;
-    }
-
-    return true;
   }
 }

@@ -112,45 +112,45 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              backgroundColor: Colors.grey[900],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              icon: const Icon(Icons.cancel, color: Colors.red, size: 56),
+              backgroundColor: AppTheme.darkCardElevated,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
+              icon: const Icon(Icons.cancel, color: AppTheme.accentOrange, size: 56),
               title: Text(l10nDialog.invalidEntry,
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(color: AppTheme.accentOrange, fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     l10nDialog.entryNoLongerValid,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 15),
+                    style: TextStyle(color: AppTheme.textoSecundario(context), fontSize: 15),
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                      color: AppTheme.accentOrange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+                      border: Border.all(color: AppTheme.accentOrange.withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       l10nDialog.validOnlyUntil(result['valid_until']?.toString() ?? '-'),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: AppTheme.accentOrange, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     l10nDialog.ticketMarkedVoid,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white38, fontSize: 12),
+                    style: TextStyle(color: AppTheme.textoApagado(context), fontSize: 12),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(l10nDialog.closeAction, style: const TextStyle(color: Colors.red)),
+                  child: Text(l10nDialog.closeAction, style: const TextStyle(color: AppTheme.accentOrange)),
                 ),
               ],
             ),
@@ -189,7 +189,7 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
     }
 
     return GlassScaffold(
-      appBar: AppBar(title: Text(l10n.manualSearchTitle)),
+      titulo: l10n.manualSearchTitle,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -357,13 +357,13 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
               padding: const EdgeInsets.all(12),
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8)),
+                  color: AppTheme.accentOrange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusCard)),
               child: Text(
                 l10n.ticketAlreadyUsedInvalid,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.red,
+                    color: AppTheme.accentOrange,
                     fontWeight: FontWeight.bold,
                     fontSize: 12),
               ),
@@ -375,20 +375,19 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
   }
 
   Widget _infoRow(String label, String value) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Text(label,
               style: TextStyle(
-                  color: isDark ? Colors.white54 : Colors.black54,
+                  color: AppTheme.textoApagado(context),
                   fontSize: 12)),
           const SizedBox(width: 8),
           Text(value,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: AppTheme.texto(context),
               )),
         ],
       ),
@@ -401,15 +400,15 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isValid
-            ? Colors.green.withValues(alpha: 0.2)
-            : Colors.red.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isValid ? Colors.green : Colors.red),
+            ? AppTheme.lima.withValues(alpha: 0.2)
+            : AppTheme.accentOrange.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        border: Border.all(color: isValid ? AppTheme.lima : AppTheme.accentOrange),
       ),
       child: Text(
         status.toUpperCase(),
         style: TextStyle(
-            color: isValid ? Colors.green : Colors.red,
+            color: isValid ? AppTheme.lima : AppTheme.accentOrange,
             fontSize: 10,
             fontWeight: FontWeight.bold),
       ),
@@ -458,18 +457,18 @@ class _ManualResultView extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                       Text(ticket['type'],
-                          style: const TextStyle(color: Colors.white70)),
+                          style: TextStyle(color: AppTheme.textoSecundario(context))),
                       const Divider(height: 30),
                       Text(l10n.manualValidationAudited,
-                          style: const TextStyle(
-                              fontSize: 10, color: Colors.white54)),
+                          style: TextStyle(
+                              fontSize: 10, color: AppTheme.textoApagado(context))),
                     ],
                   ),
                 ),
               ],
               const SizedBox(height: 60),
               Text(l10n.tapToDismiss,
-                  style: const TextStyle(color: Colors.white54, letterSpacing: 2)),
+                  style: TextStyle(color: AppTheme.textoApagado(context), letterSpacing: 2)),
             ],
           ).animate().scale(),
         ),

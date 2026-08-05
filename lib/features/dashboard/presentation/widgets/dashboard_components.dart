@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/glass_card.dart';
 
+/// Métrica compacta: un número y qué significa.
+///
+/// El número va en la grotesca y la etiqueta en mono, porque en un tablero lo
+/// que se compara de un vistazo es la columna de números — y para eso tienen
+/// que tener todos el mismo ancho de dígito.
 class MetricCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final int delay;
-
   const MetricCard({
     super.key,
     required this.title,
@@ -22,11 +22,14 @@ class MetricCard extends StatelessWidget {
     required this.delay,
   });
 
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final int delay;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     // Ícono al costado, no arriba.
     //
     // Antes era una Column con `spaceBetween`: el ícono se iba al borde de
@@ -38,9 +41,8 @@ class MetricCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: color, size: 19),
           const SizedBox(width: 11),
           Expanded(
             child: Column(
@@ -53,23 +55,18 @@ class MetricCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     value,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.1,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: AppTheme.titular(context, size: 19),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
-                  title,
+                  title.toUpperCase(),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isDark ? Colors.white60 : Colors.black54,
-                    fontSize: 9.5,
-                    height: 1.15,
-                    fontWeight: FontWeight.w500,
+                  style: AppTheme.dato(
+                    context,
+                    size: 9,
+                    color: AppTheme.textoSecundario(context),
                   ),
                 ),
               ],
@@ -77,62 +74,65 @@ class MetricCard extends StatelessWidget {
           ),
         ],
       ),
-    ).animate().fade(delay: delay.ms).scale();
+    ).animate().fade(delay: delay.ms);
   }
 }
 
+/// Métrica destacada: número grande, una línea de detalle y una barra de
+/// avance. Es la tarjeta del diseño para las dos o tres cifras que mandan.
 class EliteMetricCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String subValue;
-  final IconData icon;
-  final Color color;
-  final int delay;
-  final double? progress;
-  final Color? progressColor;
-
   const EliteMetricCard({
     super.key,
     required this.title,
     required this.value,
     required this.subValue,
     required this.icon,
-    required this.color,
     required this.delay,
+    this.color,
     this.progress,
     this.progressColor,
   });
 
+  final String title;
+  final String value;
+  final String subValue;
+  final IconData icon;
+  final int delay;
+
+  /// Ignorado. En esta tarjeta el ícono va siempre apagado —lo que tiene que
+  /// saltar es el número, no la ilustración de al lado—. Se conserva para no
+  /// romper las llamadas que todavía lo pasan.
+  final Color? color;
+  final double? progress;
+  final Color? progressColor;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return GlassCard(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 20),
-              if (progress != null)
-                SizedBox(
-                  width: 40,
-                  height: 4,
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor:
-                      (isDark ? Colors.white : Colors.black)
-                        .withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        progressColor ?? color),
-                    borderRadius: BorderRadius.circular(2),
+              Expanded(
+                child: Text(
+                  title.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTheme.etiqueta(
+                    context,
+                    size: 9.5,
+                    color: AppTheme.acentoTexto(context),
                   ),
                 ),
+              ),
+              const SizedBox(width: 6),
+              // El ícono va apagado: en esta tarjeta lo que tiene que saltar es
+              // el número, no la ilustración de al lado.
+              Icon(icon, color: AppTheme.textoApagado(context), size: 17),
             ],
           ),
           Column(
@@ -144,47 +144,43 @@ class EliteMetricCard extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   value,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                  style: AppTheme.titular(context, size: 27),
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 subValue,
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.black87,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTheme.dato(
+                  context,
+                  size: 10.5,
+                  color: AppTheme.textoSecundario(context),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: isDark ? Colors.white54 : Colors.black54,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
+              if (progress != null) ...[
+                const SizedBox(height: 10),
+                // Barra recta y fina, como un indicador de nivel. Sin esquinas
+                // redondeadas: es el mismo criterio que el resto del sistema.
+                SizedBox(
+                  height: 4,
+                  child: LinearProgressIndicator(
+                    value: progress!.clamp(0.0, 1.0),
+                    backgroundColor: AppTheme.campo(context),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        progressColor ?? AppTheme.lima),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ],
       ),
-    ).animate().fade(delay: delay.ms).scale();
+    ).animate().fade(delay: delay.ms);
   }
 }
 
 class ActionItem {
-  final String text;
-  final IconData icon;
-  final String route;
-  final Color? color;
-  final bool isPrimary;
-
   const ActionItem(
     this.text,
     this.icon,
@@ -192,55 +188,65 @@ class ActionItem {
     this.color,
     this.isPrimary = false,
   });
+
+  final String text;
+  final IconData icon;
+  final String route;
+  final Color? color;
+  final bool isPrimary;
 }
 
 class QuickActions extends StatelessWidget {
-  final List<ActionItem> actions;
-  final bool Function(ActionItem action)? onActionBeforeNavigate;
-
   const QuickActions({
     super.key,
     required this.actions,
     this.onActionBeforeNavigate,
   });
 
+  final List<ActionItem> actions;
+  final bool Function(ActionItem action)? onActionBeforeNavigate;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+
+    // Sin acciones no hay sección: un título sobre una grilla vacía ocupa
+    // lugar para decir que no hay nada que hacer.
+    if (actions.isEmpty) return const SizedBox.shrink();
+
+    // Nunca más columnas que tarjetas.
+    //
+    // La grilla pedía 3 columnas fijas, así que cuatro acciones se acomodaban
+    // 3 + 1 y la última quedaba sola con dos huecos al lado; y una sola acción
+    // ocupaba un tercio de la fila con el resto vacío. Ahora el ancho se
+    // reparte entre las que hay.
+    final columnas = Responsive.columnas(context, anchoObjetivo: 340, maximo: 3)
+        .clamp(1, actions.length);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          l10n.quickActions,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
+          l10n.quickActions.toUpperCase(),
+          style: AppTheme.titular(context, size: 16),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount:
-                Responsive.columnas(context, anchoObjetivo: 340, maximo: 3),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+            crossAxisCount: columnas,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
             // Un ícono y una etiqueta: 110px de alto alcanzan de sobra.
             childAspectRatio: Responsive.proporcionTarjeta(context,
-                alturaObjetivo: 110, anchoObjetivo: 340, maximo: 3),
+                alturaObjetivo: 110, anchoObjetivo: 340, maximo: columnas),
           ),
           itemCount: actions.length,
-          itemBuilder: (context, index) {
-            final action = actions[index];
-            return ActionCard(
-              action: action,
-              onBeforeNavigate: onActionBeforeNavigate,
-            );
-          },
+          itemBuilder: (context, index) => ActionCard(
+            action: actions[index],
+            onBeforeNavigate: onActionBeforeNavigate,
+          ),
         ),
       ],
     );
@@ -248,84 +254,55 @@ class QuickActions extends StatelessWidget {
 }
 
 class ActionCard extends StatelessWidget {
-  final ActionItem action;
-  final bool Function(ActionItem action)? onBeforeNavigate;
-
   const ActionCard({
     super.key,
     required this.action,
     this.onBeforeNavigate,
   });
 
+  final ActionItem action;
+  final bool Function(ActionItem action)? onBeforeNavigate;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = action.color ?? (isDark ? Colors.white : Colors.black);
-
+    // La acción principal se marca con el borde lima, no con un degradado de
+    // relleno. Un borde es más barato de dibujar y se lee igual de rápido.
     return GlassCard(
       padding: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () {
-          final canNavigate = onBeforeNavigate?.call(action) ?? true;
-          if (!canNavigate) {
-            return;
-          }
-
-          if (action.route.isEmpty || action.route == '#') {
-            return;
-          }
-
-          context.push(action.route);
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            border: action.isPrimary
-                ? Border.all(
-                    color: AppTheme.accentBlue.withValues(alpha: 0.5),
-                    width: 1.5,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(16),
-            gradient: action.isPrimary
-                ? LinearGradient(
-                    colors: [
-                      AppTheme.accentBlue.withValues(alpha: 0.1),
-                      AppTheme.accentPurple.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
+      acentuado: action.isPrimary,
+      onTap: () {
+        final puedeNavegar = onBeforeNavigate?.call(action) ?? true;
+        if (!puedeNavegar) return;
+        if (action.route.isEmpty || action.route == '#') return;
+        context.push(action.route);
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            action.icon,
+            size: 22,
+            color: action.isPrimary
+                ? AppTheme.acentoTexto(context)
+                : (action.color ?? AppTheme.textoSecundario(context)),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                action.icon,
-                size: 24,
-                color: action.isPrimary
-                    ? AppTheme.accentBlue
-                  : baseColor.withValues(alpha: 0.8),
+          const SizedBox(height: 9),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              action.text.toUpperCase(),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.etiqueta(
+                context,
+                size: 10.5,
+                color: AppTheme.texto(context),
               ),
-              const SizedBox(height: 8),
-              Text(
-                action.text.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                  letterSpacing: 1.1,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.black87,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
-    ).animate().scale(delay: 200.ms, duration: 400.ms);
+    );
   }
 }
