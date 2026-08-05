@@ -20,13 +20,13 @@
     bar.id = BANNER_ID;
     bar.setAttribute('role', 'status');
     bar.style.cssText = [
-      'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:2147483647',
+      'position:fixed', 'left:0', 'right:0', 'top:0', 'z-index:2147483647',
       'display:flex', 'align-items:center', 'justify-content:center',
       'gap:16px', 'flex-wrap:wrap',
-      'padding:12px 16px', 'background:#0B0F16', 'color:#fff',
-      'border-top:1px solid rgba(255,255,255,.15)',
-      'font:600 14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
-      'box-shadow:0 -4px 20px rgba(0,0,0,.4)',
+      'padding:12px 16px', 'background:#AED500', 'color:#293500',
+      'border-bottom:1px solid #293500',
+      'font:700 13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+      'letter-spacing:.4px',
     ].join(';');
 
     var text = document.createElement('span');
@@ -36,8 +36,8 @@
     btn.type = 'button';
     btn.textContent = 'Actualizar';
     btn.style.cssText = [
-      'padding:8px 20px', 'border:0', 'border-radius:8px', 'cursor:pointer',
-      'background:#fff', 'color:#0B0F16',
+      'padding:8px 20px', 'border:0', 'border-radius:0', 'cursor:pointer',
+      'background:#0A0A0B', 'color:#AED500',
       'font:600 14px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
     ].join(';');
 
@@ -46,7 +46,7 @@
     later.textContent = 'Más tarde';
     later.style.cssText = [
       'padding:8px 12px', 'border:0', 'background:transparent',
-      'color:rgba(255,255,255,.6)', 'cursor:pointer',
+      'color:rgba(41,53,0,.65)', 'cursor:pointer',
       'font:400 13px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
     ].join(';');
 
@@ -66,9 +66,45 @@
     document.body.appendChild(bar);
   }
 
+  /// Aplica la versión que está esperando. Dispara `controllerchange`, que
+  /// recarga la página.
+  function aplicarAhora(waiting) {
+    waiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+
+  /**
+   * Decide entre aplicar sola o preguntar.
+   *
+   * Antes SIEMPRE preguntaba con un banner, y en el teléfono eso dejaba a la
+   * gente con la versión vieja indefinidamente. El motivo es cómo sirve el
+   * service worker: las navegaciones van a red primero —así que el index.html
+   * llega nuevo— pero los estáticos salen del caché de la versión vieja, y ese
+   * caché sigue en uso mientras el SW nuevo esté esperando. O sea: HTML nuevo,
+   * app vieja, hasta que alguien toque el aviso. Si el aviso no se ve o se
+   * ignora, el teléfono no se actualiza más.
+   *
+   * La regla ahora es por momento, no siempre la misma:
+   *
+   *   - **Recién cargó la página**: se aplica sola. La recarga ocurre antes de
+   *     que nadie haya hecho nada; se siente como una carga un poco más lenta.
+   *   - **La app está en segundo plano**: se aplica sola. Nadie está mirando.
+   *   - **La app está abierta y en uso**: se pregunta. Es el único caso donde
+   *     recargar puede interrumpir algo —una validación en la puerta— y es
+   *     exactamente el caso para el que se escribió el aviso.
+   */
+  function resolverActualizacion(waiting, recienCargada) {
+    if (recienCargada || document.visibilityState === 'hidden') {
+      aplicarAhora(waiting);
+      return;
+    }
+    showUpdateBanner(waiting);
+  }
+
   function watchForUpdate(registration) {
+    // Quedó una esperando de una visita anterior: es justo el arranque, se
+    // aplica sin preguntar.
     if (registration.waiting) {
-      showUpdateBanner(registration.waiting);
+      resolverActualizacion(registration.waiting, true);
     }
 
     registration.addEventListener('updatefound', function () {
@@ -79,7 +115,7 @@
         // nueva esperando. Sin controller es la primera instalación: nada que
         // avisar, el usuario ya está viendo la versión más reciente.
         if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateBanner(installing);
+          resolverActualizacion(installing, false);
         }
       });
     });
@@ -182,6 +218,14 @@
         var ahora = Date.now();
         if (ahora - ultimaConsulta < 2 * 60 * 1000) return;
         ultimaConsulta = ahora;
+
+        // Si quedó una esperando mientras la app estaba afuera, se aplica en
+        // este mismo momento: la persona acaba de abrirla y no está en medio
+        // de nada. Es el instante más seguro para recargar.
+        if (registration.waiting) {
+          aplicarAhora(registration.waiting);
+          return;
+        }
         registration.update().catch(function () {});
       });
     }).catch(function (err) {
