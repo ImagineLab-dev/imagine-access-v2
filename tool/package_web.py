@@ -26,6 +26,7 @@ REQUIRED = [
     "manifest.json",      # sin esto no es instalable
     "js/pwa.js",
     "js/zxing-0.21.3.min.js",
+    "js/lector.js",        # sin esto el escaner cae al decodificador lento
     "icons/Icon-512.png",
     "main.dart.js",
 ]

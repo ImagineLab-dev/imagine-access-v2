@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 
-import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/platform/camara.dart';
+import '../../../core/platform/lector.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/scanner_repository.dart';
 import '../../events/presentation/event_state.dart';
@@ -40,6 +41,13 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// Latencias medidas en esta sesión, en milisegundos.
   final List<int> _detectionLatencies = <int>[];
 
+  /// Qué decodificador terminó atendiendo la cámara.
+  ///
+  /// Se guarda para poder decirlo en pantalla: cuando alguien reporta "no lee",
+  /// lo primero que hay que saber es si está corriendo el lector nativo o el
+  /// port de ZXing, y hasta ahora eso no se podía averiguar desde el teléfono.
+  bool _lectorNativo = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,12 +71,54 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     // navegador entrega su modo por defecto: en muchos Android, 640x480 con
     // foco fijo. Un QR impreso entra borroso y no se lee. Esto ajusta la pista
     // de video una vez que el plugin la creó.
-    WidgetsBinding.instance.addPostFrameCallback((_) => mejorarCamara());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await mejorarCamara();
+      _encenderLectorNativo();
+    });
+  }
+
+  /// Enciende el decodificador nativo del navegador, si lo hay.
+  ///
+  /// Corre EN PARALELO con ZXing sobre el mismo elemento de video: no le saca
+  /// la cámara al plugin ni lo reemplaza. El primero que reconoce el código
+  /// gana, y `_isProcessing` impide que se procese dos veces.
+  ///
+  /// En Chromium el nativo gana siempre por varios cuerpos —está respaldado por
+  /// el motor de códigos del sistema—. En Safari de iPhone no existe y esto
+  /// devuelve false, con lo que queda ZXing solo, igual que antes.
+  void _encenderLectorNativo() {
+    final encendido = iniciarLectorNativo((codigo) {
+      if (!mounted || _isProcessing) return;
+      final limpio = codigo.trim();
+      if (limpio.isEmpty) return;
+
+      _isProcessing = true;
+      _registrarLatencia();
+      _processCode(limpio);
+    });
+    if (mounted && encendido != _lectorNativo) {
+      setState(() => _lectorNativo = encendido);
+    }
+  }
+
+  /// Anota cuánto esperó la persona parada en la puerta desde que el escáner
+  /// quedó listo hasta que reconoció su código.
+  void _registrarLatencia() {
+    final start = _detectionWindowStart;
+    if (start == null) return;
+    final elapsed = DateTime.now().difference(start).inMilliseconds;
+    _detectionLatencies.add(elapsed);
+    _detectionWindowStart = null;
+    if (kDebugMode) {
+      dev.log('Detección en ${elapsed}ms (n=${_detectionLatencies.length})',
+          name: 'ScannerLatency');
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    detenerLectorNativo();
     _cameraController.dispose();
     super.dispose();
   }
@@ -79,8 +129,12 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     if (!_cameraController.value.isInitialized) return;
     if (state == AppLifecycleState.inactive) {
       _cameraController.stop();
+      // Sin esto el bucle del lector nativo seguiría pidiendo cuadros de una
+      // cámara detenida mientras la app está en segundo plano.
+      detenerLectorNativo();
     } else if (state == AppLifecycleState.resumed) {
       _cameraController.start();
+      _encenderLectorNativo();
     }
   }
 
@@ -109,18 +163,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     if (codigo == null) return;
 
     _isProcessing = true; // Antes del hueco asíncrono
-
-    final start = _detectionWindowStart;
-    if (start != null) {
-      final elapsed = DateTime.now().difference(start).inMilliseconds;
-      _detectionLatencies.add(elapsed);
-      _detectionWindowStart = null;
-      if (kDebugMode) {
-        dev.log('Detección en ${elapsed}ms (n=${_detectionLatencies.length})',
-            name: 'ScannerLatency');
-      }
-    }
-
+    _registrarLatencia();
     _processCode(codigo);
   }
 
@@ -376,32 +419,25 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             ),
           ),
 
-          // Overlay de latencia para el spike de rendimiento en dispositivos
-          // reales. La guarda es `!kReleaseMode` y no `kDebugMode` a propósito:
-          // el spike corre sobre un build `--profile`, donde `kDebugMode` es
-          // false. Con esa guarda el overlay nunca se vería justo cuando hace
-          // falta. En release no se compila.
-          if (!kReleaseMode && _detectionLatencies.isNotEmpty)
-            Positioned(
-              left: 8,
-              bottom: 8,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                color: Colors.black.withValues(alpha: 0.7),
-                child: Text(
-                  'n=${_detectionLatencies.length}  '
-                  'últ=${_detectionLatencies.last}ms  '
-                  'med=${(_detectionLatencies.reduce((a, b) => a + b) / _detectionLatencies.length).round()}ms  '
-                  'máx=${_detectionLatencies.reduce((a, b) => a > b ? a : b)}ms',
-                  style: const TextStyle(
-                    color: AppTheme.lima,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
+          // Testigo del decodificador.
+          //
+          // Antes acá había un panel de latencias que solo se compilaba fuera
+          // de release, o sea que en el teléfono de la puerta —el único lugar
+          // donde importa— no existía. Cuando alguien reportaba "no lee", no
+          // había forma de saber si el escáner estaba procesando cuadros o
+          // estaba muerto.
+          //
+          // Esto queda SIEMPRE, en chico y en una esquina: dice qué motor
+          // atiende la cámara y cuánto tardó la última lectura. Es la
+          // diferencia entre "no anda" y "usa ZXing y tarda 1.800 ms".
+          Positioned(
+            left: 12,
+            bottom: 12,
+            child: _TestigoDeLector(
+              nativo: _lectorNativo,
+              latencias: _detectionLatencies,
             ),
+          ),
         ],
       ),
     );
@@ -679,6 +715,44 @@ class _ResultOverlay extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Testigo discreto que dice qué decodificador está atendiendo la cámara.
+class _TestigoDeLector extends StatelessWidget {
+  const _TestigoDeLector({required this.nativo, required this.latencias});
+
+  final bool nativo;
+  final List<int> latencias;
+
+  @override
+  Widget build(BuildContext context) {
+    final partes = <String>[nativo ? 'NATIVO' : 'ZXING'];
+    if (latencias.isNotEmpty) {
+      final media = latencias.reduce((a, b) => a + b) ~/ latencias.length;
+      partes.add('${latencias.last}ms');
+      partes.add('med ${media}ms');
+      partes.add('n=${latencias.length}');
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.darkCardElevated.withValues(alpha: 0.8),
+        border: Border.all(color: AppTheme.darkBorder),
+      ),
+      child: Text(
+        partes.join('  '),
+        style: TextStyle(
+          fontFamily: AppTheme.fontMono,
+          fontSize: 9,
+          height: 1.2,
+          // Lima cuando lee por hardware, apagado cuando cayó al port lento.
+          color: nativo ? AppTheme.lima : AppTheme.darkTextDisabled,
         ),
       ),
     );

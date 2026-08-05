@@ -40,6 +40,20 @@
   <script id="mobile-scanner-barcode-reader" src="js/zxing-0.21.3.min.js"></script>
 
   <!--
+    Lector de QR sobre el decodificador NATIVO del navegador.
+
+    ZXing (arriba) decodifica por software en el hilo principal. En Chromium
+    existe `BarcodeDetector`, respaldado en Android por el motor de códigos del
+    sistema: entre uno y dos órdenes de magnitud más rápido y mucho más
+    tolerante al ángulo y al desenfoque.
+
+    Los dos conviven sobre el mismo <video>: gana el que reconozca primero. Si
+    el navegador no tiene decodificador nativo —Safari en iPhone— este módulo se
+    apaga solo y queda ZXing, así que nunca hay una pantalla sin escáner.
+  -->
+  <script src="js/lector.js"></script>
+
+  <!--
     Pantalla de carga.
 
     El fondo por defecto de una página es blanco, y el bundle de Flutter pesa
