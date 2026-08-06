@@ -72,28 +72,45 @@
     waiting.postMessage({ type: 'SKIP_WAITING' });
   }
 
+  /* Instante en que se cargó la página. Todo lo que pase en los primeros
+   * segundos ocurre mientras la persona todavía está esperando que abra. */
+  var cargadaEn = Date.now();
+
+  /* Cuánto dura esa ventana de arranque.
+   *
+   * El chequeo del service worker resuelve en uno o dos segundos; veinticinco
+   * es holgado de sobra y sigue siendo demasiado pronto para que alguien esté
+   * en medio de validar una entrada. */
+  var VENTANA_ARRANQUE_MS = 25000;
+
   /**
    * Decide entre aplicar sola o preguntar.
    *
-   * Antes SIEMPRE preguntaba con un banner, y en el teléfono eso dejaba a la
-   * gente con la versión vieja indefinidamente. El motivo es cómo sirve el
-   * service worker: las navegaciones van a red primero —así que el index.html
-   * llega nuevo— pero los estáticos salen del caché de la versión vieja, y ese
-   * caché sigue en uso mientras el SW nuevo esté esperando. O sea: HTML nuevo,
-   * app vieja, hasta que alguien toque el aviso. Si el aviso no se ve o se
-   * ignora, el teléfono no se actualiza más.
+   * El service worker sirve los estáticos desde el caché de SU versión, y ese
+   * caché sigue en uso mientras el SW nuevo esté esperando. O sea: index.html
+   * nuevo (va a red primero) con main.dart.js VIEJO. La app entera corre código
+   * viejo hasta que la actualización se aplica.
    *
-   * La regla ahora es por momento, no siempre la misma:
+   * La primera versión de esto aplicaba sola solo si al registrar ya había una
+   * esperando. Pero ese no es el caso normal: al abrir, `registration.waiting`
+   * casi siempre es null porque el navegador todavía no terminó de chequear.
+   * La versión nueva aparece uno o dos segundos DESPUÉS, por `updatefound`, y
+   * ahí la persona ya está "mirando" la app — con lo cual caía en la rama del
+   * aviso. El caso más común no se aplicaba nunca, y el síntoma era este:
+   * "funciona, pero solo después de darle forzar actualización".
    *
-   *   - **Recién cargó la página**: se aplica sola. La recarga ocurre antes de
-   *     que nadie haya hecho nada; se siente como una carga un poco más lenta.
-   *   - **La app está en segundo plano**: se aplica sola. Nadie está mirando.
-   *   - **La app está abierta y en uso**: se pregunta. Es el único caso donde
-   *     recargar puede interrumpir algo —una validación en la puerta— y es
-   *     exactamente el caso para el que se escribió el aviso.
+   * Ahora lo que decide es CUÁNDO pasa, no si la pestaña está visible:
+   *
+   *   - Dentro de los primeros segundos desde que cargó: se aplica sola. Nadie
+   *     puede estar en medio de nada; se siente como una carga un poco lenta.
+   *   - Con la app en segundo plano: se aplica sola, nadie está mirando.
+   *   - Con la app abierta y en uso hace rato: se pregunta. Es el único caso
+   *     donde recargar puede cortar una validación en la puerta.
    */
-  function resolverActualizacion(waiting, recienCargada) {
-    if (recienCargada || document.visibilityState === 'hidden') {
+  function resolverActualizacion(waiting) {
+    var recienArrancada = Date.now() - cargadaEn < VENTANA_ARRANQUE_MS;
+
+    if (recienArrancada || document.visibilityState === 'hidden') {
       aplicarAhora(waiting);
       return;
     }
@@ -104,7 +121,7 @@
     // Quedó una esperando de una visita anterior: es justo el arranque, se
     // aplica sin preguntar.
     if (registration.waiting) {
-      resolverActualizacion(registration.waiting, true);
+      resolverActualizacion(registration.waiting);
     }
 
     registration.addEventListener('updatefound', function () {
@@ -115,7 +132,7 @@
         // nueva esperando. Sin controller es la primera instalación: nada que
         // avisar, el usuario ya está viendo la versión más reciente.
         if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          resolverActualizacion(installing, false);
+          resolverActualizacion(installing);
         }
       });
     });
