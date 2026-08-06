@@ -46,6 +46,50 @@ producto, por eso no se aplicó.
 
 ---
 
+## Crítico — corregido el 06/08/2026
+
+### Los límites de tasa se saltaban con una cabecera
+
+Apareció auditando otra cosa: al medir qué IP recibía `meta_evento` para mandarle a Meta.
+
+`X-Forwarded-For` la escribe **el cliente**, y Traefik **agrega** la dirección real detrás en
+vez de reemplazarla. El código leía el primer elemento. Medido contra producción:
+
+| Se manda | La función recibía | Y usaba |
+|---|---|---|
+| `X-Forwarded-For: 8.8.8.8` | `8.8.8.8, 72.60.51.162, 10.11.84.6` | **`8.8.8.8`** |
+| `X-Real-IP: 1.2.3.4` | (Traefik la pisa) | `72.60.51.162` ✅ |
+
+Cambiando la cabecera en cada pedido, cada uno caía en un cubo distinto y **ningún límite de
+tasa del sistema se aplicaba**. Alcanza a las 16 funciones, e incluye:
+
+- El bloqueo por intentos fallidos de `login_device` —lo único que frena la fuerza bruta
+  contra los PIN de cuatro dígitos de los teléfonos de puerta—, que además tenía su **propia
+  copia** del mismo defecto.
+- Los topes de `create_user` y `create_ticket`.
+- El `client_ip_address` que se le manda a Meta, que se podía ensuciar con IP ajenas.
+
+**Corregido:** `ipObservada` en `_shared/rate_limiter.ts` lee la cadena **desde la derecha**,
+descartando las direcciones de la propia infraestructura; lo que el cliente inventa queda a
+la izquierda y no se elige nunca. `login_device` pasó a usar la versión compartida.
+
+**Probado** con 42 pruebas en `_shared/rate_limiter.test.ts` (`node` sin instalar nada) y
+de punta a punta **desde una máquina externa**: 35 pedidos con 35 IP falsas distintas, primer
+`429` en el número 31 —o sea, los 35 en el mismo cubo, el de la IP real—.
+
+> **Trampa al reproducirlo.** Un `curl` hecho *en el propio VPS* sale por el bridge de Docker,
+> así que Traefik escribe una IP privada y la falsificación sí funciona. Hay que probar desde
+> afuera. Es también el límite conocido del arreglo, documentado en el código: desde adentro
+> del servidor se puede falsear, y se acepta porque cerrarlo obliga a leer una posición fija
+> del encabezado, que se rompe si alguien agrega otro proxy y deja a todos los clientes
+> compartiendo un solo cubo.
+
+> **Segunda trampa.** Copiar el archivo no alcanza: el runtime de Deno cachea los módulos y
+> los workers nuevos reusan la caché. Sin `docker restart supabase-edge-functions` el código
+> viejo sigue corriendo. Se verificó instrumentando y leyendo los logs, no suponiendo.
+
+---
+
 ## Verificado y correcto
 
 | Superficie | Estado |
@@ -72,6 +116,11 @@ intentos fallidos por combinación alias+IP, con 10 minutos de espera. Pero el c
 **en memoria del isolate** de la Edge Function: cuando el isolate recicla —cosa que pasa
 sola— el contador se pierde. Un atacante paciente lo sortea esperando. Para cerrarlo hay que
 mover el contador a Postgres.
+
+> Hasta el 06/08/2026 ni siquiera hacía falta esperar: la IP con la que se armaba la clave
+> del bloqueo la elegía el atacante. Ver *Los límites de tasa se saltaban con una cabecera*.
+> Medido el 06/08: los contadores en memoria **sí duran** entre pedidos —30 pasan y el 31 da
+> `429`—, así que el reciclado del isolate es esporádico, no por pedido.
 
 ---
 

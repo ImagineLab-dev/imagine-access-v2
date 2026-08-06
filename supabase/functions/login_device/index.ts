@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { corsHeaders } from "../_shared/cors.ts"
+import { getClientIp } from "../_shared/rate_limiter.ts"
 
 const MAX_ATTEMPTS = 5
 const WINDOW_MS = 5 * 60 * 1000
@@ -16,14 +17,11 @@ const attemptsByKey = new Map<string, AttemptState>()
 
 const normalizeAlias = (value: string) => value.trim().toLowerCase()
 
-const getClientIp = (req: Request) => {
-    const forwardedFor = req.headers.get('x-forwarded-for')
-    if (forwardedFor && forwardedFor.length > 0) {
-        return forwardedFor.split(',')[0].trim()
-    }
-
-    return req.headers.get('x-real-ip')?.trim() || 'unknown-ip'
-}
+// La copia local de `getClientIp` que había acá leía el PRIMER elemento de
+// `X-Forwarded-For`, que lo escribe el cliente. Con eso, el bloqueo por
+// intentos fallidos —lo único que frena la fuerza bruta contra los PIN de los
+// teléfonos de puerta— se saltaba mandando una cabecera distinta en cada
+// intento. Ahora usa la versión compartida, que lee desde la derecha.
 
 const keyForAttempt = (alias: string, ip: string) => `${alias}|${ip}`
 
