@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:imagine_access/core/utils/error_handler.dart';
-import 'package:imagine_access/core/ui/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../events/presentation/event_state.dart';
@@ -488,31 +487,11 @@ class _StepOneType extends ConsumerWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                              // Una sola columna en teléfono. La tarjeta ahora
-                              // es una fila —ícono, nombre y precio en línea—,
-                              // así que dos por renglón dejarían el precio
-                              // apretado contra el nombre. En pantalla ancha
-                              // entran dos y se aprovecha el espacio.
-                              crossAxisCount: Responsive.columnas(context,
-                                  anchoObjetivo: 380, minimo: 1, maximo: 2),
-                              childAspectRatio: Responsive.proporcionTarjeta(
-                                  context,
-                                  alturaObjetivo: 56,
-                                  anchoObjetivo: 380,
-                                  maximo: 2),
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 8),
-                      itemCount: specialTypes.length,
-                      itemBuilder: (context, index) {
-                        final t = specialTypes[index];
-                        return _buildChip(t, selectedType, ref, isDark,
-                            myStaffRecord, isAdmin, l10n);
-                      }),
+                  _ListaDeTipos(
+                    tipos: specialTypes,
+                    construir: (t) => _buildChip(t, selectedType, ref, isDark,
+                        myStaffRecord, isAdmin, l10n),
+                  ),
                   const SizedBox(height: 24),
                 ],
                 if (standardTypes.isNotEmpty) ...[
@@ -522,31 +501,11 @@ class _StepOneType extends ConsumerWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                              // Una sola columna en teléfono. La tarjeta ahora
-                              // es una fila —ícono, nombre y precio en línea—,
-                              // así que dos por renglón dejarían el precio
-                              // apretado contra el nombre. En pantalla ancha
-                              // entran dos y se aprovecha el espacio.
-                              crossAxisCount: Responsive.columnas(context,
-                                  anchoObjetivo: 380, minimo: 1, maximo: 2),
-                              childAspectRatio: Responsive.proporcionTarjeta(
-                                  context,
-                                  alturaObjetivo: 56,
-                                  anchoObjetivo: 380,
-                                  maximo: 2),
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 8),
-                      itemCount: standardTypes.length,
-                      itemBuilder: (context, index) {
-                        final t = standardTypes[index];
-                        return _buildChip(t, selectedType, ref, isDark,
-                            myStaffRecord, isAdmin, l10n);
-                      }),
+                  _ListaDeTipos(
+                    tipos: standardTypes,
+                    construir: (t) => _buildChip(t, selectedType, ref, isDark,
+                        myStaffRecord, isAdmin, l10n),
+                  ),
                 ]
               ],
             );
@@ -645,6 +604,52 @@ class _StepOneType extends ConsumerWidget {
   }
 }
 
+/// Lista de tipos de ticket: una fila por tipo, alto natural.
+///
+/// Reemplaza a un `GridView` con `childAspectRatio`. La grilla era la
+/// herramienta equivocada: pide una PROPORCIÓN, no un alto, así que el alto
+/// terminaba saliendo del ancho de la pantalla. Y `proporcionTarjeta` topa la
+/// proporción en 3.4 para evitar tarjetas absurdas, con lo cual una fila que
+/// necesita 44 px terminaba midiendo más de 100 en un teléfono: el doble de
+/// alto que su contenido, y encima imposible de bajar pidiendo menos.
+///
+/// Con `Wrap` cada fila mide lo que mide su contenido y nada más. En pantalla
+/// ancha se acomodan de a dos; en teléfono, una debajo de la otra.
+class _ListaDeTipos extends StatelessWidget {
+  const _ListaDeTipos({required this.tipos, required this.construir});
+
+  final List<Map<String, dynamic>> tipos;
+  final Widget Function(Map<String, dynamic> tipo) construir;
+
+  /// Debajo de esto, una sola columna. Dos filas de 380 px más la separación no
+  /// entran cómodas en menos, y el precio se pegaría al nombre.
+  static const double _dosColumnasDesde = 760;
+
+  @override
+  Widget build(BuildContext context) {
+    if (tipos.isEmpty) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, medidas) {
+        final dos = medidas.maxWidth >= _dosColumnasDesde;
+        const separacion = 8.0;
+        final ancho = dos
+            ? (medidas.maxWidth - separacion) / 2
+            : medidas.maxWidth;
+
+        return Wrap(
+          spacing: separacion,
+          runSpacing: separacion,
+          children: [
+            for (final t in tipos)
+              SizedBox(width: ancho, child: construir(t)),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _TypeChip extends StatelessWidget {
   final String label;
   final String dbName;
@@ -677,7 +682,12 @@ class _TypeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final acento = enabled ? color : AppTheme.textoApagado(context);
+    // `color` viene del tipo de ticket: el lima del sistema, salvo que el evento
+    // le haya definido uno propio. Deshabilitado se apaga, porque ahí el color
+    // sí tiene que decir "esto no se puede elegir".
+    final acento = enabled
+        ? (color == AppTheme.lima ? AppTheme.acentoTexto(context) : color)
+        : AppTheme.textoApagado(context);
 
     // Fila, no columna.
     //
@@ -711,9 +721,13 @@ class _TypeChip extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon,
-                  size: 19,
-                  color: selected ? acento : AppTheme.textoSecundario(context)),
+              // El ícono va en el acento siempre, no solo cuando está elegido.
+              //
+              // En gris no aportaba nada —era una silueta apagada al lado de un
+              // texto— y la fila entera se leía sin jerarquía. En lima marca
+              // dónde empieza cada opción y le da ritmo a la lista. Lo elegido
+              // no se pierde: eso lo dicen el borde grueso y la tilde.
+              Icon(icon, size: 19, color: acento),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
