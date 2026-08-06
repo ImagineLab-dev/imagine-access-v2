@@ -21,7 +21,7 @@
 // acá solo llenaría la consola de quien visita la página sin arreglar nada.
 
 import { corsFor } from '../_shared/cors.ts'
-import { getClientIp, isRateLimited } from '../_shared/rate_limiter.ts'
+import { getClientIp, ipParaMeta, isRateLimited } from '../_shared/rate_limiter.ts'
 import { enviarEventoMeta } from '../_shared/meta_capi.ts'
 
 /**
@@ -127,7 +127,13 @@ Deno.serve(async (req) => {
             fbc: textoCorto(fbc, 200),
             // Del request, nunca del cuerpo: si el navegador pudiera declarar
             // su propia IP, el cotejo de Meta se podría falsear.
-            ip: ip || null,
+            //
+            // `ipParaMeta` y no `ip`: esta última vale 'unknown' cuando no hay
+            // cabecera —perfecto como cubo del limitador de tasa, basura como
+            // `client_ip_address`—. Meta espera IPv4 o IPv6 y descarta el
+            // resto, así que mandar 'unknown' ensuciaba justo el parámetro que
+            // se quiere mejorar. Prefiere IPv6 sobre IPv4 cuando hay ambas.
+            ip: ipParaMeta(req),
             userAgent: req.headers.get('user-agent'),
             momento: cuando,
             datos: saneados(datos),
