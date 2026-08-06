@@ -493,14 +493,20 @@ class _StepOneType extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
                           SliverGridDelegateWithFixedCrossAxisCount(
+                              // Una sola columna en teléfono. La tarjeta ahora
+                              // es una fila —ícono, nombre y precio en línea—,
+                              // así que dos por renglón dejarían el precio
+                              // apretado contra el nombre. En pantalla ancha
+                              // entran dos y se aprovecha el espacio.
                               crossAxisCount: Responsive.columnas(context,
-                                  anchoObjetivo: 240, maximo: 4),
-                              // Ícono, nombre y precio: tres renglones.
+                                  anchoObjetivo: 380, minimo: 1, maximo: 2),
                               childAspectRatio: Responsive.proporcionTarjeta(
                                   context,
-                                  alturaObjetivo: 150),
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16),
+                                  alturaObjetivo: 56,
+                                  anchoObjetivo: 380,
+                                  maximo: 2),
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 8),
                       itemCount: specialTypes.length,
                       itemBuilder: (context, index) {
                         final t = specialTypes[index];
@@ -521,14 +527,20 @@ class _StepOneType extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
                           SliverGridDelegateWithFixedCrossAxisCount(
+                              // Una sola columna en teléfono. La tarjeta ahora
+                              // es una fila —ícono, nombre y precio en línea—,
+                              // así que dos por renglón dejarían el precio
+                              // apretado contra el nombre. En pantalla ancha
+                              // entran dos y se aprovecha el espacio.
                               crossAxisCount: Responsive.columnas(context,
-                                  anchoObjetivo: 240, maximo: 4),
-                              // Ícono, nombre y precio: tres renglones.
+                                  anchoObjetivo: 380, minimo: 1, maximo: 2),
                               childAspectRatio: Responsive.proporcionTarjeta(
                                   context,
-                                  alturaObjetivo: 150),
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16),
+                                  alturaObjetivo: 56,
+                                  anchoObjetivo: 380,
+                                  maximo: 2),
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 8),
                       itemCount: standardTypes.length,
                       itemBuilder: (context, index) {
                         final t = standardTypes[index];
@@ -571,35 +583,35 @@ class _StepOneType extends ConsumerWidget {
       }
     }
 
-    IconData icon = Icons.airplane_ticket;
-    if (category == 'staff') {
-      icon = Icons.badge;
-    } else if (category == 'guest') {
-      icon = Icons.star;
-    } else if (category == 'invitation') {
-      icon = Icons.mail;
-    } else if (category == 'promo') {
-      icon = Icons.local_offer;
-    }
+    // Un ícono por categoría, y que se distingan entre sí.
+    //
+    // Las tres clases de venta —VIP, general, anticipada— compartían el mismo
+    // ícono de avión, así que el ícono no aportaba nada: había que leer el
+    // texto igual. Ahora la forma sola ya dice de qué se trata.
+    final icon = switch (category) {
+      'staff' => Icons.badge_outlined,
+      'guest' => Icons.star_outline,
+      'invitation' => Icons.mail_outline,
+      'promo' => Icons.sell_outlined,
+      _ => Icons.confirmation_number_outlined,
+    };
 
-    // Color Parsing
-    Color ticketColor = AppTheme.primaryColor;
+    // Sin color por categoría.
+    //
+    // Había cuatro colores fijos —azul para staff, violeta para invitación,
+    // rosa para invitado, naranja para promo— que no significaban nada: eran
+    // etiquetas de colores sobre etiquetas de texto que ya decían lo mismo. Y
+    // encima eran los cuatro que el resto de la app dejó de usar.
+    //
+    // El color del sistema es uno solo y marca **lo elegido**, que es la única
+    // información que el color tiene que dar en esta pantalla. Si el evento
+    // definió un color propio para el tipo de ticket, se respeta.
+    Color ticketColor = AppTheme.lima;
     if (t['color'] != null) {
       try {
         final hex = t['color'].toString().replaceAll('#', '');
         ticketColor = Color(int.parse('FF$hex', radix: 16));
       } catch (_) {}
-    } else {
-      // Fallback for special types if database color is missing
-      if (category == 'staff') {
-        ticketColor = const Color(0xFF3B82F6); // Blue
-      } else if (category == 'invitation') {
-        ticketColor = const Color(0xFFA855F7); // Purple
-      } else if (category == 'guest') {
-        ticketColor = const Color(0xFFEC4899); // Pink
-      } else if (category == 'promo') {
-        ticketColor = const Color(0xFFF97316); // Orange
-      }
     }
 
     // Localize special ticket type names based on category
@@ -626,6 +638,8 @@ class _StepOneType extends ConsumerWidget {
       subtitle: subtitle,
       color: ticketColor,
       currency: ref.read(selectedEventProvider)?['currency']?.toString() ?? 'PYG',
+      // (la moneda ahora la guarda selectedEventProvider; antes se perdía y
+      //  un evento en pesos argentinos mostraba guaraníes)
       typeData: t,
     );
   }
@@ -662,11 +676,19 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
-    // Use the passed color as the base
-    final baseColor = enabled ? color : AppTheme.accentPurple.withValues(alpha: 0.3);
+    final acento = enabled ? color : AppTheme.textoApagado(context);
 
+    // Fila, no columna.
+    //
+    // La tarjeta apilaba ícono, nombre y precio con 16 px de aire alrededor:
+    // unos 120 px de alto para decir "VIP · Gs 52.000". Con siete tipos de
+    // ticket eso era una pantalla y media de teléfono solo para elegir uno, y
+    // había que desplazarse para ver si existían más opciones.
+    //
+    // En fila entra todo en 56 px —menos de la mitad—, los siete se ven juntos
+    // sin desplazar, y los precios quedan alineados en una columna, que es lo
+    // que permite compararlos.
     return GestureDetector(
       onTap: enabled
           ? () {
@@ -676,60 +698,78 @@ class _TypeChip extends StatelessWidget {
               ref.read(ticketQuantityProvider.notifier).state = 1;
             }
           : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        // Padding managed by Grid layout essentially, but internal padding needed
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: selected
-                ? baseColor.withValues(alpha: 0.15)
-                : (isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.05)),
-            borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? AppTheme.campo(context) : AppTheme.panel(context),
             border: Border.all(
-                color: selected
-                    ? baseColor
-                    : (AppTheme.bordeSuave(context)),
-                width: selected ? 2 : 1),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                        color: baseColor.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4))
-                  ]
-                : null),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
+              color: selected ? acento : AppTheme.borde(context),
+              width: selected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
               Icon(icon,
-                  color: enabled ? baseColor : AppTheme.accentPurple,
-                  size: 24), // Reduced from 28
-              const SizedBox(height: 6), // Reduced from 8
+                  size: 19,
+                  color: selected ? acento : AppTheme.textoSecundario(context)),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTheme.etiqueta(
+                        context,
+                        size: 11.5,
+                        color: AppTheme.texto(context),
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.dato(
+                          context,
+                          size: 9.5,
+                          peso: FontWeight.w400,
+                          // El cupo agotado es el motivo por el que la opción
+                          // está apagada: se dice en rojo, no en gris.
+                          color: enabled
+                              ? AppTheme.textoApagado(context)
+                              : AppTheme.peligroTexto(context),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                price == 0
+                    ? l10n.free.toUpperCase()
+                    : CurrencyHelper.format(price, currency),
+                style: AppTheme.dato(
+                  context,
+                  size: 12,
+                  color: selected ? acento : AppTheme.texto(context),
+                ),
+              ),
+              // Marca de elegido. Ocupa lugar siempre —transparente cuando no
+              // toca— para que la fila no se corra 22 px al seleccionarla.
+              const SizedBox(width: 8),
+              Icon(Icons.check,
+                  size: 16,
+                  color: selected ? acento : Colors.transparent),
             ],
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: AppTheme.texto(context),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    overflow: TextOverflow.ellipsis)),
-            const SizedBox(height: 4),
-            Text(price == 0 ? l10n.free : CurrencyHelper.format(price, currency),
-                style: TextStyle(
-                    color: AppTheme.textoSecundario(context),
-                    fontSize: 12)),
-            if (subtitle != null) ...[
-              const SizedBox(height: 4),
-              Text(subtitle!,
-                  style: TextStyle(
-                      color: enabled ? baseColor : AppTheme.accentOrange,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold)),
-            ]
-          ],
+          ),
         ),
       ),
     );

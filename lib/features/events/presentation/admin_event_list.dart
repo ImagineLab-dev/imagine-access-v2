@@ -55,7 +55,8 @@ class AdminEventList extends ConsumerWidget {
               // RRPP/Door: Select event directly
               await ref
                   .read(selectedEventProvider.notifier)
-                  .selectEvent(event['id'], event['name'], event['slug'] ?? '');
+                  .selectEvent(event['id'], event['name'], event['slug'] ?? '',
+                      currency: event['currency']?.toString());
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('${l10n.selected}: ${event['name']}')));
@@ -97,7 +98,8 @@ class AdminEventList extends ConsumerWidget {
             if (action == 'select' && context.mounted) {
               await ref
                   .read(selectedEventProvider.notifier)
-                  .selectEvent(event['id'], event['name'], event['slug'] ?? '');
+                  .selectEvent(event['id'], event['name'], event['slug'] ?? '',
+                      currency: event['currency']?.toString());
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('${l10n.selected}: ${event['name']}')));

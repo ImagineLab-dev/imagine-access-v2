@@ -53,6 +53,7 @@ class _EventDeepLinkScreenState extends ConsumerState<EventDeepLinkScreen> {
         event['id'] as String,
         event['name'] as String,
         event['slug'] as String,
+        currency: event['currency']?.toString(),
       );
 
       if (!mounted) return;
