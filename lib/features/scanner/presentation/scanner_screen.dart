@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as dev;
 
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -41,12 +43,30 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// Latencias medidas en esta sesión, en milisegundos.
   final List<int> _detectionLatencies = <int>[];
 
-  /// Qué decodificador terminó atendiendo la cámara.
+  /// Número de sesión del lector nativo, o 0 si no hay.
   ///
-  /// Se guarda para poder decirlo en pantalla: cuando alguien reporta "no lee",
-  /// lo primero que hay que saber es si está corriendo el lector nativo o el
-  /// port de ZXing, y hasta ahora eso no se podía averiguar desde el teléfono.
-  bool _lectorNativo = false;
+  /// **Hay que guardarlo.** Es lo único que autoriza a apagarlo al destruir esta
+  /// pantalla. Sin esto, `dispose` apagaba el lector que la pantalla SIGUIENTE
+  /// acababa de encender —Flutter monta la nueva antes de destruir la vieja— y
+  /// el escáner quedaba muerto hasta cerrar y reabrir la app.
+  int _sesionLector = 0;
+
+  /// Telemetría del lector, refrescada una vez por segundo para el testigo.
+  Map<String, dynamic> _estadoLector = const {};
+  Timer? _relojTestigo;
+
+  /// Instante en que el escáner se marcó como ocupado.
+  ///
+  /// Existe para el vigía: un escaneo tarda menos de dos segundos, así que si
+  /// sigue ocupado mucho después es que se colgó y hay que liberarlo.
+  DateTime? _ocupadoDesde;
+
+  /// Cuánto se tolera un escáner ocupado antes de liberarlo por la fuerza.
+  ///
+  /// Generoso a propósito: una validación con la red lenta puede tardar. Pero
+  /// pasado esto ya no hay explicación honesta, y un escáner trabado en la
+  /// puerta es peor que uno que reintenta.
+  static const _toleranciaOcupado = Duration(seconds: 12);
 
   @override
   void initState() {
@@ -71,9 +91,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     // navegador entrega su modo por defecto: en muchos Android, 640x480 con
     // foco fijo. Un QR impreso entra borroso y no se lee. Esto ajusta la pista
     // de video una vez que el plugin la creó.
+    _arrancarTestigo();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await mejorarCamara();
+      // El lector nativo arranca PRIMERO y no espera a `mejorarCamara()`.
+      //
+      // Mejorar la cámara reintenta hasta seis segundos si el plugin todavía no
+      // montó el video. Encadenarlo antes del lector significaba que en el peor
+      // caso el escáner no empezaba a mirar hasta seis segundos después de
+      // abrir la pantalla — con alguien esperando en la puerta. El lector tiene
+      // su propia espera por el video, así que puede arrancar ya.
       _encenderLectorNativo();
+      await mejorarCamara();
     });
   }
 
@@ -87,18 +116,42 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// el motor de códigos del sistema—. En Safari de iPhone no existe y esto
   /// devuelve false, con lo que queda ZXing solo, igual que antes.
   void _encenderLectorNativo() {
-    final encendido = iniciarLectorNativo((codigo) {
+    final sesion = iniciarLectorNativo((codigo) {
       if (!mounted || _isProcessing) return;
       final limpio = codigo.trim();
       if (limpio.isEmpty) return;
 
       _isProcessing = true;
+      _ocupadoDesde = DateTime.now();
       _registrarLatencia();
       _processCode(limpio);
     });
-    if (mounted && encendido != _lectorNativo) {
-      setState(() => _lectorNativo = encendido);
+    if (!mounted) {
+      // La pantalla se fue mientras se encendía: se apaga lo que se prendió,
+      // si no queda un lector corriendo sin nadie escuchándolo.
+      detenerLectorNativo(sesion);
+      return;
     }
+    setState(() => _sesionLector = sesion);
+  }
+
+  /// Refresca el testigo. Una vez por segundo alcanza: es un indicador para
+  /// mirar, no un gráfico.
+  void _arrancarTestigo() {
+    _relojTestigo?.cancel();
+    _relojTestigo = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      _vigilarTrabado();
+      try {
+        final crudo = estadoDelLector();
+        final datos = jsonDecode(crudo);
+        if (datos is Map<String, dynamic>) {
+          setState(() => _estadoLector = datos);
+        }
+      } catch (_) {
+        // Un estado que no se puede leer no debe romper el escáner.
+      }
+    });
   }
 
   /// Anota cuánto esperó la persona parada en la puerta desde que el escáner
@@ -118,7 +171,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    detenerLectorNativo();
+    _relojTestigo?.cancel();
+    // Con el número de sesión: si mientras tanto otra pantalla encendió el
+    // lector, esto no la apaga.
+    detenerLectorNativo(_sesionLector);
     _cameraController.dispose();
     super.dispose();
   }
@@ -126,15 +182,31 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   // Handle Lifecycle changes to stop/start camera
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!_cameraController.value.isInitialized) return;
-    if (state == AppLifecycleState.inactive) {
-      _cameraController.stop();
-      // Sin esto el bucle del lector nativo seguiría pidiendo cuadros de una
-      // cámara detenida mientras la app está en segundo plano.
-      detenerLectorNativo();
-    } else if (state == AppLifecycleState.resumed) {
-      _cameraController.start();
+    // El lector nativo se maneja SIEMPRE, mire lo que mire la cámara.
+    //
+    // Antes esto arrancaba con `if (!_cameraController.value.isInitialized)
+    // return;`, así que un cambio de app en el momento justo —cuando el plugin
+    // todavía no había inicializado— se saltaba tanto el apagado como el
+    // encendido. Se volvía sin lector y sin nada que lo volviera a prender.
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      detenerLectorNativo(_sesionLector);
+      _sesionLector = 0;
+      if (_cameraController.value.isInitialized) _cameraController.stop();
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      if (_cameraController.value.isInitialized) _cameraController.start();
+      // Se vuelve a encender aunque ya creyéramos tenerlo: `iniciar()` registra
+      // el callback de nuevo y devuelve una sesión nueva, así que reencender de
+      // más es inofensivo y reencender de menos deja el escáner muerto.
       _encenderLectorNativo();
+
+      // Volver de segundo plano es también el momento donde puede haber quedado
+      // un proceso a medias: si el escáner estaba marcado como ocupado pero no
+      // hay ningún resultado en pantalla, nadie lo va a liberar.
+      if (_isProcessing && _scanResult == null) _resetScanner();
     }
   }
 
@@ -163,17 +235,29 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     if (codigo == null) return;
 
     _isProcessing = true; // Antes del hueco asíncrono
+    _ocupadoDesde = DateTime.now();
     _registrarLatencia();
     _processCode(codigo);
   }
 
   Future<void> _processCode(String code) async {
     final l10n = AppLocalizations.of(context);
+
+    // Se toma el notificador ANTES del primer await y se guarda.
+    //
+    // El velo de "procesando" es global, no de esta pantalla. El `finally`
+    // lo apagaba con `if (mounted)`, así que si la pantalla se destruía con una
+    // validación en vuelo —el operador sale, la red tarda— el velo quedaba
+    // encendido tapando la app entera, y la única salida era cerrarla y
+    // abrirla. Teniendo el notificador en una variable se puede apagar aunque
+    // el widget ya no exista.
+    final velo = ref.read(loadingProvider.notifier);
+
     setState(() => _isProcessing = true);
     HapticFeedback.mediumImpact();
 
     try {
-      ref.read(loadingProvider.notifier).state = true;
+      velo.state = true;
       final session = ref.read(deviceProvider);
       final fallbackDeviceId = await ref.read(deviceIdProvider.future);
       final deviceId = session?.deviceId ?? fallbackDeviceId;
@@ -314,7 +398,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             .showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
-      if (mounted) ref.read(loadingProvider.notifier).state = false;
+      // Sin `if (mounted)`: apagar el velo es obligatorio pase lo que pase.
+      velo.state = false;
     }
   }
 
@@ -322,8 +407,33 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     setState(() {
       _scanResult = null;
       _isProcessing = false;
+      _ocupadoDesde = null;
       _detectionWindowStart = DateTime.now();
     });
+  }
+
+  /// Libera el escáner si quedó ocupado sin nada en pantalla.
+  ///
+  /// Esta es la red de seguridad para el síntoma "tengo que cerrar y abrir la
+  /// app para que lea". Las causas conocidas ya están arregladas —la sesión del
+  /// lector, el velo global, el ciclo de vida— pero un escáner en una puerta no
+  /// puede depender de que estén TODAS. Si quedó trabado, se destraba solo.
+  ///
+  /// No toca nada si hay un resultado en pantalla: ahí está ocupado a propósito,
+  /// esperando que alguien lea el veredicto y toque para seguir.
+  void _vigilarTrabado() {
+    if (!_isProcessing || _scanResult != null) return;
+    final desde = _ocupadoDesde;
+    if (desde == null) return;
+    if (DateTime.now().difference(desde) < _toleranciaOcupado) return;
+
+    if (kDebugMode) {
+      dev.log('Escáner trabado ${_toleranciaOcupado.inSeconds}s: se libera',
+          name: 'ScannerVigia');
+    }
+    _resetScanner();
+    // Y se vuelve a encender el lector, por si lo que se cayó fue el bucle.
+    _encenderLectorNativo();
   }
 
   @override
@@ -434,7 +544,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             left: 12,
             bottom: 12,
             child: _TestigoDeLector(
-              nativo: _lectorNativo,
+              estado: _estadoLector,
               latencias: _detectionLatencies,
             ),
           ),
@@ -722,38 +832,68 @@ class _ResultOverlay extends StatelessWidget {
 }
 
 
-/// Testigo discreto que dice qué decodificador está atendiendo la cámara.
+/// Testigo del escáner: dice si está leyendo, y con qué.
+///
+/// Antes acá había un panel de latencias que solo se compilaba fuera de
+/// release, o sea que en el teléfono de la puerta —el único lugar donde
+/// importa— no existía. Cuando alguien reportaba "no lee", no había forma de
+/// saber si el escáner estaba procesando cuadros o estaba muerto.
+///
+/// Lo importante no es el motor sino el **punto**: si late, el lector está
+/// procesando cuadros ahora mismo. Si se queda apagado, está colgado — y eso se
+/// ve de un vistazo sin leer nada.
 class _TestigoDeLector extends StatelessWidget {
-  const _TestigoDeLector({required this.nativo, required this.latencias});
+  const _TestigoDeLector({required this.estado, required this.latencias});
 
-  final bool nativo;
+  final Map<String, dynamic> estado;
   final List<int> latencias;
 
   @override
   Widget build(BuildContext context) {
-    final partes = <String>[nativo ? 'NATIVO' : 'ZXING'];
-    if (latencias.isNotEmpty) {
-      final media = latencias.reduce((a, b) => a + b) ~/ latencias.length;
-      partes.add('${latencias.last}ms');
-      partes.add('med ${media}ms');
-      partes.add('n=${latencias.length}');
-    }
+    final motor = (estado['motor'] as String?) ?? 'zxing';
+    final nativo = motor == 'nativo';
+    final vivo = estado['vivo'] == true;
+    final cuadros = (estado['cuadros'] as num?)?.toInt() ?? 0;
+    final reinicios = (estado['reinicios'] as num?)?.toInt() ?? 0;
+
+    final partes = <String>[motor.toUpperCase()];
+    if (nativo) partes.add('${cuadros}c');
+    if (latencias.isNotEmpty) partes.add('${latencias.last}ms');
+    // Los reinicios del vigía son la señal de que algo se está rompiendo por
+    // debajo. Solo aparecen si pasaron.
+    if (reinicios > 0) partes.add('r$reinicios');
+
+    final color = nativo
+        ? (vivo ? AppTheme.lima : AppTheme.accentYellow)
+        : AppTheme.darkTextDisabled;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: AppTheme.darkCardElevated.withValues(alpha: 0.8),
+        color: AppTheme.darkCardElevated.withValues(alpha: 0.82),
         border: Border.all(color: AppTheme.darkBorder),
       ),
-      child: Text(
-        partes.join('  '),
-        style: TextStyle(
-          fontFamily: AppTheme.fontMono,
-          fontSize: 9,
-          height: 1.2,
-          // Lima cuando lee por hardware, apagado cuando cayó al port lento.
-          color: nativo ? AppTheme.lima : AppTheme.darkTextDisabled,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Late mientras se procesan cuadros. Es lo primero que hay que mirar.
+          Container(width: 6, height: 6, color: color)
+              .animate(
+                target: vivo ? 1 : 0,
+                onPlay: (c) => c.repeat(reverse: true),
+              )
+              .fade(begin: 0.25, end: 1, duration: 700.ms),
+          const SizedBox(width: 7),
+          Text(
+            partes.join('  '),
+            style: TextStyle(
+              fontFamily: AppTheme.fontMono,
+              fontSize: 9,
+              height: 1.2,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

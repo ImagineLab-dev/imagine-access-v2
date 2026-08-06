@@ -10,32 +10,52 @@
  * LA SOLUCIÓN
  *
  * Los navegadores basados en Chromium traen `BarcodeDetector`, que en Android
- * está respaldado por el motor de códigos del sistema (el mismo de la cámara
- * nativa), acelerado por hardware. Es entre uno y dos órdenes de magnitud más
- * rápido que el port JS y mucho más tolerante al ángulo, al desenfoque y a la
- * poca luz.
+ * está respaldado por el motor de códigos del sistema, acelerado por hardware.
+ * Es mucho más rápido que el port JS y más tolerante al ángulo, al desenfoque y
+ * a la poca luz.
  *
  * Este módulo NO reemplaza a mobile_scanner: se monta sobre el MISMO elemento
- * <video> que el plugin ya creó y decodifica en paralelo. Si el navegador no
- * tiene `BarcodeDetector` —Safari en iPhone, hoy no lo tiene— este módulo se
- * apaga solo y queda funcionando ZXing como hasta ahora. Nunca hay una pantalla
- * sin escáner.
+ * <video> que el plugin ya creó y decodifica en paralelo. Donde no hay
+ * `BarcodeDetector` —Safari en iPhone— se apaga solo y queda ZXing funcionando.
+ * Nunca hay una pantalla sin escáner.
  *
- * TRES DECISIONES QUE HACEN LA DIFERENCIA
+ * TRES DECISIONES SOBRE EL DECODIFICADO
  *
- * 1. Se decodifica SOLO el cuadrado central, no la imagen entera. Es donde la
- *    mira le pide a la persona que ponga el código. Recortar baja los píxeles a
- *    analizar a menos de la mitad y, sobre todo, saca del cuadro la ropa, el
- *    piso y las luces del local, que es de donde salen los cuadros perdidos.
+ * 1. Se decodifica SOLO el cuadrado central. Es donde la mira pide poner el
+ *    código. Recortar baja los píxeles a analizar a menos de la mitad y saca del
+ *    cuadro la ropa, el piso y las luces del local, que es de donde salen los
+ *    cuadros perdidos.
  *
- * 2. Se usa `requestVideoFrameCallback` cuando existe: entrega un aviso por
- *    cuadro REAL de la cámara, en vez de adivinar con un temporizador. Sin él,
- *    o se decodifica el mismo cuadro dos veces o se saltean cuadros buenos.
+ * 2. `requestVideoFrameCallback` cuando existe: un aviso por cuadro REAL de la
+ *    cámara, en vez de adivinar con un temporizador.
  *
- * 3. Hay un techo de cuadros por segundo. Decodificar a 60 fps no lee más
- *    rápido —la cámara no entrega tanto código nuevo— y en cambio calienta el
- *    teléfono y le come la batería a un dispositivo que pasa toda la noche
- *    enchufado a la puerta.
+ * 3. Techo de cuadros por segundo. Decodificar a 60 fps no lee más rápido y le
+ *    come la batería a un equipo que pasa la noche enchufado a la puerta.
+ *
+ * ---------------------------------------------------------------------------
+ * POR QUÉ HAY SESIONES Y UN VIGÍA
+ *
+ * La primera versión de esto tenía dos fallas que se combinaban para dejar el
+ * escáner muerto hasta cerrar y reabrir la app:
+ *
+ *   a) `iniciar()` devolvía temprano si ya estaba corriendo, SIN registrar el
+ *      callback nuevo. La pantalla nueva creía estar escuchando y en realidad
+ *      los códigos seguían yendo al callback de una pantalla ya destruida, que
+ *      los descartaba por `!mounted`.
+ *
+ *   b) `detener()` no tenía dueño: cualquiera podía apagarlo. Y al navegar
+ *      entre pantallas, Flutter monta la nueva ANTES de destruir la vieja, así
+ *      que el `dispose` de la vieja apagaba el lector que la nueva acababa de
+ *      encender.
+ *
+ * De ahí las sesiones: `iniciar()` devuelve un número y `detener(n)` solo apaga
+ * si ese número sigue siendo el vigente. Un `dispose` tardío ya no puede matar
+ * una sesión más nueva.
+ *
+ * Y de ahí el vigía: aunque la lógica quede bien, el bucle puede morir por
+ * fuera —el plugin reemplaza el <video>, una promesa queda colgada, el sistema
+ * suspende la pestaña—. Un escáner en una puerta no puede depender de que
+ * alguien se dé cuenta y reinicie: si deja de procesar cuadros, se levanta solo.
  */
 (function () {
   'use strict';
@@ -43,11 +63,15 @@
   var MAX_FPS = 15;
   var MIN_MS_ENTRE_CUADROS = 1000 / MAX_FPS;
 
-  /* Proporción del lado más corto del video que se recorta.
-   * 0.7 deja un margen cómodo alrededor de la mira: si se recortara justo, un
-   * código apenas fuera del encuadre se perdería aunque la persona lo vea
+  /* Proporción del lado más corto del video que se recorta. 0.7 deja margen
+   * alrededor de la mira: recortar justo perdería un código que la persona ve
    * dentro del marco. */
   var RECORTE = 0.7;
+
+  /* Si pasa esto sin procesar un cuadro estando encendido, el bucle está roto y
+   * el vigía lo reinicia. Dos segundos es holgado: a 15 fps deberían haber
+   * pasado treinta. */
+  var VIGIA_MS = 2000;
 
   var detector = null;
   var lienzo = null;
@@ -57,10 +81,22 @@
   var ultimoCuadro = 0;
   var handle = null;
   var videoActual = null;
+  var vigia = null;
 
-  /* Telemetría, para poder responder "¿está leyendo?" con un número y no con
-   * una sensación. La lee la app y la muestra en el panel de diagnóstico. */
-  var stats = { motor: 'ninguno', cuadros: 0, lecturas: 0, ultimoMs: 0 };
+  /* Identifica quién encendió el lector. Solo el dueño puede apagarlo. */
+  var sesion = 0;
+
+  var stats = {
+    motor: 'ninguno',
+    sesion: 0,
+    cuadros: 0,
+    lecturas: 0,
+    ultimoMs: 0,
+    reinicios: 0,
+    /* Instante del último cuadro procesado. Con esto la app puede mostrar si
+     * el lector está vivo, en vez de suponerlo. */
+    ultimoCuadroEn: 0,
+  };
 
   function soportado() {
     return typeof window.BarcodeDetector === 'function';
@@ -80,9 +116,9 @@
 
     if (!lienzo) {
       lienzo = document.createElement('canvas');
-      // `willReadFrequently` evita que el navegador suba el lienzo a la GPU:
-      // acá se lee en cada cuadro, y el viaje de vuelta desde la GPU es más
-      // caro que dibujar en memoria.
+      /* `willReadFrequently` evita que el navegador suba el lienzo a la GPU:
+       * acá se lee en cada cuadro, y el viaje de vuelta es más caro que
+       * dibujar en memoria. */
       contexto = lienzo.getContext('2d', { willReadFrequently: true });
     }
     if (lienzo.width !== lado) {
@@ -100,20 +136,35 @@
     return lienzo;
   }
 
-  function siguienteCuadro(video, tarea) {
-    if (video.requestVideoFrameCallback) {
+  function programar(video, tarea) {
+    if (video && video.requestVideoFrameCallback) {
       handle = video.requestVideoFrameCallback(tarea);
     } else {
       handle = requestAnimationFrame(tarea);
     }
   }
 
+  function cancelarProgramado() {
+    if (handle == null) return;
+    /* No se sabe con cuál de los tres se programó; cancelar el que no
+     * corresponde es inofensivo. */
+    try { clearTimeout(handle); } catch (e) {}
+    try { cancelAnimationFrame(handle); } catch (e) {}
+    handle = null;
+  }
+
   function bucle() {
     if (!corriendo) return;
 
-    var video = videoActual && videoActual.videoWidth > 0 ? videoActual : pistaDeVideo();
+    var video = videoActual && videoActual.videoWidth > 0
+      ? videoActual
+      : pistaDeVideo();
+
     if (!video) {
-      // Todavía no hay video: se reintenta sin quemar CPU.
+      /* Todavía no hay video —el plugin no montó la cámara— se reintenta sin
+       * quemar CPU. Esto cuenta como actividad para el vigía: el bucle está
+       * vivo, solo que esperando. */
+      stats.ultimoCuadroEn = Date.now();
       handle = setTimeout(bucle, 250);
       return;
     }
@@ -121,20 +172,22 @@
 
     var ahora = performance.now();
     if (ahora - ultimoCuadro < MIN_MS_ENTRE_CUADROS) {
-      siguienteCuadro(video, bucle);
+      programar(video, bucle);
       return;
     }
     ultimoCuadro = ahora;
 
     var recorte = recortar(video);
     if (!recorte) {
-      siguienteCuadro(video, bucle);
+      programar(video, bucle);
       return;
     }
 
     detector.detect(recorte).then(function (codigos) {
       stats.cuadros++;
       stats.ultimoMs = Math.round(performance.now() - ahora);
+      stats.ultimoCuadroEn = Date.now();
+
       if (corriendo && codigos && codigos.length) {
         var valor = (codigos[0].rawValue || '').trim();
         if (valor && alEncontrar) {
@@ -142,63 +195,110 @@
           alEncontrar(valor);
         }
       }
-      if (corriendo) siguienteCuadro(video, bucle);
+      if (corriendo) programar(video, bucle);
     }).catch(function () {
-      // Un cuadro que el detector no pudo procesar no es motivo para apagar el
-      // escáner: se sigue con el siguiente.
-      if (corriendo) siguienteCuadro(video, bucle);
+      /* Un cuadro que el detector no pudo procesar no apaga el escáner. Se
+       * marca actividad igual: el bucle sigue vivo. */
+      stats.ultimoCuadroEn = Date.now();
+      if (corriendo) programar(video, bucle);
     });
   }
 
+  function arrancarVigia() {
+    if (vigia != null) clearInterval(vigia);
+    vigia = setInterval(function () {
+      if (!corriendo) return;
+      if (Date.now() - stats.ultimoCuadroEn < VIGIA_MS) return;
+
+      /* El bucle dejó de procesar cuadros. Se lo levanta desde cero. */
+      stats.reinicios++;
+      stats.ultimoCuadroEn = Date.now();
+      cancelarProgramado();
+      videoActual = null;
+      bucle();
+    }, VIGIA_MS);
+  }
+
   window.imagineLector = {
-    /** ¿Este navegador tiene decodificador nativo? */
+    /** ¿Este navegador trae decodificador nativo? */
     disponible: function () {
       return soportado();
     },
 
-    /** Arranca el lector rápido. Devuelve false si el navegador no lo soporta,
-     *  y en ese caso la app sigue con ZXing sin cambiar nada. */
+    /**
+     * Enciende el lector y devuelve el número de sesión.
+     *
+     * Devuelve 0 si el navegador no lo soporta; ahí la app sigue con ZXing.
+     * El número hay que guardarlo: es lo único que autoriza a apagarlo después.
+     */
     iniciar: function (callback) {
       if (!soportado()) {
         stats.motor = 'zxing';
-        return false;
-      }
-      if (corriendo) return true;
-
-      try {
-        detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-      } catch (e) {
-        stats.motor = 'zxing';
-        return false;
+        return 0;
       }
 
+      if (!detector) {
+        try {
+          detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+        } catch (e) {
+          stats.motor = 'zxing';
+          return 0;
+        }
+      }
+
+      /* El callback se registra SIEMPRE, corra o no el bucle. Esta línea es la
+       * que faltaba: sin ella, una pantalla nueva heredaba el callback de la
+       * anterior —ya destruida— y los códigos se descartaban en silencio. */
       alEncontrar = callback;
-      corriendo = true;
+      sesion++;
+      stats.sesion = sesion;
       stats.motor = 'nativo';
-      stats.cuadros = 0;
-      stats.lecturas = 0;
-      ultimoCuadro = 0;
-      videoActual = null;
-      bucle();
-      return true;
+      stats.ultimoCuadroEn = Date.now();
+
+      if (!corriendo) {
+        corriendo = true;
+        stats.cuadros = 0;
+        stats.lecturas = 0;
+        ultimoCuadro = 0;
+        videoActual = null;
+        bucle();
+      }
+      arrancarVigia();
+      return sesion;
     },
 
-    detener: function () {
+    /**
+     * Apaga el lector, pero SOLO si quien pide es el dueño de la sesión actual.
+     *
+     * Al navegar entre pantallas, Flutter monta la nueva antes de destruir la
+     * vieja. Sin esta comprobación, el `dispose` de la vieja apagaba el lector
+     * que la nueva acababa de encender, y el escáner quedaba muerto hasta
+     * recargar la app.
+     */
+    detener: function (id) {
+      if (id && id !== sesion) return false;
       corriendo = false;
       alEncontrar = null;
       videoActual = null;
-      if (handle != null) {
-        // No se sabe con cuál de los tres se programó, así que se cancelan los
-        // tres. Cancelar un handle que no corresponde es inofensivo.
-        try { clearTimeout(handle); } catch (e) {}
-        try { cancelAnimationFrame(handle); } catch (e) {}
-        handle = null;
-      }
+      cancelarProgramado();
+      if (vigia != null) { clearInterval(vigia); vigia = null; }
+      return true;
     },
 
-    /** Para el panel de diagnóstico del escáner. */
+    /** Telemetría, para poder responder "¿está leyendo?" con un número. */
     estado: function () {
-      return JSON.stringify(stats);
+      var desde = stats.ultimoCuadroEn ? Date.now() - stats.ultimoCuadroEn : -1;
+      return JSON.stringify({
+        motor: stats.motor,
+        sesion: stats.sesion,
+        cuadros: stats.cuadros,
+        lecturas: stats.lecturas,
+        ultimoMs: stats.ultimoMs,
+        reinicios: stats.reinicios,
+        /* Milisegundos desde el último cuadro. Si crece, está colgado. */
+        inactivoMs: desde,
+        vivo: corriendo && desde >= 0 && desde < VIGIA_MS,
+      });
     },
   };
 })();
