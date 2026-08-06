@@ -108,6 +108,9 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
+                // Limita el texto al ancho del campo: sin esto una etiqueta
+                // larga se sale del recuadro en vez de recortarse.
+                isExpanded: true,
                 initialValue: plan,
                 decoration: InputDecoration(
                     labelText: l10n.plan, border: const OutlineInputBorder()),

@@ -23,8 +23,38 @@ function getNowLocalISO(tz: string): string {
     const p = Object.fromEntries(
         f.formatToParts(now).map(x => [x.type, x.value])
     );
-    const h = p.hour === '24' ? '00' : p.hour;
-    return `${p.year}-${p.month}-${p.day}T${h}:${p.minute}:${p.second}`;
+
+    // La medianoche puede llegar como hora "24".
+    //
+    // Algunas versiones de V8 devuelven "24" en vez de "00" con
+    // `hour12: false`. Antes esto se resolvía mapeando 24 a 00 y nada más —
+    // pero 24:00 del día N ES 00:00 del día N+1, así que sin avanzar la fecha
+    // la hora de pared quedaba veinticuatro horas atrasada, y una entrada
+    // vencida se leía como vigente. En un rubro donde los eventos cruzan la
+    // medianoche, ese es el peor minuto posible para equivocarse.
+    //
+    // Se corrige avanzando el día de verdad. `Date.UTC` se encarga del fin de
+    // mes y del fin de año, que a mano se escriben mal.
+    //
+    // Se mantiene `hour12: false` a propósito y no se usa `hourCycle`: este es
+    // el camino que valida los tickets en la puerta, y no se cambia una API por
+    // otra sin poder probarla en el runtime real —el contenedor corre
+    // `edge-runtime`, no un `deno` suelto donde ejecutar una prueba—.
+    let anio = Number(p.year);
+    let mes = Number(p.month);
+    let dia = Number(p.day);
+    let hora = Number(p.hour);
+
+    if (hora === 24) {
+        const siguiente = new Date(Date.UTC(anio, mes - 1, dia + 1));
+        anio = siguiente.getUTCFullYear();
+        mes = siguiente.getUTCMonth() + 1;
+        dia = siguiente.getUTCDate();
+        hora = 0;
+    }
+
+    const dd = (n: number) => String(n).padStart(2, '0');
+    return `${anio}-${dd(mes)}-${dd(dia)}T${dd(hora)}:${p.minute}:${p.second}`;
 }
 
 /** Check if a ticket is expired using the valid_until already fetched from ticket_types.

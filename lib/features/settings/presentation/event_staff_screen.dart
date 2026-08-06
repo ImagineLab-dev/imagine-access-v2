@@ -230,6 +230,9 @@ class EventStaffScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
+                // Limita el texto al ancho del campo: sin esto una etiqueta
+                // larga se sale del recuadro en vez de recortarse.
+                isExpanded: true,
                 decoration: InputDecoration(labelText: l10n.selectUser),
                 items: allUsers
                     .map((u) => DropdownMenuItem(
@@ -241,6 +244,9 @@ class EventStaffScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
+                // Limita el texto al ancho del campo: sin esto una etiqueta
+                // larga se sale del recuadro en vez de recortarse.
+                isExpanded: true,
                 initialValue: selectedRole,
                 decoration: InputDecoration(labelText: l10n.roleInEvent),
                 items: [

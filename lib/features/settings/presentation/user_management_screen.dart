@@ -249,6 +249,9 @@ class UserManagementScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
+                  // Limita el texto al ancho del campo: sin esto una etiqueta
+                  // larga se sale del recuadro en vez de recortarse.
+                  isExpanded: true,
                   initialValue: selectedRole,
                   dropdownColor: AppTheme.panelElevado(context),
                   items: [

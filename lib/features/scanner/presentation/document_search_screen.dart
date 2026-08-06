@@ -221,6 +221,9 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
                 children: [
                   // Dropdown for search type
                   DropdownButtonFormField<String>(
+                    // Limita el texto al ancho del campo: sin esto una etiqueta
+                    // larga se sale del recuadro en vez de recortarse.
+                    isExpanded: true,
                     initialValue: _searchType,
                     decoration: InputDecoration(
                       labelText: l10n.searchByLabel,
@@ -322,6 +325,9 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
           if (isValid) ...[
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
+              // Limita el texto al ancho del campo: sin esto una etiqueta
+              // larga se sale del recuadro en vez de recortarse.
+              isExpanded: true,
               decoration: InputDecoration(
                 labelText: l10n.validationReason,
                 border: const OutlineInputBorder(),

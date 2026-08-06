@@ -739,6 +739,33 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                           initialValue: _currency,
                           dropdownColor: AppTheme.panelElevado(context),
                           style: AppTheme.dato(context, size: 14, peso: FontWeight.w500),
+
+                          // Sin esto el desplegable no limita a su hijo y el
+                          // texto se sale del recuadro en vez de recortarse.
+                          isExpanded: true,
+
+                          // En el campo cerrado va la versión corta —"ARS $"—
+                          // y en la lista desplegada el nombre completo.
+                          //
+                          // Este campo comparte la fila con la ciudad, así que
+                          // en un teléfono le tocan unos 140 px: "Peso
+                          // Argentino (ARS)" no entra ni recortado con puntos
+                          // suspensivos, quedaría "Peso Arge…", que no dice
+                          // nada. El código de moneda sí identifica, y ocupa
+                          // cuatro caracteres.
+                          selectedItemBuilder: (context) => CurrencyHelper
+                              .currencies.keys
+                              .map((codigo) => Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      '$codigo  ${CurrencyHelper.getSymbol(codigo)}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTheme.dato(context,
+                                          size: 14, peso: FontWeight.w500),
+                                    ),
+                                  ))
+                              .toList(),
                           
                           // Salen de `CurrencyHelper` y no de una lista a mano.
                           //
@@ -753,7 +780,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                           items: CurrencyHelper.currencies.keys
                               .map((codigo) => DropdownMenuItem(
                                     value: codigo,
-                                    child: Text(CurrencyHelper.getLabel(codigo)),
+                                    child: Text(
+                                      CurrencyHelper.getLabel(codigo),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ))
                               .toList(),
                           onChanged: (v) => setState(() => _currency = v!),
@@ -854,6 +885,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 ),
               ),
               DropdownButtonFormField<String>(
+                // Limita el texto al ancho del campo: sin esto una etiqueta
+                // larga se sale del recuadro en vez de recortarse.
+                isExpanded: true,
                 key: ValueKey(_timezone),
                 initialValue: _timezone,
                 dropdownColor: AppTheme.panelElevado(context),
@@ -984,6 +1018,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                   fontSize: 13)),
                           const SizedBox(width: 8),
                           DropdownButton<int>(
+                            // Limita el texto al ancho del campo: sin esto una etiqueta
+                            // larga se sale del recuadro en vez de recortarse.
+                            isExpanded: true,
                             value: _invitationToleranceMinutes,
                             dropdownColor: AppTheme.darkCardElevated,
                             style: const TextStyle(
@@ -1096,6 +1133,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                 fontSize: 13)),
                         const SizedBox(width: 8),
                         DropdownButton<int>(
+                          // Limita el texto al ancho del campo: sin esto una etiqueta
+                          // larga se sale del recuadro en vez de recortarse.
+                          isExpanded: true,
                           value: _promoQty,
                           dropdownColor: AppTheme.darkCardElevated,
                           style: const TextStyle(

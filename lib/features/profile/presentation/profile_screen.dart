@@ -487,6 +487,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           _titulo(l10n.preferences, Icons.tune),
           DropdownButtonFormField<ThemeMode>(
+            // Limita el texto al ancho del campo: sin esto una etiqueta
+            // larga se sale del recuadro en vez de recortarse.
+            isExpanded: true,
             initialValue: modo,
             decoration: InputDecoration(
               labelText: l10n.theme,
@@ -508,6 +511,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
+            // Limita el texto al ancho del campo: sin esto una etiqueta
+            // larga se sale del recuadro en vez de recortarse.
+            isExpanded: true,
             initialValue: locale.languageCode,
             decoration: InputDecoration(
               labelText: l10n.language,
