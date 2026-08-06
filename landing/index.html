@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imagine Access · Control de acceso para eventos</title>
+  <link rel="preload" href="fonts/SpaceGrotesk.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="description" content="Emitís entradas con código QR, escaneás en la puerta y sabés al instante si entra o no. Funciona sin señal. Desde USD 25 al mes.">
 <link rel="icon" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/logo.png">
@@ -37,36 +38,73 @@
 
 <!--
   Tema OSCURO bloqueado, no dark-mode opcional.
-  La marca del producto es oscura (#0B0F16), la app es oscura, y el contexto es
+  La marca del producto es oscura (#0A0A0B), la app es oscura, y el contexto es
   nocturno. Un modo claro pelearía con la identidad en vez de servirla.
 
   Sistema de radios, documentado y uniforme:
     superficies 16px · botones pastilla · campos 10px
 -->
 <style>
+  /* `swap`: la página se dibuja YA con la fuente del sistema y cambia cuando
+     llega la propia. Con `block` habría un instante de texto invisible, y en
+     una landing ese instante es gente que se va. */
+  @font-face {
+    font-family: 'SpaceGrotesk';
+    src: url('fonts/SpaceGrotesk.woff2') format('woff2');
+    font-weight: 300 700;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrainsMono';
+    src: url('fonts/JetBrainsMono.woff2') format('woff2');
+    font-weight: 400 700;
+    font-display: swap;
+  }
+
   :root {
-    --bg:        #0B0F16;
-    --surface:   #101725;
-    --surface-2: #151E30;
-    --line:      rgba(255,255,255,.09);
-    --line-2:    rgba(255,255,255,.16);
-    --text:      #EAF0F7;
-    --muted:     #8E9FB6;
-    --accent:    #4A9EFF;
-    --ok:        #22C55E;
-    --bad:       #EF4444;
+    /* Los mismos valores que `AppTheme` en la app. Si esto se desalinea, la
+       persona hace clic en "probar" y aterriza en un producto que parece de
+       otra empresa. */
+    --bg:        #0A0A0B;
+    --surface:   #131315;
+    --surface-2: #1B1B1D;
+    --line:      #353437;
+    --line-2:    #46464A;
+    --text:      #E4E2E4;
+    --muted:     #C7C6CA;
+    --accent:    #AED500;
+    --accent-vivo:#C7F300;
+    /* Tinta que va ENCIMA del acento. Sobre el lima, el blanco da 1,9:1 y es
+       ilegible; esta combinación da 7,7:1. */
+    --accent-tinta:#293500;
+    --ok:        #AED500;
+    --bad:       #CC3339;
+    --bad-suave: #FFB4AB;
 
-    --r-surface: 16px;
-    --r-field:   10px;
+    /* Ángulo recto, igual que la app. Es la decisión de marca más visible y la
+       que más delata cuando no coincide. */
+    --r-surface: 0px;
+    --r-field:   0px;
 
-    /* Pila del sistema: cero webfonts.
-       Es la decisión correcta para un público que abre esto en 4G desde el
-       teléfono, y el LCP lo agradece. Si más adelante se quiere una tipografía
-       propia, se auto-hospeda; nunca por <link> a Google Fonts. */
-    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    /* Las fuentes de la marca, RECORTADAS a los caracteres de esta página.
+       Space Grotesk pesa 133 KB completa y JetBrains Mono 183; recortadas a los
+       117 caracteres que la página realmente usa, y en WOFF2, quedan en 12 y 13.
+       Los 25 KB de las dos juntas son menos que cualquiera de las fotos, así
+       que la regla de "cero webfonts" que había acá deja de aplicar: se puso
+       por peso, y el peso desapareció.
+
+       Ojo al editar el texto: si se agrega un carácter que no está en el
+       recorte —otro alfabeto, un símbolo raro— el navegador lo dibuja con la
+       fuente de reserva y se nota. Regenerar con `tool/recortar_fuentes.py`.
+
+       El texto corrido sigue con la pila del sistema: en párrafo la diferencia
+       casi no se percibe y no justifica un tercer archivo. */
+    --sans: "SpaceGrotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+            Roboto, "Helvetica Neue", Arial, sans-serif;
+    --texto: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
             "Helvetica Neue", Arial, sans-serif;
-    --mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono",
-            "Roboto Mono", Menlo, Consolas, monospace;
+    --mono: "JetBrainsMono", ui-monospace, "SF Mono", SFMono-Regular,
+            "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -76,9 +114,13 @@
 
   body {
     margin: 0;
-    background: var(--bg);
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(to right,  color-mix(in srgb, var(--line-2) 22%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--line-2) 22%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
     color: var(--text);
-    font-family: var(--sans);
+    font-family: var(--texto);
     font-size: 17px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -94,7 +136,14 @@
      dejar una palabra sola abajo. Sin esto, el h1 cierra con "celular." solo en
      su renglón a 1440 px de ancho. Donde no está soportado el navegador ignora
      la propiedad y corta como siempre: no hay nada que emular. */
-  h1, h2, h3 { margin: 0; letter-spacing: -.028em; line-height: 1.06; text-wrap: balance; }
+  h1, h2, h3 {
+    margin: 0;
+    font-family: var(--sans);
+    font-weight: 700;
+    letter-spacing: -.028em;
+    line-height: 1.06;
+    text-wrap: balance;
+  }
   h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 680; }
   h2 { font-size: clamp(1.9rem, 4.2vw, 3rem); font-weight: 650; }
   h3 { font-size: 1.16rem; font-weight: 620; letter-spacing: -.015em; }
@@ -125,9 +174,9 @@
     transition: transform .18s cubic-bezier(.16,1,.3,1),
                 background-color .18s ease, border-color .18s ease;
   }
-  /* #4A9EFF con texto #06101F: contraste holgado sobre AA. */
-  .btn-primary { background: var(--accent); color: #06101F; }
-  .btn-primary:hover { background: #6BB0FF; transform: translateY(-1px); }
+  /* Lima con tinta lima oscura: 7,7:1, muy por encima de AA. */
+  .btn-primary { background: var(--accent); color: var(--accent-tinta); }
+  .btn-primary:hover { background: var(--accent-vivo); transform: translateY(-1px); }
   .btn-primary:active { transform: translateY(1px) scale(.99); }
 
   .btn-ghost { border-color: var(--line-2); color: var(--text); background: transparent; }
@@ -232,7 +281,7 @@
     display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px;
     padding: 8px 15px; border-radius: 999px;
     border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.11);
-    font: 600 .82rem/1 var(--mono); letter-spacing: .04em; color: #FF9B9B;
+    font: 600 .82rem/1 var(--mono); letter-spacing: .04em; color: var(--bad-suave);
   }
 
   /* ---------- Funciones: bento, 6 celdas para 6 funciones ----------
@@ -275,7 +324,7 @@
   .cel-full { grid-column: 1 / -1; }
   .cel-panel { padding: 0; overflow: hidden; display: grid; grid-template-columns: .9fr 1.1fr; }
   .cel-panel > div { padding: 32px; align-self: center; display: flex; flex-direction: column; gap: 11px; }
-  .cel-panel figure { margin: 0; position: relative; min-height: 330px; background: #0A0E18; }
+  .cel-panel figure { margin: 0; position: relative; min-height: 330px; background: var(--surface); }
   .cel-panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   @media (max-width: 900px) {
     .bento { grid-template-columns: repeat(2, 1fr); }
