@@ -77,9 +77,9 @@ mover el contador a Postgres.
 
 ## Pendiente, por orden de riesgo
 
-### 1. El puerto 3000 del panel sigue abierto en HTTP plano
+### 1. El puerto 3000 del panel — cerrado el 06/08/2026
 
-**Mitigado, no cerrado.**
+**Resuelto.** Se deja el detalle porque explica de dónde salió `panel.imaginecloud.digital`.
 
 El panel de Easypanel administra **todos** los sistemas de clientes del VPS —chillberry, el
 CRM, las landings—, y se servía únicamente por `http://72.60.51.162:3000`, sin cifrado: la
@@ -97,32 +97,68 @@ DNS público, así que nadie la usaba. Se agregó una propia:
 - Verificado: HTTPS 200 con certificado Let's Encrypt propio, HTTP redirige con 301, y el
   API sigue devolviendo 401 sin credenciales
 
-**Falta cerrar el 3000.** Se dejó abierto a propósito para no dejar a nadie afuera antes de
-confirmar que la ruta nueva funciona en el uso diario. Una vez confirmado:
+Con la ruta HTTPS en uso, el 3000 se cerró en las dos familias:
 
 ```bash
-ufw deny 3000/tcp     # o restringir por IP de origen
+iptables  -A INPUT -s 127.0.0.1/32 -p tcp --dport 3000 -j ACCEPT
+iptables  -A INPUT                 -p tcp --dport 3000 -j DROP
+ip6tables -A INPUT -s ::1/128      -p tcp --dport 3000 -j ACCEPT   # 06/08
+ip6tables -A INPUT                 -p tcp --dport 3000 -j DROP     # 06/08
 ```
+
+**Verificado desde fuera del VPS**, no desde adentro: IPv4 da timeout, y por IPv6 el
+contador del DROP sube. Easypanel sigue respondiendo 200 por loopback y por
+`panel.imaginecloud.digital`.
+
+La parte de IPv6 se agregó recién el 06/08 junto con el registro AAAA de `api`: hasta ese
+día `ip6tables` estaba vacío y el 3000 estaba abierto por IPv6 aunque en IPv4 tuviera el
+DROP puesto. Ver `docs/INFRAESTRUCTURA.md` → *IPv6*.
 
 Copia versionada de la ruta en `deploy/traefik-panel-imaginecloud.yaml`.
 
-### 2. Sin captcha en registro ni login
+### 2. Los puertos de Docker Swarm están abiertos a internet
+
+Detectado el 06/08/2026 escaneando desde afuera del VPS:
+
+| Puerto | Qué es | Desde internet |
+|---|---|---|
+| 2377 | Gestión del clúster Swarm | **abierto** |
+| 7946 | Descubrimiento entre nodos (gossip) | **abierto** |
+
+No es una puerta abierta —2377 exige TLS mutuo con el token de unión al clúster—, pero no
+hay ninguna razón para que sean visibles: el Swarm es de un solo nodo, así que nadie los
+necesita desde afuera. Es superficie de ataque regalada.
+
+```bash
+# cerrar en las dos familias, que son firewalls distintos
+for p in 2377 7946; do
+  iptables  -A INPUT -p tcp --dport $p -j DROP
+  ip6tables -A INPUT -p tcp --dport $p -j DROP
+done
+iptables-save  > /etc/iptables/rules.v4
+ip6tables-save > /etc/iptables/rules.v6
+```
+
+Sin probar: verificar antes que los contenedores no dependan de esos puertos por la IP
+pública del host.
+
+### 3. Sin captcha en registro ni login
 
 GoTrue soporta hCaptcha y Turnstile (`GOTRUE_SECURITY_CAPTCHA_ENABLED`). Es la defensa
 real contra bots; los límites de tasa solo encarecen el ataque.
 
-### 3. PIN de dispositivo en localStorage
+### 4. PIN de dispositivo en localStorage
 
 En web queda legible por cualquier XSS, en teléfonos personales del personal de puerta. El
 reemplazo por un token de sesión con expiración está diseñado en
 `docs/superpowers/specs/2026-07-27-pwa-migration-design.md` §6, sin implementar.
 
-### 4. Acceso SSH por root
+### 5. Acceso SSH por root
 
 Se entra como `root` con clave. Funciona, pero un usuario sin privilegios con `sudo` y
 `PermitRootLogin no` reduce el daño de una clave filtrada.
 
-### 5. Credenciales expuestas en el chat de esta sesión
+### 6. Credenciales expuestas en el chat de esta sesión
 
 El token de API de Hostinger y la contraseña del buzón `tickets@imaginecloud.digital`
 pasaron por la conversación. **Ambos hay que rotarlos.** El token da control total sobre

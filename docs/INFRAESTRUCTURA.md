@@ -171,6 +171,46 @@ iptables -I DOCKER-USER 2 -i br+ -p tcp -m tcp --dport 3000 -j RETURN
 iptables-save > /etc/iptables/rules.v4   # persistir para el reboot
 ```
 
+## IPv6
+
+Meta recomienda mandar `client_ip_address` en la API de conversiones, y prefiere
+la IPv6 cuando existe. Sin AAAA en el dominio de la API, ningún cliente llega por
+IPv6 y esa dirección nunca aparece.
+
+Estado desde el 06/08/2026:
+
+| Nombre | A | AAAA |
+|---|---|---|
+| `@` y `www` | `62.72.62.225` | `2a02:4780:13:1281:0:1c56:17e:3` (hosting compartido, ya estaba) |
+| `api` | `72.60.51.162` | `2a02:4780:66:5e49::1` (VPS, agregado el 06/08) |
+
+Verificado que la cadena entera responde por IPv6: Traefik → Kong → GoTrue y
+PostgREST devuelven 200 con el nombre público.
+
+### La trampa: `ip6tables` es un firewall aparte
+
+`iptables` y `ip6tables` no comparten reglas. El VPS tenía `ip6tables` **vacío con
+política ACCEPT**, así que todo lo que se creía cerrado por IPv4 estaba abierto por
+IPv6 — incluido el 3000 de Easypanel, que en IPv4 tiene un DROP explícito.
+
+Mientras el nombre no tuvo AAAA la dirección IPv6 no era pública y el hueco pasaba
+inadvertido. Publicar el AAAA lo convierte en algo que se descubre con una consulta
+de DNS. Por eso el espejo se aplicó **el mismo día**:
+
+```bash
+ip6tables -A INPUT -s ::1/128 -p tcp --dport 3000 -j ACCEPT
+ip6tables -A INPUT          -p tcp --dport 3000 -j DROP
+ip6tables-save > /etc/iptables/rules.v6   # NO usar netfilter-persistent save:
+                                          # pisa también rules.v4
+```
+
+**Regla para el futuro: toda regla que se agregue a `iptables` hay que espejarla en
+`ip6tables`.** Si no, se cierra media puerta.
+
+Cuidado al verificar: un `curl` desde el propio VPS hacia su IP pública **no pasa por
+`INPUT`** y devuelve 200 aunque la regla esté bien puesta. Para saber si algo está
+realmente cerrado hay que probar desde afuera, o mirar los contadores de paquetes.
+
 ## Pendientes conocidos
 
 - **El dump diario no sale del VPS.** Los backups de Hostinger son semanales y de la
