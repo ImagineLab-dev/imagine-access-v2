@@ -1852,4 +1852,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteAccountSuperadmin =>
       'A super-admin account can\'t be deleted from here. Move the role to another account first.';
+
+  @override
+  String get installApp => 'Install app';
+
+  @override
+  String get installAppDesc =>
+      'Add it to your home screen and open it like any other app';
+
+  @override
+  String get installOpened => 'Follow your browser to finish installing';
+
+  @override
+  String get installIOS =>
+      'On iPhone: Share button, then \"Add to Home Screen\"';
+
+  @override
+  String get installNotReady =>
+      'Your browser is not offering it yet. Use it for a moment and try again.';
 }

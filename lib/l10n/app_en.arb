@@ -914,5 +914,25 @@
   "deleteAccountAction": "Delete permanently",
   "deleteAccountDone": "Account deleted.",
   "deleteAccountNameMismatch": "The name doesn't match.",
-  "deleteAccountSuperadmin": "A super-admin account can't be deleted from here. Move the role to another account first."
+  "deleteAccountSuperadmin": "A super-admin account can't be deleted from here. Move the role to another account first.",
+  "installApp": "Install app",
+  "@installApp": {
+    "description": "Settings entry to install the PWA"
+  },
+  "installAppDesc": "Add it to your home screen and open it like any other app",
+  "@installAppDesc": {
+    "description": "Subtitle of the install entry"
+  },
+  "installOpened": "Follow your browser to finish installing",
+  "@installOpened": {
+    "description": "Shown after the browser install dialog opens"
+  },
+  "installIOS": "On iPhone: Share button, then \"Add to Home Screen\"",
+  "@installIOS": {
+    "description": "iPhone has no install dialog; it is manual from the Share sheet"
+  },
+  "installNotReady": "Your browser is not offering it yet. Use it for a moment and try again.",
+  "@installNotReady": {
+    "description": "The browser has not fired beforeinstallprompt yet"
+  }
 }

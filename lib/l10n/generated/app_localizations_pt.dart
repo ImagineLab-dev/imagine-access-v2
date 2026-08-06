@@ -1861,4 +1861,22 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get deleteAccountSuperadmin =>
       'Uma conta de super-admin não pode ser excluída aqui. Passe o papel para outra conta primeiro.';
+
+  @override
+  String get installApp => 'Instalar o app';
+
+  @override
+  String get installAppDesc =>
+      'Fica na tela inicial e abre como qualquer outro';
+
+  @override
+  String get installOpened => 'Siga o que o navegador pede para concluir';
+
+  @override
+  String get installIOS =>
+      'No iPhone: botão Compartilhar e depois \"Adicionar à Tela de Início\"';
+
+  @override
+  String get installNotReady =>
+      'O navegador ainda não oferece. Use o app um pouco e tente de novo.';
 }

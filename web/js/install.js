@@ -288,4 +288,56 @@
     // En el resto se espera a `beforeinstallprompt`, que llega solo.
     if (esIOS()) setTimeout(mostrarInstruccionesIOS, 4000);
   });
+
+  // --------------------------------------------------------------------------
+  // API para la app
+  // --------------------------------------------------------------------------
+  //
+  // Hasta acá instalar dependía SOLO del aviso automático. Y ese aviso, si
+  // alguien lo cerraba una vez, se silenciaba catorce días — con lo cual la
+  // app quedaba sin ninguna forma de instalarse durante dos semanas, y la
+  // persona sin manera de saber que existía la opción.
+  //
+  // Con esto la configuración puede ofrecerlo siempre: el aviso es el empujón,
+  // la configuración es el camino permanente.
+  window.imagineInstalar = {
+    /** Estado, en JSON, para que la app decida qué mostrar. */
+    estado: function () {
+      return JSON.stringify({
+        instalada: yaInstalada(),
+        silenciada: silenciado(),
+        // En Android y escritorio hace falta el evento del navegador; sin él no
+        // se puede abrir el diálogo por más que se quiera.
+        listo: !!eventoGuardado,
+        ios: esIOS(),
+      });
+    },
+
+    /**
+     * Ofrece instalar. Devuelve qué pasó, para que la app pueda explicarlo:
+     *
+     *   'instalada'  ya está instalada, no hay nada que hacer
+     *   'pedido'     se abrió el diálogo del navegador
+     *   'ios'        se mostraron las instrucciones manuales de iPhone
+     *   'no-listo'   el navegador todavía no ofreció instalar
+     */
+    instalar: function () {
+      if (yaInstalada()) return 'instalada';
+
+      // Pedirlo a mano borra el silencio: si alguien entra a buscarlo, es que
+      // lo quiere.
+      try { localStorage.removeItem(CLAVE_DESCARTE); } catch (_) {}
+
+      if (eventoGuardado) {
+        eventoGuardado.prompt();
+        eventoGuardado = null;
+        return 'pedido';
+      }
+      if (esIOS()) {
+        mostrarInstruccionesIOS();
+        return 'ios';
+      }
+      return 'no-listo';
+    },
+  };
 })();

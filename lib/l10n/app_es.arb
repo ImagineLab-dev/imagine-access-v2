@@ -853,5 +853,10 @@
   "deleteAccountAction": "Eliminar definitivamente",
   "deleteAccountDone": "Cuenta eliminada.",
   "deleteAccountNameMismatch": "El nombre no coincide.",
-  "deleteAccountSuperadmin": "Una cuenta de super-admin no puede darse de baja desde acá. Pasá el rol a otra cuenta primero."
+  "deleteAccountSuperadmin": "Una cuenta de super-admin no puede darse de baja desde acá. Pasá el rol a otra cuenta primero.",
+  "installApp": "Instalar la app",
+  "installAppDesc": "Queda en la pantalla de inicio y se abre como cualquier otra",
+  "installOpened": "Seguí lo que te pide el navegador para terminar",
+  "installIOS": "En iPhone: botón Compartir y después \"Agregar a inicio\"",
+  "installNotReady": "El navegador todavía no lo ofrece. Usá la app un momento y volvé a intentar."
 }

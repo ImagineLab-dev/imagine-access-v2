@@ -14,6 +14,7 @@ import 'package:imagine_access/features/auth/presentation/auth_controller.dart';
 import 'package:imagine_access/features/settings/data/settings_repository.dart';
 import 'package:imagine_access/features/events/data/event_repository.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
+import '../../../core/platform/instalar.dart';
 import '../../../core/platform/pwa.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -164,6 +165,19 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
+          // Instalar la app.
+          //
+          // Hasta acá instalar dependía SOLO del aviso automático del
+          // navegador. Y ese aviso, si alguien lo cerraba una vez, se
+          // silenciaba catorce días: la app quedaba sin ninguna forma de
+          // instalarse durante dos semanas, y la persona sin saber siquiera
+          // que la opción existía.
+          //
+          // Solo aparece cuando de verdad se puede: instalada ya, o un
+          // navegador que todavía no lo ofrece, no muestran nada. Una opción
+          // que al tocarla no hace nada es peor que no tenerla.
+          const _InstalarTile(),
+
           // Legal / Privacy Policy
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
@@ -217,6 +231,52 @@ class _SettingsTile extends StatelessWidget {
           ),
           const Icon(Icons.chevron_right, color: AppTheme.accentPurple)
         ],
+      ),
+    );
+  }
+}
+
+/// Ofrece instalar la app, solo si en este navegador se puede.
+class _InstalarTile extends StatefulWidget {
+  const _InstalarTile();
+
+  @override
+  State<_InstalarTile> createState() => _InstalarTileState();
+}
+
+class _InstalarTileState extends State<_InstalarTile> {
+  EstadoInstalacion _estado = estadoInstalacion();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_estado.sePuedeOfrecer) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: _SettingsTile(
+        icon: Icons.install_mobile_outlined,
+        title: l10n.installApp,
+        subtitle: l10n.installAppDesc,
+        onTap: () async {
+          final mensajero = ScaffoldMessenger.of(context);
+          final resultado = await pedirInstalacion();
+          if (!mounted) return;
+
+          mensajero.hideCurrentSnackBar();
+          final texto = switch (resultado) {
+            'pedido' => l10n.installOpened,
+            'ios' => l10n.installIOS,
+            'instalada' => l10n.upToDate,
+            _ => l10n.installNotReady,
+          };
+          mensajero.showSnackBar(SnackBar(content: Text(texto)));
+
+          // El estado cambia al instalar o al abrirse el diálogo, así que se
+          // vuelve a consultar: si ya quedó instalada, la opción desaparece.
+          setState(() => _estado = estadoInstalacion());
+        },
       ),
     );
   }

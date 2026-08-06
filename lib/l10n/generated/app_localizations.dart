@@ -3524,6 +3524,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A super-admin account can\'t be deleted from here. Move the role to another account first.'**
   String get deleteAccountSuperadmin;
+
+  /// Settings entry to install the PWA
+  ///
+  /// In en, this message translates to:
+  /// **'Install app'**
+  String get installApp;
+
+  /// Subtitle of the install entry
+  ///
+  /// In en, this message translates to:
+  /// **'Add it to your home screen and open it like any other app'**
+  String get installAppDesc;
+
+  /// Shown after the browser install dialog opens
+  ///
+  /// In en, this message translates to:
+  /// **'Follow your browser to finish installing'**
+  String get installOpened;
+
+  /// iPhone has no install dialog; it is manual from the Share sheet
+  ///
+  /// In en, this message translates to:
+  /// **'On iPhone: Share button, then \"Add to Home Screen\"'**
+  String get installIOS;
+
+  /// The browser has not fired beforeinstallprompt yet
+  ///
+  /// In en, this message translates to:
+  /// **'Your browser is not offering it yet. Use it for a moment and try again.'**
+  String get installNotReady;
 }
 
 class _AppLocalizationsDelegate

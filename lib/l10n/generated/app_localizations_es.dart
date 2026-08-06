@@ -1861,4 +1861,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get deleteAccountSuperadmin =>
       'Una cuenta de super-admin no puede darse de baja desde acá. Pasá el rol a otra cuenta primero.';
+
+  @override
+  String get installApp => 'Instalar la app';
+
+  @override
+  String get installAppDesc =>
+      'Queda en la pantalla de inicio y se abre como cualquier otra';
+
+  @override
+  String get installOpened => 'Seguí lo que te pide el navegador para terminar';
+
+  @override
+  String get installIOS =>
+      'En iPhone: botón Compartir y después \"Agregar a inicio\"';
+
+  @override
+  String get installNotReady =>
+      'El navegador todavía no lo ofrece. Usá la app un momento y volvé a intentar.';
 }

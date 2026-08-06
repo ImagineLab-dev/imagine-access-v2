@@ -853,5 +853,10 @@
   "deleteAccountAction": "Excluir definitivamente",
   "deleteAccountDone": "Conta excluída.",
   "deleteAccountNameMismatch": "O nome não confere.",
-  "deleteAccountSuperadmin": "Uma conta de super-admin não pode ser excluída aqui. Passe o papel para outra conta primeiro."
+  "deleteAccountSuperadmin": "Uma conta de super-admin não pode ser excluída aqui. Passe o papel para outra conta primeiro.",
+  "installApp": "Instalar o app",
+  "installAppDesc": "Fica na tela inicial e abre como qualquer outro",
+  "installOpened": "Siga o que o navegador pede para concluir",
+  "installIOS": "No iPhone: botão Compartilhar e depois \"Adicionar à Tela de Início\"",
+  "installNotReady": "O navegador ainda não oferece. Use o app um pouco e tente de novo."
 }
