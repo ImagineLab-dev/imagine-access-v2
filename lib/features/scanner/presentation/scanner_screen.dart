@@ -34,7 +34,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     with WidgetsBindingObserver {
   late MobileScannerController _cameraController;
   bool _isProcessing = false;
-  Map<String, dynamic>? _scanResult; // To show overlay
 
   /// Instante en que el escáner quedó listo para leer el código siguiente.
   /// Es el punto cero de la medición: lo que se mide es lo que espera la
@@ -55,6 +54,15 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// Telemetría del lector, refrescada una vez por segundo para el testigo.
   Map<String, dynamic> _estadoLector = const {};
   Timer? _relojTestigo;
+
+  /// ¿El cartel del veredicto está REALMENTE en pantalla?
+  ///
+  /// No alcanza con saber que hubo un resultado: desde que el cartel se
+  /// presenta como diálogo, "hubo respuesta" y "hay algo que el operario puede
+  /// tocar" dejaron de ser lo mismo. El vigía antitrabas necesita lo segundo,
+  /// así que esto se marca dentro del constructor de la ruta —cuando el
+  /// diálogo realmente se construyó— y no al pedirlo.
+  bool _veredictoEnPantalla = false;
 
   /// Instante en que el escáner se marcó como ocupado.
   ///
@@ -207,7 +215,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       // Volver de segundo plano es también el momento donde puede haber quedado
       // un proceso a medias: si el escáner estaba marcado como ocupado pero no
       // hay ningún resultado en pantalla, nadie lo va a liberar.
-      if (_isProcessing && _scanResult == null) _resetScanner();
+      if (_isProcessing && !_veredictoEnPantalla) _resetScanner();
     }
   }
 
@@ -377,9 +385,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
           return;
         }
 
-        setState(() {
-          _scanResult = result;
-        });
         _mostrarVeredicto(result);
 
         final allowed = result['allowed'] == true;
@@ -424,32 +429,69 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// con `useRootNavigator`, que dibuja encima de todo el armazón sin tocar la
   /// estructura de rutas.
   void _mostrarVeredicto(Map<String, dynamic> resultado) {
-    showGeneralDialog(
-      context: context,
-      useRootNavigator: true,
-      // El cartel se cierra solo, con sus propias reglas: tiempo mínimo en
-      // pantalla, y botón explícito cuando es un rechazo. Que el sistema lo
-      // cierre por atrás —tocando la barrera o con el botón de volver—
-      // saltearía las dos cosas.
-      barrierDismissible: false,
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 120),
-      pageBuilder: (contexto, _, _) => PopScope(
-        canPop: false,
-        child: VeredictoAcceso(
-          resultado: resultado,
-          onDismiss: () {
-            Navigator.of(context, rootNavigator: true).pop();
-            _resetScanner();
-          },
-        ),
-      ),
-    );
+    // Dos pedidos encimados no pueden apilar dos carteles.
+    if (_veredictoEnPantalla) return;
+
+    try {
+      showGeneralDialog(
+        context: context,
+        useRootNavigator: true,
+        // El cartel se cierra solo, con sus propias reglas: tiempo mínimo en
+        // pantalla, y botón explícito cuando es un rechazo. Que el sistema lo
+        // cierre por atrás —tocando la barrera o con el botón de volver—
+        // saltearía las dos cosas.
+        barrierDismissible: false,
+        barrierColor: Colors.transparent,
+        // Sin transición de ruta. El cartel ya entra con su propia animación
+        // —el ícono escala en 220ms, el titular funde en 180ms— y encimarle un
+        // fundido de ruta solo retrasa el instante en que el operario ve el
+        // color. Antes de presentarse como diálogo, el veredicto aparecía en el
+        // cuadro siguiente; esto lo devuelve a eso.
+        transitionDuration: Duration.zero,
+        pageBuilder: (_, _, _) {
+          // Se marca acá y no antes de pedir el diálogo: esto corre cuando la
+          // ruta REALMENTE se construyó. Es la diferencia entre "pedí que se
+          // abriera" y "está en pantalla", y de esa diferencia depende que el
+          // vigía sepa si tiene que rescatar el escáner.
+          _veredictoEnPantalla = true;
+          return PopScope(
+            canPop: false,
+            child: VeredictoAcceso(
+              resultado: resultado,
+              onDismiss: () {
+                // Se re-arma ACÁ, antes de cerrar. `whenComplete` corre recién
+                // cuando termina la animación de salida de la ruta, y esperar
+                // eso le sumaba más de 100ms a cada escaneo — con una fila
+                // esperando, eso se paga por persona. `_resetScanner` es
+                // idempotente, así que el de `whenComplete` sigue siendo la red
+                // de seguridad sin costar nada.
+                _resetScanner();
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            ),
+          );
+        },
+      ).whenComplete(() {
+        // Se re-arma el escáner acá y no en `onDismiss`: esto corre cuando la
+        // ruta se fue, sin importar CÓMO se fue. Si algún día algo cierra el
+        // cartel por un camino que no previmos, el escáner vuelve igual.
+        _veredictoEnPantalla = false;
+        if (mounted) _resetScanner();
+      });
+    } catch (e) {
+      // Si el diálogo no se pudo ni pedir, el escáner NO puede quedar ocupado
+      // esperando un cartel que no existe: eso es el bug de "tengo que cerrar
+      // y abrir la app para que lea", con otra ropa.
+      _veredictoEnPantalla = false;
+      if (kDebugMode) {
+        dev.log('No se pudo mostrar el veredicto: $e', name: 'ScannerVeredicto');
+      }
+      _resetScanner();
+    }
   }
 
   void _resetScanner() {
     setState(() {
-      _scanResult = null;
       _isProcessing = false;
       _ocupadoDesde = null;
       _detectionWindowStart = DateTime.now();
@@ -463,10 +505,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// lector, el velo global, el ciclo de vida— pero un escáner en una puerta no
   /// puede depender de que estén TODAS. Si quedó trabado, se destraba solo.
   ///
-  /// No toca nada si hay un resultado en pantalla: ahí está ocupado a propósito,
+  /// No toca nada si el cartel está EN PANTALLA: ahí está ocupado a propósito,
   /// esperando que alguien lea el veredicto y toque para seguir.
+  ///
+  /// La condición mira si el cartel está EN PANTALLA, no si hubo resultado.
+  /// Hasta que el veredicto se presentó como diálogo eran lo mismo, porque
+  /// `build` devolvía el cartel y era imposible tener uno sin lo otro. Ya no:
+  /// si el diálogo no llegara a abrirse, la condición vieja haría que el vigía
+  /// se abstenga de rescatar justo en el caso en que hace falta —escáner
+  /// ocupado, pantalla vacía—, que es exactamente el síntoma de "tengo que
+  /// cerrar y abrir la app para que lea".
   void _vigilarTrabado() {
-    if (!_isProcessing || _scanResult != null) return;
+    if (!_isProcessing || _veredictoEnPantalla) return;
     final desde = _ocupadoDesde;
     if (desde == null) return;
     if (DateTime.now().difference(desde) < _toleranciaOcupado) return;
@@ -484,9 +534,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     // El veredicto ya NO se devuelve desde acá: lo presenta `_mostrarVeredicto`
-    // por encima del armazón. `_scanResult` sigue existiendo como estado
-    // porque el vigía de trabado lo consulta para saber si el escáner está
-    // ocupado a propósito —esperando que alguien lea— o colgado.
+    // por encima del armazón, así el color llega a los cuatro bordes y la
+    // barra inferior deja de estar tocable detrás.
 
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
