@@ -284,31 +284,39 @@ DROP puesto. Ver `docs/INFRAESTRUCTURA.md` → *IPv6*.
 
 Copia versionada de la ruta en `deploy/traefik-panel-imaginecloud.yaml`.
 
-### 2. Los puertos de Docker Swarm están abiertos a internet
+### 2. Los puertos de Docker Swarm — cerrados el 07/08/2026
 
-Detectado el 06/08/2026 escaneando desde afuera del VPS:
+**Resuelto.** Estaban abiertos a internet (detectado el 06/08 escaneando desde afuera):
 
-| Puerto | Qué es | Desde internet |
-|---|---|---|
-| 2377 | Gestión del clúster Swarm | **abierto** |
-| 7946 | Descubrimiento entre nodos (gossip) | **abierto** |
+| Puerto | Qué es |
+|---|---|
+| 2377 | Gestión del clúster Swarm |
+| 7946 | Descubrimiento entre nodos (gossip) |
 
-No es una puerta abierta —2377 exige TLS mutuo con el token de unión al clúster—, pero no
-hay ninguna razón para que sean visibles: el Swarm es de un solo nodo, así que nadie los
-necesita desde afuera. Es superficie de ataque regalada.
+No era una puerta abierta —2377 exige TLS mutuo con el token de unión—, pero es un Swarm de
+**un solo nodo** (verificado: `docker node ls` muestra un único Leader, sin workers), así
+que nadie los necesita desde afuera. Superficie de ataque regalada.
+
+Antes de cerrar se verificó que no hubiera conexiones establecidas desde afuera (`ss -ntp`,
+ninguna). Se dejó pasar loopback y la red interna de Docker (`172.16.0.0/12`, por donde va
+el tráfico overlay) y se bloqueó el resto, en TCP y UDP, en las dos familias:
 
 ```bash
-# cerrar en las dos familias, que son firewalls distintos
 for p in 2377 7946; do
+  iptables  -A INPUT -i lo -p tcp --dport $p -j ACCEPT
+  iptables  -A INPUT -s 172.16.0.0/12 -p tcp --dport $p -j ACCEPT
   iptables  -A INPUT -p tcp --dport $p -j DROP
+  iptables  -A INPUT -p udp --dport $p -j DROP
   ip6tables -A INPUT -p tcp --dport $p -j DROP
+  ip6tables -A INPUT -p udp --dport $p -j DROP
 done
 iptables-save  > /etc/iptables/rules.v4
 ip6tables-save > /etc/iptables/rules.v6
 ```
 
-Sin probar: verificar antes que los contenedores no dependan de esos puertos por la IP
-pública del host.
+**Verificado desde fuera del VPS:** 2377 y 7946 dan timeout, 443/80 siguen abiertos, la app
+responde 200 y `docker node ls` sigue mostrando el nodo activo. Respaldo en
+`rules.v{4,6}.bak-swarm-*`.
 
 ### 3. Sin captcha en registro ni login
 
