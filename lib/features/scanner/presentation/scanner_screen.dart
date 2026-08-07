@@ -380,6 +380,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         setState(() {
           _scanResult = result;
         });
+        _mostrarVeredicto(result);
 
         final allowed = result['allowed'] == true;
         if (allowed) {
@@ -402,6 +403,48 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       // Sin `if (mounted)`: apagar el velo es obligatorio pase lo que pase.
       velo.state = false;
     }
+  }
+
+  /// Muestra el veredicto POR ENCIMA del armazón.
+  ///
+  /// Antes el cartel era lo que devolvía `build`, y como `/scanner` vive dentro
+  /// del `ShellRoute`, quedaba encajado entre la cabecera de 56px y la barra
+  /// inferior de 62px. Dos consecuencias, las dos malas:
+  ///
+  ///   - El color no llegaba a los bordes. En un teléfono, más del 20% de la
+  ///     altura era cromo de navegación restándole superficie a lo único que
+  ///     importa. El "a sangre" que el diseño promete no ocurría.
+  ///   - La barra inferior seguía viva y tocable DETRÁS del veredicto. Un toque
+  ///     en la zona del pulgar sacaba al operario del escáner en plena
+  ///     validación.
+  ///
+  /// La salida obvia era mover `/scanner` fuera del `ShellRoute`, y es la
+  /// equivocada: el escáner perdería la barra, que es justamente por donde el
+  /// personal llega a la búsqueda por documento cuando un QR falla. Se resuelve
+  /// con `useRootNavigator`, que dibuja encima de todo el armazón sin tocar la
+  /// estructura de rutas.
+  void _mostrarVeredicto(Map<String, dynamic> resultado) {
+    showGeneralDialog(
+      context: context,
+      useRootNavigator: true,
+      // El cartel se cierra solo, con sus propias reglas: tiempo mínimo en
+      // pantalla, y botón explícito cuando es un rechazo. Que el sistema lo
+      // cierre por atrás —tocando la barrera o con el botón de volver—
+      // saltearía las dos cosas.
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 120),
+      pageBuilder: (contexto, _, _) => PopScope(
+        canPop: false,
+        child: VeredictoAcceso(
+          resultado: resultado,
+          onDismiss: () {
+            Navigator.of(context, rootNavigator: true).pop();
+            _resetScanner();
+          },
+        ),
+      ),
+    );
   }
 
   void _resetScanner() {
@@ -440,10 +483,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // If we have a result, show the Full Screen Result Overlay
-    if (_scanResult != null) {
-      return VeredictoAcceso(resultado: _scanResult!, onDismiss: _resetScanner);
-    }
+    // El veredicto ya NO se devuelve desde acá: lo presenta `_mostrarVeredicto`
+    // por encima del armazón. `_scanResult` sigue existiendo como estado
+    // porque el vigía de trabado lo consulta para saber si el escáner está
+    // ocupado a propósito —esperando que alguien lea— o colgado.
 
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
@@ -461,33 +504,58 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
           // Testigo de sistema activo. El punto que late es la única señal de
           // que la cámara está leyendo: sin él, un encuadre que no encuentra
           // nada y un escáner colgado se ven exactamente igual.
+          //
+          // El texto dice el NOMBRE DEL EVENTO, no "listo para escanear". Esta
+          // pantalla era la única del producto que no decía contra qué evento
+          // valida: la búsqueda por documento lo muestra, el panel también, y
+          // el escáner —donde equivocarse tiene consecuencia inmediata— no.
+          // Que el veredicto `wrong_event` exista prueba que el escenario es
+          // real: un local con dos salas, o dos fiestas el mismo sábado. El
+          // diseño lo detectaba después en vez de prevenirlo antes.
+          //
+          // "Listo para escanear" era redundante: el punto que late ya dice
+          // que está listo, y lo dice mejor porque se mueve.
           Positioned(
             top: 12,
             right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
-                border: Border.all(color: AppTheme.darkBorder),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(width: 7, height: 7, color: AppTheme.lima)
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .fade(begin: 0.25, end: 1, duration: 900.ms),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.readyToScan.toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: AppTheme.fontMono,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                      color: AppTheme.darkText,
+            left: 12,
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
+                  border: Border.all(color: AppTheme.darkBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 7, height: 7, color: AppTheme.lima)
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .fade(begin: 0.25, end: 1, duration: 900.ms),
+                    const SizedBox(width: 8),
+                    // `Flexible` porque un nombre de evento real se pasa de
+                    // largo: "FIESTA DE FIN DE AÑO — CLUB SOCIAL Y DEPORTIVO".
+                    Flexible(
+                      child: Text(
+                        (ref.watch(selectedEventProvider)?['name'] ??
+                                l10n.readyToScan)
+                            .toString()
+                            .toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: AppTheme.fontMono,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                          color: AppTheme.darkText,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

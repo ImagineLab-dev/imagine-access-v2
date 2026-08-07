@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -38,7 +40,7 @@ import '../theme/app_theme.dart';
 ///   3. PRIMERA PALABRA — "ADELANTE", "NO PASA", "YA USADO". Antes las dos
 ///      primeras eran "ACCESO ..." y la diferencia estaba en la segunda
 ///      palabra, que a esa velocidad nadie lee.
-class VeredictoAcceso extends StatelessWidget {
+class VeredictoAcceso extends StatefulWidget {
   /// Respuesta cruda de la validación. Se aceptan las dos formas que devuelven
   /// los dos caminos: `allowed` (escáner) y `success` (búsqueda por documento).
   final Map<String, dynamic> resultado;
@@ -58,8 +60,51 @@ class VeredictoAcceso extends StatelessWidget {
     this.nota,
   });
 
+  /// Lo que el cartel tiene que estar en pantalla antes de aceptar que lo
+  /// cierren.
+  ///
+  /// Sin esto, el dedo que ya venía bajando —o la palma al devolver el
+  /// teléfono— cerraba el veredicto antes de que nadie lo leyera, y no había
+  /// forma de volver a verlo. Medio segundo no se siente como espera y alcanza
+  /// para que el ojo registre el color y la silueta.
+  static const Duration minimoEnPantalla = Duration(milliseconds: 500);
+
+  /// Llave del botón que cierra un rechazo. Existe para poder afirmar en un
+  /// test que un toque en cualquier otro lado NO cierra el cartel, que es la
+  /// conducta que separa esta versión de la anterior.
+  static const Key llaveBotonCerrar = Key('veredicto-cerrar');
+
+  @override
+  State<VeredictoAcceso> createState() => _VeredictoAccesoState();
+}
+
+class _VeredictoAccesoState extends State<VeredictoAcceso> {
+  bool _sePuedeCerrar = false;
+  Timer? _reloj;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloj = Timer(VeredictoAcceso.minimoEnPantalla, () {
+      if (mounted) setState(() => _sePuedeCerrar = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _reloj?.cancel();
+    super.dispose();
+  }
+
+  void _cerrar() {
+    if (!_sePuedeCerrar) return;
+    widget.onDismiss();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final resultado = widget.resultado;
+    final nota = widget.nota;
     final l10n = AppLocalizations.of(context);
     final permitido = (resultado['allowed'] as bool?) ??
         (resultado['success'] as bool?) ??
@@ -119,12 +164,22 @@ class VeredictoAcceso extends StatelessWidget {
         (l10n.firstEntry, horaLegible(ticket?['scanned_at'], l10n)),
     ];
 
+    // Cómo se cierra cada uno.
+    //
+    // Los tres se cerraban con un toque en cualquier parte, sin tiempo mínimo.
+    // Para NO PASA eso está mal: es la decisión más cara del producto y era la
+    // única que se cerraba por accidente. Ahora exige apuntar a un botón, que
+    // es un gesto que no ocurre al devolver el teléfono ni al rozar la
+    // pantalla. Los otros dos siguen con toque libre porque la fila avanza y
+    // hacer que el operario apunte 400 veces por noche sería peor.
+    final exigeBoton = veredicto == Veredicto.denegado;
+
     return Scaffold(
       backgroundColor: fondo,
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: onDismiss,
+          onTap: exigeBoton ? null : _cerrar,
           child: Container(
             width: double.infinity,
             decoration: marco == null
@@ -198,7 +253,7 @@ class VeredictoAcceso extends StatelessWidget {
                 if (nota != null) ...[
                   const SizedBox(height: 20),
                   Text(
-                    nota!,
+                    nota,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: AppTheme.fontMono,
@@ -209,16 +264,83 @@ class VeredictoAcceso extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 34),
-                Text(
-                  '[ ${l10n.tapToDismiss.toUpperCase()} ]',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontMono,
-                    fontSize: 11,
-                    letterSpacing: 0.8,
-                    color: tinta.withValues(alpha: 0.65),
-                  ),
+                // El pie aparece recién cuando el cartel se puede cerrar. Que
+                // no esté es la señal de "todavía no": no hay que explicarla.
+                AnimatedOpacity(
+                  opacity: _sePuedeCerrar ? 1 : 0,
+                  duration: const Duration(milliseconds: 160),
+                  child: exigeBoton
+                      ? _BotonCerrar(
+                          key: VeredictoAcceso.llaveBotonCerrar,
+                          etiqueta: l10n.closeAction.toUpperCase(),
+                          tinta: tinta,
+                          fondo: fondo,
+                          onPressed: _cerrar,
+                        )
+                      : Text(
+                          '[ ${l10n.tapToDismiss.toUpperCase()} ]',
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontMono,
+                            fontSize: 11,
+                            letterSpacing: 0.8,
+                            color: tinta.withValues(alpha: 0.65),
+                          ),
+                        ),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// El botón que cierra un rechazo.
+///
+/// No usa `NeonButton` a propósito: ese pinta en lima, y acá el lima significa
+/// "pasa". Un botón lima dentro del cartel de NO PASA sería la única mancha del
+/// color equivocado en la pantalla que menos ambigüedad tolera. Va en la tinta
+/// del propio cartel, que ya tiene 10,47:1 contra el fondo.
+class _BotonCerrar extends StatelessWidget {
+  final String etiqueta;
+  final Color tinta;
+  final Color fondo;
+  final VoidCallback onPressed;
+
+  const _BotonCerrar({
+    super.key,
+    required this.etiqueta,
+    required this.tinta,
+    required this.fondo,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: etiqueta,
+      child: InkWell(
+        onTap: onPressed,
+        // 56 de alto y 200 de ancho: se apunta con el pulgar, de noche, con
+        // una mano. El mínimo de accesibilidad es 44.
+        child: Container(
+          height: 56,
+          constraints: const BoxConstraints(minWidth: 200),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: tinta,
+            border: Border.all(color: tinta, width: 2),
+          ),
+          child: Text(
+            etiqueta,
+            style: TextStyle(
+              fontFamily: AppTheme.fontDisplay,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.4,
+              color: fondo,
             ),
           ),
         ),

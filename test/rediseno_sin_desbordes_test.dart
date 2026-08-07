@@ -505,6 +505,100 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
+  testWidgets('el veredicto no se cierra antes del tiempo mínimo',
+      (tester) async {
+    // El dedo que ya venía bajando, o la palma al devolver el teléfono,
+    // cerraban el veredicto antes de que nadie lo leyera. Y no había forma de
+    // volver a verlo: la lectura se perdía.
+    var cerrado = false;
+    await _montar(
+      tester,
+      SizedBox(
+        height: 780,
+        child: VeredictoAcceso(
+          resultado: const {'allowed': true},
+          onDismiss: () => cerrado = true,
+        ),
+      ),
+      ancho: 390,
+      brillo: Brightness.dark,
+    );
+
+    await tester.tap(find.byType(VeredictoAcceso));
+    expect(cerrado, isFalse,
+        reason: 'un toque inmediato no debería cerrar el veredicto');
+
+    await tester.pump(
+        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+    await tester.tap(find.byType(VeredictoAcceso));
+    expect(cerrado, isTrue,
+        reason: 'pasado el mínimo, un toque sí tiene que cerrarlo');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('un rechazo exige el botón, no un toque en cualquier lado',
+      (tester) async {
+    // Es la decisión más cara del producto y era la única que se cerraba por
+    // accidente. Los otros dos veredictos siguen con toque libre a propósito:
+    // la fila avanza.
+    var cerrado = false;
+    await _montar(
+      tester,
+      SizedBox(
+        height: 780,
+        child: VeredictoAcceso(
+          resultado: const {'allowed': false, 'result': 'invalid_signature'},
+          onDismiss: () => cerrado = true,
+        ),
+      ),
+      ancho: 390,
+      brillo: Brightness.dark,
+    );
+    await tester.pump(
+        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+
+    // Un toque arriba del todo, lejos del botón: el fondo del cartel.
+    const enElFondo = Offset(195, 40);
+    await tester.tapAt(enElFondo);
+    expect(cerrado, isFalse,
+        reason: 'tocar el fondo de un rechazo no debería cerrarlo');
+
+    await tester.tap(find.byKey(VeredictoAcceso.llaveBotonCerrar));
+    expect(cerrado, isTrue, reason: 'el botón sí tiene que cerrarlo');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+
+    // Y ahora la contraprueba, que es lo que vuelve honesta a la de arriba: si
+    // esa coordenada no golpeara nada, `cerrado` habría quedado en false igual
+    // y el test pasaría sin probar nada. Sobre un veredicto POSITIVO, el mismo
+    // toque en el mismo punto sí tiene que cerrar.
+    var cerradoPositivo = false;
+    await _montar(
+      tester,
+      SizedBox(
+        height: 780,
+        child: VeredictoAcceso(
+          resultado: const {'allowed': true},
+          onDismiss: () => cerradoPositivo = true,
+        ),
+      ),
+      ancho: 390,
+      brillo: Brightness.dark,
+    );
+    await tester.pump(
+        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+    await tester.tapAt(enElFondo);
+    expect(cerradoPositivo, isTrue,
+        reason: 'la coordenada tiene que ser un blanco real; si esto falla, '
+            'la aserción de arriba no estaba probando nada');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   test('proporcion() no divide por cero ni se pasa de 1', () {
     expect(proporcion(0, 0), 0);
     expect(proporcion(5, 0), 0);
