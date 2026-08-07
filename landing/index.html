@@ -254,6 +254,59 @@
   .nav-links a:hover { color: var(--text); }
   @media (max-width: 860px) { .nav-links { display: none; } .nav { gap: 16px; } .nav .btn { margin-left: auto; } }
 
+  /* ---------- Barra de acción fija al pie ----------
+
+     Aparece cuando el hero sale de pantalla y se retira cuando llega el
+     cierre. El porqué está en `js/barra-cta.js`.
+
+     Va abajo y no arriba por una razón física: el público llega desde un
+     anuncio, en el teléfono, con una mano. El pulgar alcanza el tercio
+     inferior de la pantalla; el borde superior es el punto más lejano que
+     existe. La cabecera fija ya tiene su botón para quien navega con mouse. */
+  .barra-cta {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(10,10,11,.92);
+    backdrop-filter: saturate(160%) blur(14px);
+    border-top: 1px solid var(--line-2);
+    /* Fuera de pantalla y sin capturar toques mientras no corresponde. */
+    transform: translateY(101%);
+    transition: transform .42s cubic-bezier(.16,1,.3,1);
+    visibility: hidden;
+  }
+  .barra-cta.visible { transform: none; visibility: visible; }
+
+  /* Tipografía de texto, no monoespaciada. En este sistema la mono es para
+     etiquetas y datos —"SIN SEÑAL", las etiquetas de plan— y esto es una frase
+     corrida: en mono sería la fuente usada de disfraz técnico. El número se
+     destaca por color y peso, que es de donde tiene que venir el énfasis. */
+  .barra-cta .oferta {
+    flex: 1; min-width: 0;
+    font: 500 .88rem/1.35 var(--texto);
+    color: var(--muted); letter-spacing: -.005em;
+  }
+  .barra-cta .oferta b { color: var(--accent); font-weight: 700; }
+
+  /* 48px de alto: por encima del mínimo de 44 para un blanco táctil, y es el
+     elemento que más se va a tocar de la página. */
+  .barra-cta .btn { flex: none; min-height: 48px; }
+
+  @media (max-width: 420px) {
+    .barra-cta { gap: 12px; padding-inline: 14px; }
+    .barra-cta .oferta { font-size: .78rem; }
+    .barra-cta .btn { padding-inline: 18px; }
+    /* La altura de la barra la fija el botón (48 + relleno), no el texto, así
+       que acortar acá no gana píxeles: gana legibilidad. En los ~150px que
+       quedan al lado del botón, la frase completa cae en tres renglones
+       apretados; sin la cláusula del medio son dos y se lee de un vistazo. */
+    .barra-cta .oferta-larga { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .barra-cta { transition: none; }
+  }
+
   /* ---------- Secciones ---------- */
   section { padding: 96px 0; }
   @media (max-width: 760px) { section { padding: 64px 0; } }
@@ -901,7 +954,7 @@
 </section>
 
 <!-- ============ CIERRE ============ -->
-<section class="cierre">
+<section class="cierre" id="cierre">
   <div class="wrap">
     <h2 class="revelar">Probalo en tu próximo evento</h2>
     <p class="lede revelar">
@@ -928,7 +981,17 @@
   </div>
 </footer>
 
+<!-- La oferta viaja acá porque en el cuerpo llega tarde: "15 tickets gratis,
+     sin tarjeta" es el desactivador de riesgo más fuerte de la página y hoy
+     aparece recién DEBAJO del precio. Acá acompaña al visitante desde que
+     termina el hero. -->
+<div class="barra-cta" id="barra-cta">
+  <p class="oferta"><b>15 tickets gratis</b><span class="oferta-larga"> para probarlo en un evento real</span>. Sin tarjeta.</p>
+  <a class="btn btn-primary" href="https://imaginecloud.digital" data-donde="barra-fija">Probar gratis</a>
+</div>
+
 <script src="js/aparicion.js"></script>
+<script src="js/barra-cta.js"></script>
 
 </body>
 </html>

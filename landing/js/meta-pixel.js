@@ -194,11 +194,18 @@
     // (#precio, #preguntas) no son intención de registro.
     if (a.getAttribute('href').indexOf('imaginecloud.digital') === -1) return;
 
+    // `data-donde` gana sobre la deducción. Existe porque la deducción no
+    // alcanza: un enlace que no está dentro de ninguna <section> —la barra fija
+    // del final, el "Entrar" del pie— caía en el respaldo `'hero'` y se contaba
+    // como si el visitante hubiera decidido en el primer viewport. Eso corrompe
+    // justo la métrica que este archivo existe para medir: cuánto de la página
+    // leyeron antes de decidirse.
     var seccion = a.closest('section');
     evento('trackCustom', 'ClicProbarGratis', {
-      donde: a.closest('header') ? 'navegacion'
+      donde: a.getAttribute('data-donde')
+           || (a.closest('header') ? 'navegacion'
            : seccion && seccion.id ? seccion.id
-           : 'hero',
+           : 'sin-seccion'),
       texto: (a.textContent || '').trim().slice(0, 40)
     });
   }, true);
