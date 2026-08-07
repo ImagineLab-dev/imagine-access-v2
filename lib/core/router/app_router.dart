@@ -150,8 +150,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) {
           final mode = state.uri.queryParameters['mode'];
-          final initialTabIndex = mode == AppRoles.door ? 1 : 0;
-          return LoginScreen(initialTabIndex: initialTabIndex);
+          // `?registrar=1` abre directo el formulario de registro. Es el
+          // destino de "Probar gratis" de la landing: antes ese botón caía en
+          // el login, pidiéndole una contraseña a alguien que nunca tuvo
+          // cuenta —el abandono más predecible del embudo—. El registro es
+          // solo de admin; un dispositivo de puerta no se registra, así que
+          // registrar implica la pestaña admin.
+          final registrar = state.uri.queryParameters['registrar'] == '1';
+          final initialTabIndex = (mode == AppRoles.door && !registrar) ? 1 : 0;
+          return LoginScreen(
+            initialTabIndex: initialTabIndex,
+            initialRegister: registrar,
+          );
         },
       ),
       // --- Pantallas CON armazón (cabecera global + barra inferior) ---

@@ -23,9 +23,15 @@ import '../../../core/platform/meta.dart';
 class LoginScreen extends ConsumerStatefulWidget {
   final int initialTabIndex;
 
+  /// Abrir directamente en modo registro. Lo activa `?registrar=1` desde la
+  /// landing: "Probar gratis" tiene que mostrar el formulario de crear cuenta,
+  /// no el de iniciar sesión.
+  final bool initialRegister;
+
   const LoginScreen({
     super.key,
     this.initialTabIndex = 0,
+    this.initialRegister = false,
   });
 
   @override
@@ -35,7 +41,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isRegistering = false;
+  late bool _isRegistering = widget.initialRegister;
   bool _acceptedTerms = false;
 
   final _emailController = TextEditingController();
