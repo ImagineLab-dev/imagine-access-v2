@@ -571,14 +571,29 @@
 <section class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
-      <!-- El espacio duro entre "el" y "celular" ata las dos palabras para que
-           la segunda línea no termine con una sola palabra suelta abajo.
-           `text-wrap: balance` debería resolverlo, pero Chrome no lo aplica
-           cuando el titular ya trae un <br> forzado, así que se decide acá. -->
-      <h1>Ni papel ni Excel.<br><span>Tu puerta, desde el&nbsp;celular.</span></h1>
+      <!-- El <br> separa las dos mitades a propósito: la primera es el gancho
+           y la segunda dice qué es esto. `text-wrap: balance` no se aplica
+           cuando hay un <br> forzado, así que el corte se decide acá.
+
+           El titular dice "control de acceso para fiestas" y no "tu puerta,
+           desde el celular" —que es lo que decía— por una razón medida: la
+           página tenía 798 palabras y NINGUNA era "control de acceso", que es
+           justo la frase por la que alguien la buscaría. Estaba escrita en el
+           idioma de la experiencia y no en el de la búsqueda.
+
+           Se eligió esta variante entre cinco midiendo cuántas líneas ocupa
+           cada una con Space Grotesk real a 38px en una caja de 342 —un
+           teléfono de 390—. Esta ocupa TRES, las mismas que el titular
+           anterior: no empuja ni un píxel la bajada ni el botón. La versión
+           que además decía "desde el celular" ocupaba cuatro, y ese renglón
+           de más sale del espacio del llamado a la acción.
+
+           "desde el celular" no se perdió: bajó a la línea siguiente, donde
+           no cuesta altura. -->
+      <h1>Ni papel ni Excel.<br><span>Control de acceso para&nbsp;fiestas.</span></h1>
       <p class="lede">
-        Emitís entradas con código QR, escaneás en la puerta y sabés al instante
-        si entra o no.
+        Emitís entradas con código QR, escaneás en la puerta desde el celular
+        y sabés al instante si entra o no.
       </p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="https://imaginecloud.digital">Probar gratis</a>
@@ -597,7 +612,7 @@
 <section class="problema">
   <div class="wrap problema-grid">
     <div class="revelar">
-      <h2>La lista se congela cuando la imprimís</h2>
+      <h2>La lista de invitados se congela cuando la imprimís</h2>
       <div class="costos">
         <div class="costo">
           <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88Zm12-88a12 12 0 1 1-12-12 12 12 0 0 1 12 12Zm-4-60v40a8 8 0 0 1-16 0V68a8 8 0 0 1 16 0Z"/></svg>
@@ -623,7 +638,7 @@
 <!-- ============ CÓMO FUNCIONA ============ -->
 <section id="funciona">
   <div class="wrap">
-    <h2 class="revelar">Cuatro pasos</h2>
+    <h2 class="revelar">Cuatro pasos, de la entrada a la puerta</h2>
     <div class="pasos-grid">
       <div class="paso revelar">
         <div class="paso-n">1</div>
