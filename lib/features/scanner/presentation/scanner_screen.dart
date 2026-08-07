@@ -13,6 +13,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/platform/camara.dart';
 import '../../../core/platform/lector.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/ui/veredicto_acceso.dart';
 import '../data/scanner_repository.dart';
 import '../../events/presentation/event_state.dart';
 import '../../../core/utils/device_id_service.dart';
@@ -441,7 +442,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     final l10n = AppLocalizations.of(context);
     // If we have a result, show the Full Screen Result Overlay
     if (_scanResult != null) {
-      return _ResultOverlay(scanResult: _scanResult!, onDismiss: _resetScanner);
+      return VeredictoAcceso(resultado: _scanResult!, onDismiss: _resetScanner);
     }
 
     return Scaffold(
@@ -634,214 +635,7 @@ class _Escuadra extends StatelessWidget {
 /// el operador veía "2026-07-28T22:46:22.202+00:00" y tenía que descifrarlo
 /// con gente esperando delante. Ahora ve la hora local, y la fecha solo si la
 /// entrada no fue hoy.
-String _horaLegible(dynamic valor, AppLocalizations l10n) {
-  if (valor == null) return l10n.unknown;
-  final fecha = DateTime.tryParse(valor.toString())?.toLocal();
-  if (fecha == null) return l10n.unknown;
 
-  final hh = fecha.hour.toString().padLeft(2, '0');
-  final mm = fecha.minute.toString().padLeft(2, '0');
-
-  final ahora = DateTime.now();
-  final mismoDia = fecha.year == ahora.year &&
-      fecha.month == ahora.month &&
-      fecha.day == ahora.day;
-  if (mismoDia) return '$hh:$mm';
-
-  final dd = fecha.day.toString().padLeft(2, '0');
-  final mo = fecha.month.toString().padLeft(2, '0');
-  return '$dd/$mo  $hh:$mm';
-}
-
-/// Los tres veredictos posibles en la puerta.
-///
-/// Antes eran dos —pasa o no pasa— y "ya usado" se pintaba igual que un código
-/// falso. No son lo mismo: un código falso es alguien que no tiene entrada, y
-/// uno ya usado es alguien que SÍ la tenía y entró antes. Quien está en la
-/// puerta resuelve cada caso distinto, así que tienen que verse distinto.
-enum _Veredicto {
-  /// Adelante. Lima a sangre.
-  validado,
-
-  /// No pasa. Salmón a sangre.
-  denegado,
-
-  /// Ojo: esta entrada ya se usó. Ámbar sobre oscuro, para que no se confunda
-  /// con las otras dos ni de reojo.
-  yaUsado,
-}
-
-class _ResultOverlay extends StatelessWidget {
-  final Map<String, dynamic> scanResult;
-  final VoidCallback onDismiss;
-
-  const _ResultOverlay({required this.scanResult, required this.onDismiss});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final allowed = (scanResult['allowed'] as bool?) ??
-        (scanResult['success'] as bool?) ??
-        false;
-    final ticket = scanResult['ticket'];
-    final resultCode = scanResult['result']?.toString();
-
-    final veredicto = allowed
-        ? _Veredicto.validado
-        : (resultCode == 'already_used'
-            ? _Veredicto.yaUsado
-            : _Veredicto.denegado);
-
-    // fondo, tinta, borde. El borde solo lo usa "ya usado": al ir sobre
-    // oscuro necesita un marco que lo haga inconfundible desde lejos.
-    final (Color fondo, Color tinta, Color? marco) = switch (veredicto) {
-      _Veredicto.validado => (AppTheme.lima, AppTheme.limaTinta, null),
-      _Veredicto.denegado => (AppTheme.peligroSuave, AppTheme.peligroTinta, null),
-      _Veredicto.yaUsado => (
-          AppTheme.darkBorderSoft,
-          AppTheme.accentYellow,
-          AppTheme.accentYellow
-        ),
-    };
-
-    final icono = switch (veredicto) {
-      _Veredicto.validado => Icons.check_circle,
-      _Veredicto.denegado => Icons.cancel,
-      _Veredicto.yaUsado => Icons.warning_rounded,
-    };
-
-    final titulo = resultCode == 'wrong_event'
-        ? l10n.wrongEvent
-        : (scanResult['message']?.toString() ??
-            switch (veredicto) {
-              _Veredicto.validado => l10n.accessGranted,
-              _Veredicto.denegado => l10n.accessDenied,
-              _Veredicto.yaUsado => l10n.alreadyUsed,
-            });
-
-    // Datos del ticket, en mono y bajo una regla: es la "letra chica" del
-    // pase. Antes iban en una tarjeta blanca redondeada flotando sobre el
-    // color, que partía la pantalla en dos y le robaba fuerza al veredicto.
-    final lineas = <(String, String)>[
-      if ((ticket?['buyer_name']) != null)
-        (l10n.name.toUpperCase(), ticket['buyer_name'].toString()),
-      if ((ticket?['type']) != null)
-        (l10n.ticketType.toUpperCase(), ticket['type'].toString()),
-      if (resultCode == 'wrong_event')
-        (
-          l10n.ticketBelongsTo,
-          (scanResult['event_name'] ?? l10n.unknown).toString()
-        ),
-      if (resultCode == 'already_used')
-        (l10n.firstEntry, _horaLegible(ticket?['scanned_at'], l10n)),
-    ];
-
-    return Scaffold(
-      backgroundColor: fondo,
-      body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onDismiss,
-          child: Container(
-            width: double.infinity,
-            decoration: marco == null
-                ? null
-                : BoxDecoration(border: Border.all(color: marco, width: 8)),
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icono, size: 108, color: tinta)
-                    .animate()
-                    .scale(duration: 220.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 18),
-                Text(
-                  titulo.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontDisplay,
-                    fontSize: 44,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -1.4,
-                    height: 1.0,
-                    color: tinta,
-                  ),
-                ).animate().fade(duration: 180.ms),
-                if (lineas.isNotEmpty) ...[
-                  const SizedBox(height: 26),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 340),
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 14),
-                      decoration: BoxDecoration(
-                        border: Border(top: BorderSide(color: tinta, width: 2)),
-                      ),
-                      child: Column(
-                        children: [
-                          for (final (etiqueta, valor) in lineas)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    etiqueta,
-                                    style: TextStyle(
-                                      fontFamily: AppTheme.fontDisplay,
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1.2,
-                                      color: tinta.withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    valor,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: AppTheme.fontMono,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: tinta,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ).animate().fade(delay: 90.ms),
-                ],
-                const SizedBox(height: 34),
-                Text(
-                  '[ ${l10n.tapToDismiss.toUpperCase()} ]',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontMono,
-                    fontSize: 11,
-                    letterSpacing: 0.8,
-                    color: tinta.withValues(alpha: 0.65),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-/// Testigo del escáner: dice si está leyendo, y con qué.
-///
-/// Antes acá había un panel de latencias que solo se compilaba fuera de
-/// release, o sea que en el teléfono de la puerta —el único lugar donde
-/// importa— no existía. Cuando alguien reportaba "no lee", no había forma de
-/// saber si el escáner estaba procesando cuadros o estaba muerto.
-///
-/// Lo importante no es el motor sino el **punto**: si late, el lector está
-/// procesando cuadros ahora mismo. Si se queda apagado, está colgado — y eso se
-/// ve de un vistazo sin leer nada.
 class _TestigoDeLector extends StatelessWidget {
   const _TestigoDeLector({required this.estado, required this.latencias});
 

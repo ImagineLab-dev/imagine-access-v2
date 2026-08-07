@@ -110,11 +110,36 @@ class AppTheme {
   /// botón de suspender una organización, justo el que conviene leer bien—.
   static const Color accentOrange = Color(0xFFCC3339);
 
-  /// Fondo del cartel DENEGADO a pantalla completa (salmón claro).
+  /// Salmón claro. Era el fondo del cartel DENEGADO y ahora es su TINTA:
+  /// ver [peligroProfundo].
   static const Color peligroSuave = Color(0xFFFFB4AB);
 
-  /// Tinta que va encima de [peligroSuave].
+  /// Tinta que va encima de [peligroSuave] cuando el salmón hace de fondo
+  /// (banderas, badges). En el cartel de la puerta ya no se usa así.
   static const Color peligroTinta = Color(0xFF690005);
+
+  /// Fondo del cartel NO PASA a pantalla completa.
+  ///
+  /// POR QUÉ ES CASI NEGRO Y NO EL SALMÓN
+  ///
+  /// El cartel de rechazo era [peligroSuave] `#FFB4AB` y el de aceptación es
+  /// [lima] `#AED500`. Se ven distintos, pero sus luminancias relativas son
+  /// 0,5684 y 0,5659: **el contraste ENTRE los dos carteles era 1,00:1**. En
+  /// escala de grises son la misma pantalla.
+  ///
+  /// Eso importa porque quien está en la puerta no lee el cartel: lo ve de
+  /// reojo, de noche, mientras mira a la persona. Decide por el destello. Y
+  /// los cuatro refuerzos que deberían salvarlo fallaban los cuatro: los dos
+  /// íconos eran círculos macizos del mismo tamaño, los dos titulares
+  /// empezaban con la palabra "ACCESO", la háptica no se mapea en web, y el
+  /// proyecto no tiene ni una dependencia de audio.
+  ///
+  /// Con este valor el par crítico pasa de 1,00:1 a **10,43:1**, y la
+  /// diferencia sobrevive al daltonismo rojo-verde, a la poca luz y a la
+  /// visión periférica, porque es de BRILLO y no de tono.
+  ///
+  /// El salmón no se tira: pasa a ser la tinta encima, con 10,47:1.
+  static const Color peligroProfundo = Color(0xFF3A0002);
 
   /// Rojo legible como TEXTO sobre fondo claro.
   static const Color peligroOscuro = Color(0xFFB3261E);

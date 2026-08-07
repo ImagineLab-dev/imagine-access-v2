@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/glass_scaffold.dart';
 import '../../../core/ui/glass_card.dart';
 import '../../../core/ui/neon_button.dart';
+import '../../../core/ui/veredicto_acceso.dart';
 import '../../events/presentation/event_state.dart';
 import '../data/scanner_repository.dart';
 import '../../../core/utils/device_id_service.dart';
@@ -179,8 +180,13 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (_scanResult != null) {
-      return _ManualResultView(
-          result: _scanResult!,
+      // El MISMO cartel que usa el escáner. Antes esta pantalla tenía el suyo,
+      // con dos estados en vez de tres y el titular en blanco sobre lima
+      // —1,70:1, ilegible—, justo en el camino al que se recurre cuando el QR
+      // ya falló y hay alguien esperando.
+      return VeredictoAcceso(
+          resultado: _scanResult!,
+          nota: l10n.manualValidationAudited,
           onDismiss: () => setState(() {
                 _scanResult = null;
                 _foundTickets = [];
@@ -417,67 +423,6 @@ class _DocumentSearchScreenState extends ConsumerState<DocumentSearchScreen> {
             color: isValid ? AppTheme.lima : AppTheme.accentOrange,
             fontSize: 10,
             fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class _ManualResultView extends StatelessWidget {
-  final Map<String, dynamic> result;
-  final VoidCallback onDismiss;
-  const _ManualResultView({required this.result, required this.onDismiss});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final success = result['success'] == true;
-    final color = success ? AppTheme.accentGreen : AppTheme.errorColor;
-    final ticket = result['ticket'];
-
-    return Scaffold(
-      backgroundColor: color,
-      body: InkWell(
-        onTap: onDismiss,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(success ? Icons.check_circle : Icons.error,
-                  size: 100, color: Colors.white),
-              const SizedBox(height: 20),
-              Text(
-                success ? l10n.accessGranted : l10n.accessDenied,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold),
-              ),
-              if (ticket != null) ...[
-                const SizedBox(height: 40),
-                GlassCard(
-                  margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Text(ticket['buyer_name'],
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text(ticket['type'],
-                          style: TextStyle(color: AppTheme.textoSecundario(context))),
-                      const Divider(height: 30),
-                      Text(l10n.manualValidationAudited,
-                          style: TextStyle(
-                              fontSize: 10, color: AppTheme.textoApagado(context))),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 60),
-              Text(l10n.tapToDismiss,
-                  style: TextStyle(color: AppTheme.textoApagado(context), letterSpacing: 2)),
-            ],
-          ).animate().scale(),
-        ),
       ),
     );
   }

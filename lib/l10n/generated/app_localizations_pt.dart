@@ -301,10 +301,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get scanQRCode => 'Escanear Código QR';
 
   @override
-  String get accessGranted => 'ACESSO PERMITIDO';
+  String get accessGranted => 'PODE ENTRAR';
 
   @override
-  String get accessDenied => 'ACESSO NEGADO';
+  String get accessDenied => 'NÃO PASSA';
 
   @override
   String get alreadyUsed => 'JÁ USADO';

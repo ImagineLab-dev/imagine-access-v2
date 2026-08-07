@@ -679,13 +679,13 @@ abstract class AppLocalizations {
   /// No description provided for @accessGranted.
   ///
   /// In en, this message translates to:
-  /// **'ACCESS GRANTED'**
+  /// **'COME IN'**
   String get accessGranted;
 
   /// No description provided for @accessDenied.
   ///
   /// In en, this message translates to:
-  /// **'ACCESS DENIED'**
+  /// **'STOP'**
   String get accessDenied;
 
   /// No description provided for @alreadyUsed.

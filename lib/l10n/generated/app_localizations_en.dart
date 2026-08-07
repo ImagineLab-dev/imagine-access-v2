@@ -300,10 +300,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanQRCode => 'Scan QR Code';
 
   @override
-  String get accessGranted => 'ACCESS GRANTED';
+  String get accessGranted => 'COME IN';
 
   @override
-  String get accessDenied => 'ACCESS DENIED';
+  String get accessDenied => 'STOP';
 
   @override
   String get alreadyUsed => 'ALREADY USED';

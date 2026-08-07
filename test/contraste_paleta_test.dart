@@ -105,7 +105,9 @@ void main() {
           (AppTheme.lima, AppTheme.limaTinta),
       'lima vivo + tinta lima (botón presionado)':
           (AppTheme.limaVivo, AppTheme.limaTinta),
-      'salmón + tinta (cartel DENEGADO)':
+      'casi negro + salmón (cartel NO PASA)':
+          (AppTheme.peligroProfundo, AppTheme.peligroSuave),
+      'salmón + tinta (banderas y badges de peligro)':
           (AppTheme.peligroSuave, AppTheme.peligroTinta),
       'ámbar + tinta (YA USADO / sin conexión)':
           (AppTheme.accentYellow, Color(0xFF3A2A00)),
@@ -119,6 +121,51 @@ void main() {
         expect(r, greaterThanOrEqualTo(minimoTexto),
             reason: '$nombre da ${r.toStringAsFixed(2)}:1');
       });
+    });
+  });
+
+  group('los tres carteles de la puerta se distinguen ENTRE SÍ', () {
+    // ESTA ES LA PRUEBA QUE FALTABA.
+    //
+    // Toda la suite medía la tinta CONTRA SU FONDO, y por eso los tres
+    // carteles pasaban: cada uno era legible por separado. Lo que nadie medía
+    // es cuánto se distingue un cartel DEL OTRO, que es la única pregunta que
+    // importa en una puerta.
+    //
+    // Y ahí estaba el bug: el cartel de aceptación (#AED500, L 0,5659) y el de
+    // rechazo (#FFB4AB, L 0,5684) daban **1,00:1** entre sí. En escala de
+    // grises eran la misma pantalla. Quien está en la puerta no lee el cartel,
+    // lo ve de reojo mientras mira a la persona: decide por el destello.
+    //
+    // El fondo de un cartel es una superficie grande, no texto, así que el
+    // umbral aplicable es el de componentes de interfaz (WCAG 1.4.11): 3:1.
+    // Para el par crítico se exige más, porque confundirlo es dejar entrar a
+    // alguien sin entrada.
+    const adelante = AppTheme.lima;
+    const noPasa = AppTheme.peligroProfundo;
+    const yaUsado = AppTheme.darkBorderSoft;
+
+    test('ADELANTE vs NO PASA (el par crítico)', () {
+      final r = contraste(adelante, noPasa);
+      expect(r, greaterThanOrEqualTo(4.5),
+          reason: 'da ${r.toStringAsFixed(2)}:1 — si baja de 4.5 el operario '
+              'confunde pasar con no pasar de reojo y con poca luz');
+    });
+
+    test('ADELANTE vs YA USADO', () {
+      final r = contraste(adelante, yaUsado);
+      expect(r, greaterThanOrEqualTo(3.0),
+          reason: 'da ${r.toStringAsFixed(2)}:1');
+    });
+
+    test('los tres tienen luminancias distintas, no solo tonos distintos', () {
+      // Un daltónico rojo-verde no ve el tono. Si los tres no se separan en
+      // brillo, para esa persona no hay tres carteles: hay uno.
+      final ls = [adelante, noPasa, yaUsado].map(_luminancia).toList()..sort();
+      expect(ls[1] - ls[0], greaterThan(0.01),
+          reason: 'dos carteles comparten brillo: ${ls.map((l) => l.toStringAsFixed(4))}');
+      expect(ls[2] - ls[1], greaterThan(0.01),
+          reason: 'dos carteles comparten brillo: ${ls.map((l) => l.toStringAsFixed(4))}');
     });
   });
 

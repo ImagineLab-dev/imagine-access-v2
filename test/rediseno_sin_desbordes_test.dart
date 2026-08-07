@@ -33,6 +33,7 @@ import 'package:imagine_access/core/ui/glass_card.dart';
 import 'package:imagine_access/core/ui/neon_button.dart';
 import 'package:imagine_access/core/ui/pase_ticket.dart';
 import 'package:imagine_access/core/ui/status_badge.dart';
+import 'package:imagine_access/core/ui/veredicto_acceso.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 
 /// Anchos donde la app tiene que funcionar.
@@ -46,6 +47,9 @@ const _anchos = <String, double>{
 };
 
 /// Texto largo de verdad: nombres de evento reales se pasan de una línea.
+/// Callback vacio reutilizable: permite construir el widget con `const`.
+void _nada() {}
+
 const _textoLargo =
     'FIESTA DE FIN DE AÑO — CLUB SOCIAL Y DEPORTIVO GENERAL SAN MARTÍN';
 
@@ -403,6 +407,103 @@ void main() {
       ),
     ),
   );
+
+  // El cartel de la puerta, en los tres veredictos y con contenido hostil.
+  //
+  // Es la pantalla más cara de romper del producto: si un nombre largo la
+  // desborda, el operario ve una franja amarilla y negra de error de Flutter
+  // en vez de saber si la persona entra. Se monta con el nombre más largo del
+  // archivo y con el caso `wrong_event`, que agrega una línea de más.
+  testWidgets('VeredictoAcceso en los tres estados, tamaños y temas',
+      (tester) async {
+    final casos = <String, Map<String, dynamic>>{
+      'ADELANTE': {
+        'allowed': true,
+        'ticket': {'buyer_name': _textoLargo, 'type': 'ENTRADA GENERAL'},
+      },
+      'NO PASA': {
+        'allowed': false,
+        'result': 'invalid_signature',
+      },
+      'YA USADO': {
+        'allowed': false,
+        'result': 'already_used',
+        'ticket': {
+          'buyer_name': _textoLargo,
+          'type': 'VIP',
+          'scanned_at': '2026-07-28T22:46:22.202Z',
+        },
+      },
+      'EVENTO EQUIVOCADO': {
+        'allowed': false,
+        'result': 'wrong_event',
+        'event_name': _textoLargo,
+        'ticket': {'buyer_name': _textoLargo, 'type': 'CORTESÍA'},
+      },
+    };
+
+    for (final entrada in casos.entries) {
+      for (final ancho in _anchos.entries) {
+        for (final brillo in [Brightness.dark, Brightness.light]) {
+          await _montar(
+            tester,
+            // Alto acotado: el cartel es un `Scaffold` que ocupa la
+            // pantalla entera, y el arnés lo monta dentro de un scroll de
+            // alto infinito. Es el mismo recurso que usa GlassScaffold acá.
+            SizedBox(
+              height: 780,
+              child: VeredictoAcceso(
+                  resultado: entrada.value, onDismiss: () {}),
+            ),
+            ancho: ancho.value,
+            brillo: brillo,
+          );
+          expect(tester.takeException(), isNull,
+              reason: '${entrada.key} desbordó en ${ancho.key} '
+                  '(${brillo.name})');
+
+          // El cartel entra con animación; si no se la deja terminar, el
+          // arnés denuncia temporizadores vivos al desmontar.
+          await tester.pumpWidget(const SizedBox.shrink());
+          await tester.pump(const Duration(seconds: 1));
+        }
+      }
+    }
+  });
+
+  testWidgets('la nota de auditoría aparece solo cuando se pasa', (tester) async {
+    // La búsqueda por documento la usa para avisar que la validación manual
+    // queda registrada; el escáner no la manda. Si se filtrara al escáner
+    // sería ruido en la pantalla que menos ruido tolera.
+    await _montar(
+      tester,
+      const SizedBox(
+        height: 780,
+        child: VeredictoAcceso(resultado: {'allowed': true}, onDismiss: _nada),
+      ),
+      ancho: 390,
+      brillo: Brightness.dark,
+    );
+    expect(find.textContaining('auditad'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+
+    await _montar(
+      tester,
+      const SizedBox(
+        height: 780,
+        child: VeredictoAcceso(
+            resultado: {'allowed': true},
+            nota: 'Esta validación queda auditada',
+            onDismiss: _nada),
+      ),
+      ancho: 390,
+      brillo: Brightness.dark,
+    );
+    expect(find.textContaining('auditada'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
 
   test('proporcion() no divide por cero ni se pasa de 1', () {
     expect(proporcion(0, 0), 0);
