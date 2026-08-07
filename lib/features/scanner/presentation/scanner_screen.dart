@@ -463,21 +463,38 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   ///
   /// Existe porque un portero no puede esperar 12 segundos con una fila
   /// enfrente: si ve que no lee, lo reinicia en el acto.
-  void _reiniciarManual() {
+  Future<void> _reiniciarManual() async {
     HapticFeedback.mediumImpact();
+
+    // Primero lo barato y sin riesgo: liberar el estado de ocupado y reencender
+    // el lector nativo. Esto solo ya destraba el caso más común —`_isProcessing`
+    // pegado en true— sin tocar la cámara.
     detenerLectorNativo(_sesionLector);
     _sesionLector = 0;
     _resetScanner();
-    try {
-      if (_cameraController.value.isInitialized) {
-        _cameraController.stop();
-        _cameraController.start();
-      }
-    } catch (_) {
-      // Si la cámara no coopera, el lector nativo igual se reenciende abajo.
-    }
     _detectionWindowStart = DateTime.now();
     _encenderLectorNativo();
+
+    // Y recién después el ciclo de la cámara, que es el que puede fallar.
+    //
+    // La primera versión de esto llamaba stop() y start() sin await: start()
+    // corría antes de que stop() terminara y el plugin tiraba "The
+    // MobileScannerController is already running", que además quedaba impreso en
+    // inglés sobre la cámara. Hay que ESPERAR a que el stop se complete, dejar
+    // un respiro, y solo entonces arrancar. Si aun así falla, se reintenta una
+    // vez: la implementación web del plugin a veces reporta el estado tarde.
+    for (var intento = 0; intento < 2; intento++) {
+      try {
+        await _cameraController.stop();
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        if (!mounted) return;
+        await _cameraController.start();
+        return; // arrancó bien
+      } catch (_) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
+      }
+    }
   }
 
   void _resetScanner() {
@@ -554,6 +571,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
           MobileScanner(
             controller: _cameraController,
             onDetect: _onDetect,
+            // Un error del controlador NUNCA se muestra como el texto crudo del
+            // plugin —en inglés, técnico— encima de la cámara. En la puerta eso
+            // es peor que una pantalla negra: el operario ve un párrafo que no
+            // entiende. Se muestra el fondo oscuro de la app y nada más; el
+            // botón "¿No lee?" y el vigía se encargan de recuperar el lector.
+            errorBuilder: (context, error) => const ColoredBox(
+              color: AppTheme.darkBg,
+            ),
           ),
 
           // Sin botón de volver propio: la cabecera del armazón ya lo trae, y
