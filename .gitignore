@@ -97,3 +97,9 @@ build/
 *.env
 .env.*
 !.env.example
+
+# Habilidades de terceros que instala `npx skills add` (Higgsfield, 07/08/2026).
+# Son 1,4 MB de codigo ajeno que se reinstala con un comando, asi que no tiene
+# sentido versionarlo. `skills-lock.json` SI queda versionado: es el que fija
+# que version se instala, como cualquier archivo de bloqueo.
+.agents/
