@@ -9,6 +9,28 @@
 <link rel="icon" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/logo.png">
 
+<!-- CANONICAL. No es opcional acá, y la razón es concreta.
+
+     El subdominio `super-admin.imaginecloud.digital` apunta al MISMO
+     `public_html` que el dominio principal, así que esta página se sirve
+     idéntica desde dos nombres distintos —verificado: mismo md5—. Para un
+     buscador eso son dos copias del mismo contenido compitiendo entre sí, y
+     la fuerza que gana una es fuerza que pierde la otra.
+
+     Esta línea le dice cuál de las dos es la de verdad. Es también el motivo
+     por el que el subdominio se puede dejar vivo sin costo de posicionamiento:
+     borrarlo sería más limpio, pero su document root es el del sitio
+     principal y el borrado se lo podría llevar puesto. -->
+<link rel="canonical" href="https://imaginecloud.digital/landing/">
+
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+
+<!-- El público es de Paraguay, Argentina, Uruguay y Perú, y el texto está en
+     español rioplatense. Sin variantes por país no hace falta `hreflang`:
+     declarar el idioma alcanza y evita el error de apuntar a URLs que no
+     existen. -->
+<meta name="language" content="es">
+
 <!-- La tarjeta para compartir es una imagen propia de 1200x630, no el icono.
      Este link se va a pegar sobre todo en WhatsApp, y ahí la vista previa ocupa
      media pantalla: un icono cuadrado de 96 px se ve como un error de carga.
@@ -406,6 +428,124 @@
     .cel { transition: none; }
   }
 </style>
+
+<!-- DATOS ESTRUCTURADOS
+
+     Tres bloques, cada uno con un trabajo distinto:
+
+     - Organization        : quién es la marca, para que el buscador la trate
+                             como una entidad y no como una cadena de texto.
+     - SoftwareApplication : qué hace y cuánto sale.
+     - FAQPage             : las cinco preguntas de más abajo. Es el único de los
+                             tres que puede ganar un resultado enriquecido —las
+                             preguntas desplegables debajo del enlace— y ya
+                             estaba escrito.
+
+     El FAQ NO se escribió a mano: se generó leyendo la sección `#preguntas` de
+     este mismo archivo. Google exige que el dato estructurado coincida con lo
+     visible, y un FAQ copiado a mano se desincroniza en la primera edición del
+     copy. Si cambian las preguntas, hay que regenerar este bloque. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Imagine Access",
+  "url": "https://imaginecloud.digital/landing/",
+  "logo": "https://imaginecloud.digital/landing/img/logo.png",
+  "description": "Control de acceso para eventos: emisión de entradas con código QR y validación en la puerta desde el celular.",
+  "areaServed": [
+    {
+      "@type": "Country",
+      "name": "Paraguay"
+    },
+    {
+      "@type": "Country",
+      "name": "Argentina"
+    },
+    {
+      "@type": "Country",
+      "name": "Uruguay"
+    },
+    {
+      "@type": "Country",
+      "name": "Perú"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Imagine Access",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Android, iOS, Windows, macOS — se usa desde el navegador",
+  "url": "https://imaginecloud.digital/landing/",
+  "description": "Emitís entradas con código QR, escaneás en la puerta y sabés al instante si la persona entra o no. Funciona sin conexión a internet.",
+  "featureList": [
+    "Entradas con código QR",
+    "Validación en la puerta desde el celular",
+    "Funciona sin conexión",
+    "Cada código vale una sola vez",
+    "Control de quién emitió cada entrada",
+    "Números de venta en vivo"
+  ],
+  "offers": {
+    "@type": "Offer",
+    "price": "25",
+    "priceCurrency": "USD",
+    "description": "15 tickets gratis para probar, sin tarjeta."
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Funciona si en el evento no hay internet?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. El escáner valida igual y guarda cada lectura en el teléfono. Cuando vuelve la conexión sincroniza todo solo. Podés trabajar la noche entera sin señal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Tengo que instalar algo de la App Store o Play Store?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Se abre desde el navegador y se agrega a la pantalla de inicio, donde queda como cualquier otra aplicación. Funciona en Android, iPhone, tablet y computadora."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué pasa si alguien reenvía su entrada a un amigo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cada código vale una sola vez. El primero que lo presenta entra; el segundo recibe un rechazo, y el escáner le muestra al operador a qué hora entró la primera vez. Un código de otra de tus fechas tampoco sirve."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Desde qué países puedo pagar la suscripción?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Paraguay, Argentina, Uruguay, Brasil, Chile, Bolivia, Colombia, Perú, Ecuador, Panamá, República Dominicana, Costa Rica, Guatemala, México, Estados Unidos y España, entre otros. El cobro lo procesa dLocal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué pasa cuando se me terminan los 15 tickets gratis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Podés seguir entrando, viendo tus datos y validando los tickets que ya emitiste. Para emitir nuevos hace falta activar la suscripción. Nada se borra ni se bloquea."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 

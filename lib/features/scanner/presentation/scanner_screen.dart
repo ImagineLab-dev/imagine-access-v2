@@ -8,7 +8,6 @@ import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/platform/camara.dart';
 import '../../../core/platform/lector.dart';
@@ -70,6 +69,16 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// pasado esto ya no hay explicación honesta, y un escáner trabado en la
   /// puerta es peor que uno que reintenta.
   static const _toleranciaOcupado = Duration(seconds: 12);
+
+  /// Instante en que el cartel del veredicto apareció, o null si no hay.
+  DateTime? _veredictoDesde;
+
+  /// Cuánto puede quedarse un veredicto en pantalla sin que nadie lo toque.
+  ///
+  /// Un minuto es muchísimo para alguien que está validando una fila, y es
+  /// poco para que se pierda información: si nadie lo miró en un minuto, no lo
+  /// va a mirar.
+  static const _toleranciaVeredicto = Duration(seconds: 60);
 
   @override
   void initState() {
@@ -244,8 +253,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   }
 
   Future<void> _processCode(String code) async {
-    final l10n = AppLocalizations.of(context);
-
     // Se toma el notificador ANTES del primer await y se guarda.
     //
     // El velo de "procesando" es global, no de esta pantalla. El `finally`
@@ -267,12 +274,13 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       final selectedEvent = ref.read(selectedEventProvider);
 
       if (selectedEvent == null) {
-        if (mounted) {
-          setState(() => _isProcessing = false);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(l10n.pleaseSelectEvent)));
-          context.pop();
-        }
+        // Cartel a pantalla completa, y NO se lo saca de la pantalla.
+        //
+        // Antes esto era un SnackBar más un `context.pop()`: el operario
+        // escaneaba, la app saltaba a otro lado, y una tira gris de tres
+        // segundos le explicaba por qué. Para alguien que prueba el producto
+        // por primera vez eso es "escaneé y no pasó nada".
+        if (mounted) _mostrarVeredicto({'result': 'sin_evento'});
         return;
       }
 
@@ -392,11 +400,21 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isProcessing = false);
-        final message =
-            e is OfflineQueuedException ? l10n.offlineValidationQueued : l10n.scanError;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(message)));
+        // Los dos resultados tienen consecuencias OPUESTAS en la puerta y antes
+        // se comunicaban con el mismo componente, del mismo tamaño y color:
+        //
+        //   encolado -> la persona pasa, pero su entrada NO está confirmada
+        //   error    -> no se sabe nada; hay que volver a intentar
+        //
+        // Que "esta persona no está confirmada" saliera por una tira gris de
+        // tres segundos, abajo del todo, donde está la barra de navegación y
+        // justo cuando el operario ya está mirando a la siguiente persona,
+        // significaba que nadie se enteraba. Si después la sincronización
+        // rechaza el ticket, entró alguien que no debía y no quedó registro de
+        // que alguien lo supo.
+        _mostrarVeredicto({
+          'result': e is OfflineQueuedException ? 'encolado' : 'error_red',
+        });
       }
     } finally {
       // Sin `if (mounted)`: apagar el velo es obligatorio pase lo que pase.
@@ -431,10 +449,12 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// tres siluetas, las tres primeras palabras distintas, el mínimo en pantalla
   /// y el botón para el rechazo. Nada de eso dependía del diálogo.
   void _mostrarVeredicto(Map<String, dynamic> resultado) {
+    _veredictoDesde = DateTime.now();
     setState(() => _scanResult = resultado);
   }
 
   void _resetScanner() {
+    _veredictoDesde = null;
     setState(() {
       _scanResult = null;
       _isProcessing = false;
@@ -461,6 +481,24 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   /// ocupado, pantalla vacía—, que es exactamente el síntoma de "tengo que
   /// cerrar y abrir la app para que lea".
   void _vigilarTrabado() {
+    // PRIMERA RED: un cartel no puede quedarse en pantalla para siempre.
+    //
+    // Si el operario dejó el teléfono apoyado, se distrajo, o el cartel quedó
+    // por algún camino que no previmos, el escáner está bloqueado esperando un
+    // toque que no va a llegar. Pasado un minuto se cierra solo y vuelve a
+    // leer: perder un veredicto que nadie miró es barato, tener la puerta
+    // parada no.
+    final mostradoDesde = _veredictoDesde;
+    if (mostradoDesde != null &&
+        DateTime.now().difference(mostradoDesde) > _toleranciaVeredicto) {
+      if (kDebugMode) {
+        dev.log('Veredicto ${_toleranciaVeredicto.inSeconds}s en pantalla: se cierra',
+            name: 'ScannerVigia');
+      }
+      _resetScanner();
+      return;
+    }
+
     if (!_isProcessing || _scanResult != null) return;
     final desde = _ocupadoDesde;
     if (desde == null) return;

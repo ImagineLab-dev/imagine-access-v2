@@ -434,6 +434,12 @@ void main() {
           'scanned_at': '2026-07-28T22:46:22.202Z',
         },
       },
+      // Los tres de sistema. Antes salian por un SnackBar; ahora tienen que
+      // entrar en la pantalla igual que los veredictos, con textos que en
+      // espanol son largos.
+      'SIN EVENTO': {'result': 'sin_evento'},
+      'PENDIENTE': {'result': 'encolado'},
+      'ERROR DE RED': {'result': 'error_red'},
       'EVENTO EQUIVOCADO': {
         'allowed': false,
         'result': 'wrong_event',
@@ -597,6 +603,37 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('cada situacion del sistema tiene su propio cartel', (tester) async {
+    // La afirmacion real: NINGUNA situacion deja al operario sin respuesta en
+    // pantalla. Antes, tres de estas salian por un SnackBar de tres segundos
+    // abajo del todo, y para quien probaba el producto por primera vez eso era
+    // "escanee y no paso nada".
+    final casos = <String, Map<String, dynamic>>{
+      'sin evento': {'result': 'sin_evento'},
+      'encolado': {'result': 'encolado'},
+      'error de red': {'result': 'error_red'},
+    };
+
+    for (final caso in casos.entries) {
+      await _montar(
+        tester,
+        SizedBox(
+          height: 780,
+          child: VeredictoAcceso(resultado: caso.value, onDismiss: _nada),
+        ),
+        ancho: 390,
+        brillo: Brightness.dark,
+      );
+      expect(tester.takeException(), isNull, reason: caso.key);
+
+      // Hay un titular visible: el cartel dice algo, no queda mudo.
+      expect(find.byType(Text), findsWidgets, reason: caso.key);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+    }
   });
 
   test('proporcion() no divide por cero ni se pasa de 1', () {

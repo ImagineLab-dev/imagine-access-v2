@@ -134,9 +134,25 @@ class _VeredictoAccesoState extends State<VeredictoAcceso> {
     final ticket = resultado['ticket'];
     final codigo = resultado['result']?.toString();
 
-    final veredicto = permitido
-        ? Veredicto.validado
-        : (codigo == 'already_used' ? Veredicto.yaUsado : Veredicto.denegado);
+    // Los códigos internos no son veredictos de la puerta: son situaciones del
+    // sistema —falta elegir evento, no hay señal, se cayó la red— que antes se
+    // comunicaban con un SnackBar. Una tira gris de tres segundos, abajo del
+    // todo, mientras el operario mira a la persona y no al teléfono.
+    //
+    // El escáner tiene un canal excelente para hablar, que es la pantalla
+    // entera de color, y lo usaba SOLO cuando todo salía bien. Cuando algo
+    // fallaba, susurraba. Para quien prueba el producto por primera vez eso es
+    // exactamente "escaneé y no pasó nada", y se va pensando que está roto.
+    final veredicto = switch (codigo) {
+      'sin_evento' => Veredicto.sinEvento,
+      'encolado' => Veredicto.pendiente,
+      'error_red' => Veredicto.error,
+      _ => permitido
+          ? Veredicto.validado
+          : (codigo == 'already_used'
+              ? Veredicto.yaUsado
+              : Veredicto.denegado),
+    };
 
     // fondo, tinta, borde. El borde solo lo usa "ya usado": al ir sobre
     // oscuro necesita un marco que lo haga inconfundible desde lejos.
@@ -152,12 +168,29 @@ class _VeredictoAccesoState extends State<VeredictoAcceso> {
           AppTheme.accentYellow,
           AppTheme.accentYellow
         ),
+      // Los tres de sistema comparten el fondo de la app y se distinguen por
+      // la tinta. Es a propósito: no son decisiones sobre la persona que está
+      // enfrente, y no tienen que competir en fuerza con las que sí lo son.
+      Veredicto.sinEvento => (AppTheme.darkBg, AppTheme.lima, AppTheme.lima),
+      Veredicto.pendiente => (
+          AppTheme.darkBg,
+          AppTheme.accentYellow,
+          AppTheme.accentYellow
+        ),
+      Veredicto.error => (
+          AppTheme.darkBg,
+          AppTheme.peligroSuave,
+          AppTheme.peligroSuave
+        ),
     };
 
     final icono = switch (veredicto) {
       Veredicto.validado => Icons.check_circle,
       Veredicto.denegado => Icons.dangerous,
       Veredicto.yaUsado => Icons.warning_rounded,
+      Veredicto.sinEvento => Icons.event_outlined,
+      Veredicto.pendiente => Icons.cloud_off_outlined,
+      Veredicto.error => Icons.wifi_tethering_off_outlined,
     };
 
     final titulo = codigo == 'wrong_event'
@@ -167,6 +200,9 @@ class _VeredictoAccesoState extends State<VeredictoAcceso> {
               Veredicto.validado => l10n.accessGranted,
               Veredicto.denegado => l10n.accessDenied,
               Veredicto.yaUsado => l10n.alreadyUsed,
+              Veredicto.sinEvento => l10n.pleaseSelectEvent,
+              Veredicto.pendiente => l10n.offlineValidationQueued,
+              Veredicto.error => l10n.scanError,
             });
 
     // Datos del ticket, en mono y bajo una regla: es la "letra chica" del
@@ -387,6 +423,29 @@ enum Veredicto {
   /// Ojo: esta entrada ya se usó. Ámbar sobre oscuro, para que no se confunda
   /// con las otras dos ni de reojo.
   yaUsado,
+
+  /// Falta elegir el evento contra el cual validar.
+  ///
+  /// No es un veredicto sobre la persona: es el sistema pidiendo un dato. Antes
+  /// salía por un SnackBar y además sacaba al operario de la pantalla, así que
+  /// para alguien que probaba el producto por primera vez el escaneo
+  /// simplemente "no hacía nada".
+  sinEvento,
+
+  /// Sin señal: la validación quedó encolada y se sincroniza sola.
+  ///
+  /// Es el estado más delicado de todos, porque la persona YA pasó y el
+  /// operario tiene que saber que esa entrada todavía no está confirmada.
+  /// Comunicarlo con la tira gris de menor jerarquía del sistema era pedir que
+  /// no se enterara.
+  pendiente,
+
+  /// No se pudo verificar: la red falló o el servidor no contestó a tiempo.
+  ///
+  /// Distinto de un rechazo, y la diferencia importa: en un rechazo la persona
+  /// no entra, acá no se sabe. El operario tiene que volver a intentar, no
+  /// tomar una decisión.
+  error,
 }
 
 /// Convierte una marca de tiempo en algo que se pueda decir en voz alta.

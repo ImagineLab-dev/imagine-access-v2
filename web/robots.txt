@@ -1,0 +1,41 @@
+# robots.txt de imaginecloud.digital
+#
+# Hasta el 07/08/2026 este archivo NO EXISTÍA. No era un 404: el `.htaccess`
+# reescribe toda ruta desconocida a `index.html`, así que un buscador que pedía
+# /robots.txt recibía el HTML de la aplicación con código 200. Un archivo de
+# reglas que en realidad es una página web es basura para un rastreador.
+#
+# La regla de reescritura deja pasar los archivos que existen de verdad
+# (`RewriteCond %{REQUEST_FILENAME} -f`), así que con que este archivo exista
+# alcanza para que se sirva tal cual.
+
+User-agent: *
+Allow: /
+
+# La raíz es la aplicación: una cáscara de JavaScript sin contenido que un
+# buscador pueda mostrar. No se bloquea —bloquearla impediría descubrir el
+# enlace a la landing— pero lo que vale la pena indexar es /landing/.
+#
+# Estas rutas son estados internos de la aplicación. Ninguna tiene contenido
+# propio: todas devuelven la misma cáscara, así que indexarlas sería publicar
+# quince copias de la misma página vacía.
+Disallow: /scanner
+Disallow: /dashboard
+Disallow: /tickets
+Disallow: /events
+Disallow: /settings
+Disallow: /profile
+Disallow: /super-admin
+Disallow: /subscription
+Disallow: /document_search
+Disallow: /verify-email
+Disallow: /reset-password
+
+# Archivos de la compilación. No son contenido y ocupan presupuesto de rastreo:
+# main.dart.js solo pesa 5 MB.
+Disallow: /main.dart.js
+Disallow: /flutter_bootstrap.js
+Disallow: /canvaskit/
+Disallow: /assets/
+
+Sitemap: https://imaginecloud.digital/sitemap.xml
