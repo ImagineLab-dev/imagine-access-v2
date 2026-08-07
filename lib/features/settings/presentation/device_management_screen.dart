@@ -26,6 +26,7 @@ class DeviceManagementScreen extends ConsumerWidget {
       titulo: l10n.devices,
       acciones: [
         IconButton(
+          tooltip: l10n.addAction,
           onPressed: () => _showAddDeviceDialog(context, ref, currentDeviceAsync.valueOrNull),
           icon: const Icon(Icons.add_circle_outline),
         )
@@ -121,6 +122,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                             },
                           ),
                           IconButton(
+                            tooltip: l10n.delete,
                             icon: const Icon(Icons.delete, color: AppTheme.accentOrange),
                             onPressed: () => _confirmDelete(
                               context,
@@ -237,6 +239,7 @@ class DeviceManagementScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 8),
                             IconButton(
+                              tooltip: l10n.copy,
                               icon: const Icon(Icons.copy, size: 18, color: AppTheme.neonBlue),
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: pin));

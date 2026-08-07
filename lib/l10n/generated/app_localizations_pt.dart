@@ -18,6 +18,33 @@ class AppLocalizationsPt extends AppLocalizations {
   String get welcomeEnter => 'Entrar';
 
   @override
+  String get authHeaderLogin => 'Entrar';
+
+  @override
+  String get authHeaderRegister => 'Crie sua conta grátis';
+
+  @override
+  String get copy => 'Copiar';
+
+  @override
+  String get addAction => 'Adicionar';
+
+  @override
+  String get archiveAction => 'Arquivar';
+
+  @override
+  String get deletePermanently => 'Excluir definitivamente';
+
+  @override
+  String get clearField => 'Limpar';
+
+  @override
+  String get goBack => 'Voltar';
+
+  @override
+  String get chooseColor => 'Escolher cor';
+
+  @override
   String get adminRRPP => 'Admin / RRPP';
 
   @override
@@ -802,9 +829,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get roleInEvent => 'Função no Evento';
-
-  @override
-  String get addAction => 'Adicionar';
 
   @override
   String editQuotasFor(String userName) {

@@ -145,6 +145,7 @@ class EventStaffScreen extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
+                          tooltip: l10n.edit,
                           icon: const Icon(Icons.edit, color: AppTheme.lima),
                           onPressed: () => _showEditQuotaDialog(
                             context,
@@ -154,6 +155,7 @@ class EventStaffScreen extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
+                          tooltip: l10n.delete,
                           icon: const Icon(Icons.delete_outline, color: AppTheme.accentOrange),
                           onPressed: () => _confirmRemoveStaff(
                             context,

@@ -172,6 +172,7 @@ class _TicketListScreenState extends ConsumerState<TicketListScreen> {
       titulo: l10n.guestList,
       acciones: [
         IconButton(
+          tooltip: l10n.refresh,
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.refresh(ticketsProvider)),
       ],

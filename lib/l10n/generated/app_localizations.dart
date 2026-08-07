@@ -118,6 +118,60 @@ abstract class AppLocalizations {
   /// **'Log in'**
   String get welcomeEnter;
 
+  /// No description provided for @authHeaderLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get authHeaderLogin;
+
+  /// No description provided for @authHeaderRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your free account'**
+  String get authHeaderRegister;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @addAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addAction;
+
+  /// No description provided for @archiveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archiveAction;
+
+  /// No description provided for @deletePermanently.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deletePermanently;
+
+  /// No description provided for @clearField.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearField;
+
+  /// No description provided for @goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get goBack;
+
+  /// No description provided for @chooseColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose color'**
+  String get chooseColor;
+
   /// No description provided for @adminRRPP.
   ///
   /// In en, this message translates to:
@@ -1641,12 +1695,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Role in Event'**
   String get roleInEvent;
-
-  /// No description provided for @addAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get addAction;
 
   /// No description provided for @editQuotasFor.
   ///

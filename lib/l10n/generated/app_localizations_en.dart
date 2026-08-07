@@ -18,6 +18,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeEnter => 'Log in';
 
   @override
+  String get authHeaderLogin => 'Log in';
+
+  @override
+  String get authHeaderRegister => 'Create your free account';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get addAction => 'Add';
+
+  @override
+  String get archiveAction => 'Archive';
+
+  @override
+  String get deletePermanently => 'Delete permanently';
+
+  @override
+  String get clearField => 'Clear';
+
+  @override
+  String get goBack => 'Back';
+
+  @override
+  String get chooseColor => 'Choose color';
+
+  @override
   String get adminRRPP => 'Admin / RRPP';
 
   @override
@@ -800,9 +827,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleInEvent => 'Role in Event';
-
-  @override
-  String get addAction => 'Add';
 
   @override
   String editQuotasFor(String userName) {

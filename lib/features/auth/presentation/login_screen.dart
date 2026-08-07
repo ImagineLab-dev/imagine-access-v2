@@ -272,9 +272,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           children: [
                             Expanded(
                               child: Text(
-                                _isRegistering
-                                    ? 'REGISTRO_NUEVO_USUARIO'
-                                    : 'SEC_AUTH_REQ',
+                                // Texto claro, no jerga. Antes decía
+                                // 'SEC_AUTH_REQ' —"requisito de autenticación de
+                                // seguridad" abreviado como una constante de
+                                // sistema—: era lo PRIMERO que leía un usuario
+                                // nuevo, y no significaba nada. El estilo mono en
+                                // mayúsculas conserva el aire técnico sin costar
+                                // comprensión.
+                                (_isRegistering
+                                        ? l10n.authHeaderRegister
+                                        : l10n.authHeaderLogin)
+                                    .toUpperCase(),
                                 style: AppTheme.dato(
                                   context,
                                   size: 10.5,

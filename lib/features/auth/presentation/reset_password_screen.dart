@@ -175,6 +175,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       appBar: AppBar(
         title: Text(l10n.resetPassword),
         leading: IconButton(
+          tooltip: l10n.goBack,
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/login'),
         ),

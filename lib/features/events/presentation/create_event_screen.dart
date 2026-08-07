@@ -570,6 +570,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
         actions: [
           if (widget.eventId != null)
             IconButton(
+              tooltip: l10n.archiveAction,
               icon: const Icon(Icons.archive, color: AppTheme.accentYellow),
               onPressed: () async {
                 try {
@@ -591,6 +592,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
             ),
           if (widget.eventId != null)
             IconButton(
+              tooltip: l10n.deletePermanently,
               icon: const Icon(Icons.delete_forever, color: AppTheme.accentOrange),
               onPressed: () async {
                 final l10n = AppLocalizations.of(context);
@@ -992,6 +994,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                       : FontWeight.bold)),
                           if (_invitationValidUntil != null)
                             IconButton(
+                              tooltip: l10n.clearField,
                               icon: const Icon(Icons.clear,
                                   size: 16, color: AppTheme.accentOrange),
                               onPressed: () =>

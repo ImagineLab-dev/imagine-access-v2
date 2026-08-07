@@ -186,6 +186,7 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                       label: l10n.name,
                       // icon: Icons.label, // Removed default icon
                       prefixWidget: IconButton(
+                        tooltip: l10n.chooseColor,
                         onPressed: () => _showColorPicker(index),
                         icon: Container(
                           width: 20,
@@ -226,6 +227,7 @@ class _TicketTypesWidgetState extends State<TicketTypesWidget> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
+                    tooltip: l10n.delete,
                     onPressed: () => _removeType(index),
                     icon: const Icon(Icons.delete, color: AppTheme.accentOrange),
                     visualDensity: VisualDensity.compact,

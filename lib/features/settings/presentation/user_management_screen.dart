@@ -147,6 +147,7 @@ class UserManagementScreen extends ConsumerWidget {
                     if (!isSelf) ...[
                       const SizedBox(width: 8),
                       IconButton(
+                        tooltip: l10n.delete,
                           icon: const Icon(Icons.delete_outline, color: AppTheme.accentOrange),
                           onPressed: () => _confirmDelete(context, ref, user),
                         ),
@@ -403,6 +404,7 @@ class UserManagementScreen extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
+                    tooltip: l10n.copy,
                     icon: const Icon(Icons.copy, size: 18, color: AppTheme.neonBlue),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: password));
