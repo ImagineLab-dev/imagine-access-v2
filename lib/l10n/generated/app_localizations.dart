@@ -106,6 +106,18 @@ abstract class AppLocalizations {
   /// **'Imagine Access'**
   String get appTitle;
 
+  /// No description provided for @welcomeCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account'**
+  String get welcomeCreate;
+
+  /// No description provided for @welcomeEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get welcomeEnter;
+
   /// No description provided for @adminRRPP.
   ///
   /// In en, this message translates to:

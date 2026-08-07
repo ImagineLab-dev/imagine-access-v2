@@ -1,6 +1,8 @@
 {
   "@@locale": "en",
   "appTitle": "Imagine Access",
+  "welcomeCreate": "Create a free account",
+  "welcomeEnter": "Log in",
   "adminRRPP": "Admin / RRPP",
   "doorAccess": "Door Access",
   "email": "Email",

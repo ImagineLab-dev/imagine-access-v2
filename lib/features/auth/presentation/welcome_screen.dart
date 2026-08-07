@@ -120,18 +120,37 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 22),
 
                 // --- Entradas al sistema ---
+                //
+                // Tres botones, cada uno a su destino EXACTO, sin pasar por una
+                // pantalla intermedia que haya que interpretar. Antes había uno
+                // solo, "ADMIN / RRPP", que caía en el login y dejaba a quien
+                // venía a probar el producto sin ver por ningún lado dónde se
+                // crea la cuenta.
+                //
+                // "Crear cuenta gratis" va primero y en lima: es la acción que
+                // hace crecer el producto. "Ingresar" es para quien ya tiene
+                // cuenta. "Acceso Puerta" es otro tipo de usuario —el personal
+                // con dispositivo y PIN— y va aparte.
                 NeonButton(
-                  text: l10n.adminRRPP,
-                  icon: Icons.shield_outlined,
-                  onPressed: () => context.go('/login?mode=admin'),
+                  text: l10n.welcomeCreate,
+                  icon: Icons.person_add_alt_1_outlined,
+                  onPressed: () =>
+                      context.go('/login?mode=admin&registrar=1'),
                 ).animate().fade(delay: 180.ms),
+                const SizedBox(height: 10),
+                NeonButton(
+                  text: l10n.welcomeEnter,
+                  icon: Icons.login_outlined,
+                  isSecondary: true,
+                  onPressed: () => context.go('/login?mode=admin'),
+                ).animate().fade(delay: 210.ms),
                 const SizedBox(height: 10),
                 NeonButton(
                   text: l10n.doorAccess,
                   icon: Icons.meeting_room_outlined,
                   isSecondary: true,
                   onPressed: () => context.go('/login?mode=door'),
-                ).animate().fade(delay: 220.ms),
+                ).animate().fade(delay: 240.ms),
 
                 const SizedBox(height: 20),
                 const Center(child: TestigoDeSistema()),

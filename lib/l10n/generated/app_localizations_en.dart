@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Imagine Access';
 
   @override
+  String get welcomeCreate => 'Create a free account';
+
+  @override
+  String get welcomeEnter => 'Log in';
+
+  @override
   String get adminRRPP => 'Admin / RRPP';
 
   @override
