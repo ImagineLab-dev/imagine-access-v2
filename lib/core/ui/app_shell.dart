@@ -61,15 +61,24 @@ class AppShell extends ConsumerWidget {
 /// en cuatro columnas de teléfono "Panel de Control" y "DOCUMENTO (CI / DNI)"
 /// no entran: se cortaban con puntos suspensivos y no se entendía cuál era
 /// cuál.
-List<_Destino> _destinos(BuildContext context, {required bool esPuerta}) {
+List<_Destino> _destinos(BuildContext context,
+    {required bool esPuerta, required bool puedeEscanear}) {
   final l10n = AppLocalizations.of(context);
   return [
     _Destino('/dashboard', l10n.navPanel, Icons.dashboard_outlined,
         Icons.dashboard),
     _Destino('/events', l10n.events, Icons.calendar_today_outlined,
         Icons.calendar_today),
-    _Destino('/scanner', l10n.scanner, Icons.qr_code_scanner,
-        Icons.qr_code_scanner),
+    // Escanear es tarea de puerta y de admin. El RRPP emite invitaciones, no
+    // controla el acceso. En el lugar que el escáner deja libre en su barra va
+    // "Emitir": es su acción principal, y así la barra le queda en cuatro como
+    // a los demás en vez de en tres.
+    if (puedeEscanear)
+      _Destino('/scanner', l10n.scanner, Icons.qr_code_scanner,
+          Icons.qr_code_scanner)
+    else if (!esPuerta)
+      _Destino('/create_ticket', l10n.navEmitir, Icons.add_circle_outline,
+          Icons.add_circle),
     if (esPuerta)
       _Destino('/document_search', l10n.navDocument, Icons.badge_outlined,
           Icons.badge)
@@ -98,7 +107,7 @@ class _Destino {
 /// En vez de bloquear y no hacer nada, lleva a elegir evento: el destino al que
 /// se quería ir era imposible, pero el paso que falta está a la vista.
 void _irA(BuildContext context, WidgetRef ref, String ruta) {
-  const necesitanEvento = {'/scanner', '/document_search'};
+  const necesitanEvento = {'/scanner', '/document_search', '/create_ticket'};
 
   if (necesitanEvento.contains(ruta) &&
       ref.read(selectedEventProvider) == null) {
@@ -108,6 +117,14 @@ void _irA(BuildContext context, WidgetRef ref, String ruta) {
         content: Text(AppLocalizations.of(context).pleaseSelectEvent),
       ));
     context.go('/events');
+    return;
+  }
+
+  // Emitir es un asistente a pantalla completa, FUERA del armazón: se abre con
+  // `push` para que el botón de atrás vuelva al panel. Con `go` lo reemplazaría
+  // y el RRPP quedaría sin forma de volver salvo tocando otra pestaña.
+  if (ruta == '/create_ticket') {
+    context.push(ruta);
     return;
   }
 
@@ -122,9 +139,12 @@ class BarraInferior extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final esPuerta = ref.watch(deviceProvider) != null ||
-        ref.watch(userRoleProvider) == AppRoles.door;
-    final destinos = _destinos(context, esPuerta: esPuerta);
+    final role = ref.watch(userRoleProvider);
+    final esPuerta = ref.watch(deviceProvider) != null || role == AppRoles.door;
+    // Escanea la puerta (dispositivo o rol door) y el admin. El RRPP no.
+    final puedeEscanear = esPuerta || AppRoles.isAdmin(role);
+    final destinos =
+        _destinos(context, esPuerta: esPuerta, puedeEscanear: puedeEscanear);
     final actual = ubicacion;
 
     return Container(

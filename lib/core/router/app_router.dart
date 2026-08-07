@@ -9,6 +9,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
+import '../../features/auth/presentation/cambiar_clave_inicial_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/tickets/presentation/create_ticket_wizard.dart';
 import '../../features/scanner/presentation/scanner_screen.dart';
@@ -98,6 +99,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/reset-password';
       final isAuth = user != null || deviceSession != null;
 
+      // Contraseña temporal sin cambiar todavía.
+      //
+      // A quien se invita se le crea la cuenta con una clave de un solo uso
+      // (`create_user` marca `must_change_password` en el JWT). Hasta que elija
+      // una propia no puede ir a ningún lado: cualquier ruta lo devuelve a la
+      // pantalla de cambio, y esa pantalla no está disponible para nadie más.
+      // La bandera la baja `establecer_clave_definitiva`, y al refrescar la
+      // sesión este redirect vuelve a correr y lo deja pasar.
+      final debeCambiarClave = ref.read(debesCambiarClaveProvider);
+      const rutaCambioForzado = '/cambiar-clave';
+      if (isAuth && debeCambiarClave) {
+        return state.matchedLocation == rutaCambioForzado
+            ? null
+            : rutaCambioForzado;
+      }
+      if (state.matchedLocation == rutaCambioForzado) {
+        return isAuth ? rutaTrasIngresar(role) : '/welcome';
+      }
+
       if (!isAuth && !isPublicEntry) return '/welcome';
       if (isAuth && isPublicEntry) {
         // Entrando por super-admin.imaginecloud.digital se aterriza en el
@@ -127,6 +147,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (isAdminRoute && !AppRoles.isAdmin(role)) {
         return '/dashboard'; // Redirect non-admins to dashboard
+      }
+
+      // Escanear y buscar por documento son tareas de puerta. Las hace un
+      // dispositivo, un usuario con rol door, o un admin. El RRPP no: emite
+      // invitaciones, no controla el acceso. El backend ya se lo niega
+      // (get_staff_dashboard y la búsqueda gatean a admin/door); esto evita
+      // además que le aparezca una pantalla que iba a fallarle.
+      final esRutaDePuerta =
+          path == '/scanner' || path == '/document_search';
+      final puedeEscanear = deviceSession != null ||
+          role == AppRoles.door ||
+          AppRoles.isAdmin(role);
+      if (esRutaDePuerta && !puedeEscanear) {
+        return '/dashboard';
       }
 
       // Door/Scanner restricted routes
@@ -253,6 +287,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/reset-password',
         builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/cambiar-clave',
+        builder: (context, state) => const CambiarClaveInicialScreen(),
       ),
       GoRoute(
         path: '/create_ticket',

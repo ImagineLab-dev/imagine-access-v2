@@ -89,6 +89,13 @@ serve(async (req: Request) => {
             app_metadata: {
                 role: assignedRole,
                 organization_id: callerOrgId,
+                // La contraseña que va en el correo es temporal y de un solo uso.
+                // Esta bandera obliga a cambiarla en el primer ingreso: el router
+                // la lee del JWT y no deja pasar a ningún lado hasta que el
+                // usuario pone una propia (la limpia `establecer_clave_definitiva`).
+                // GoTrue FUSIONA app_metadata, así que sobrevive al sync de rol de
+                // ensure_profile en cada login.
+                must_change_password: true,
             },
             user_metadata: {
                 display_name,

@@ -328,7 +328,7 @@ serve(async (req) => {
         const emailHtml = `
             ${estilosEntrada}
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; background-color: #fff;">
-                <div style="background: #000; padding: 25px; text-align: center;">
+                <div style="background: #0A0A0B; padding: 25px; text-align: center; border-bottom: 3px solid #AED500;">
                     <h1 style="color: #fff; margin: 0; font-size: 24px; letter-spacing: 2px;">IMAGINE ACCESS</h1>
                 </div>
                 <div style="padding: 40px 30px;">

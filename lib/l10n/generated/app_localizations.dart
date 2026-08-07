@@ -1372,6 +1372,30 @@ abstract class AppLocalizations {
   /// **'GUEST INVITATIONS'**
   String get invitationsGuest;
 
+  /// No description provided for @navEmitir.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue'**
+  String get navEmitir;
+
+  /// No description provided for @cupoStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard Quota'**
+  String get cupoStandard;
+
+  /// No description provided for @cupoInvitacion.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation Quota'**
+  String get cupoInvitacion;
+
+  /// No description provided for @cupoVip.
+  ///
+  /// In en, this message translates to:
+  /// **'VIP Quota'**
+  String get cupoVip;
+
   /// No description provided for @entered.
   ///
   /// In en, this message translates to:
@@ -2373,6 +2397,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password changed successfully'**
   String get passwordChanged;
+
+  /// No description provided for @mustChangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your password'**
+  String get mustChangeTitle;
+
+  /// No description provided for @mustChangeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed in with a temporary password. Before continuing, set your own.'**
+  String get mustChangeSubtitle;
 
   /// No description provided for @resetCodeInvalid.
   ///

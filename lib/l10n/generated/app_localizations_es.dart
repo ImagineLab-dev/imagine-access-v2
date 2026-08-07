@@ -652,6 +652,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get invitationsGuest => 'INVITACIONES GUEST';
 
   @override
+  String get navEmitir => 'Emitir';
+
+  @override
+  String get cupoStandard => 'Cupo Standard';
+
+  @override
+  String get cupoInvitacion => 'Cupo Invitación';
+
+  @override
+  String get cupoVip => 'Cupo VIP';
+
+  @override
   String get entered => 'INGRESARON';
 
   @override
@@ -1215,6 +1227,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get passwordChanged => 'Contraseña cambiada exitosamente';
+
+  @override
+  String get mustChangeTitle => 'Elegí tu contraseña';
+
+  @override
+  String get mustChangeSubtitle =>
+      'Entraste con una clave temporal. Antes de seguir, poné una contraseña tuya.';
 
   @override
   String get resetCodeInvalid => 'Código inválido o expirado';

@@ -42,7 +42,14 @@ class Responsive {
   }) {
     final disponible = anchoMaximo(context);
     final calculado = (disponible / anchoObjetivo).floor();
-    return calculado.clamp(minimo, maximo);
+    // Si quien llama pide un techo por debajo del piso, el piso cede. Sin esto
+    // `clamp(minimo, maximo)` con minimo > maximo lanza ArgumentError y se lleva
+    // puesta toda la grilla: Flutter la reemplaza por su recuadro de error gris.
+    // Pasaba en el panel de RRPP —su única acción rápida hacía
+    // `proporcionTarjeta(maximo: 1)`, y el piso por defecto es 2—, que quedaba
+    // en un bloque gris en lugar del botón.
+    final piso = minimo <= maximo ? minimo : maximo;
+    return calculado.clamp(piso, maximo);
   }
 
   /// Proporción de una tarjeta de métrica, para que su ALTURA quede fija.

@@ -163,6 +163,23 @@ final userRoleProvider = Provider<String>((ref) {
   return 'guest';
 });
 
+/// Si el usuario entró con una contraseña temporal y todavía no eligió una
+/// propia.
+///
+/// Lo pone `create_user` en el JWT (`app_metadata.must_change_password`) al
+/// invitar a alguien, y lo baja `establecer_clave_definitiva` cuando la persona
+/// elige su contraseña. El router lo lee para no dejar pasar a ningún lado hasta
+/// que eso pase.
+///
+/// Los dispositivos de puerta (alias + PIN) quedan afuera: no tienen una
+/// contraseña de este tipo.
+final debesCambiarClaveProvider = Provider<bool>((ref) {
+  if (ref.watch(deviceProvider) != null) return false;
+  final user = ref.watch(userProvider);
+  if (user == null) return false;
+  return user.appMetadata['must_change_password'] == true;
+});
+
 // Organization ID from metadata (for API calls)
 final organizationIdProvider = Provider<String?>((ref) {
   final cachedOrg = ref.watch(userOrganizationProvider);

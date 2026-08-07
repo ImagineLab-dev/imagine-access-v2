@@ -106,7 +106,7 @@ export function bloqueEntrada(d: DatosEntrada): string {
               ${dato('Entrada', escapar(d.tipo.toUpperCase()))}
               ${d.organizador ? dato('Organiza', escapar(d.organizador)) : ''}
             </table>
-            ${d.direccion ? `<a href="${escapar(d.direccion)}" style="display:inline-block;margin-top:4px;color:#2563EB;font-size:13px;text-decoration:none;font-weight:600;">Ver ubicación &rsaquo;</a>` : ''}
+            ${d.direccion ? `<a href="${escapar(d.direccion)}" style="display:inline-block;margin-top:4px;color:#3D7A00;font-size:13px;text-decoration:underline;font-weight:600;">Ver ubicación &rsaquo;</a>` : ''}
             <div style="color:#C2C8D4;font-size:9px;margin-top:14px;word-break:break-all;">${escapar(d.ticketId)}</div>
           </td>
 

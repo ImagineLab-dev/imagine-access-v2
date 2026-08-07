@@ -157,22 +157,29 @@ serve(async (req) => {
     }
 
     const html = `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px;">
-        <h2 style="margin:0 0 12px 0;">Tu ticket fue reenviado</h2>
-        <p>Hola ${escapeHtml(ticket.buyer_name ?? "invitado")},</p>
-        <p>Reenviamos tu entrada para <strong>${escapeHtml(eventName)}</strong>.</p>
-        <p><strong>Tipo de entrada:</strong> ${escapeHtml((ticket.type ?? "").toString().toUpperCase())}</p>
-        <p><strong>Fecha:</strong> ${escapeHtml(dateLabel)}</p>
-        <p><strong>Hora:</strong> ${escapeHtml(timeLabel)}</p>
-        <p><strong>Lugar:</strong> ${escapeHtml(venueLabel)}</p>
-        <p><strong>Dirección:</strong> ${escapeHtml(addressLabel)}${cityLabel ? `, ${escapeHtml(cityLabel)}` : ""}</p>
-        <div style="margin-top:16px;padding:16px;border:1px dashed #d1d5db;border-radius:10px;text-align:center;">
-          ${qrBuffer
-            ? '<img src="cid:ticket-qr.png" alt="QR Ticket" style="width:220px;height:220px;" />'
-            : '<p style="margin:0;color:#6b7280;">No se pudo adjuntar el QR en este envío.</p>'}
-          <p style="margin:10px 0 0 0;font-size:12px;color:#374151;">Presenta este QR al ingresar.</p>
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border:1px solid #eee;overflow:hidden;background:#fff;">
+        <div style="background:#0A0A0B;padding:25px;text-align:center;border-bottom:3px solid #AED500;">
+          <h1 style="color:#fff;margin:0;font-size:24px;letter-spacing:2px;">IMAGINE ACCESS</h1>
         </div>
-        <p style="margin-top:18px;color:#6b7280;font-size:12px;">ID Ticket: ${ticket.id}</p>
+        <div style="padding:36px 30px;">
+          <h2 style="color:#333;margin:0 0 6px 0;">Reenviamos tu entrada</h2>
+          <p style="color:#555;font-size:16px;line-height:1.5;margin:0 0 18px 0;">Hola ${escapeHtml(ticket.buyer_name ?? "invitado")}, acá está tu acceso para <strong>${escapeHtml(eventName)}</strong>.</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;color:#333;font-size:14px;">
+            <tr><td style="padding:4px 0;color:#8A94A6;width:110px;">Entrada</td><td style="padding:4px 0;font-weight:600;">${escapeHtml((ticket.type ?? "").toString().toUpperCase())}</td></tr>
+            <tr><td style="padding:4px 0;color:#8A94A6;">Fecha</td><td style="padding:4px 0;font-weight:600;">${escapeHtml(dateLabel)}</td></tr>
+            <tr><td style="padding:4px 0;color:#8A94A6;">Hora</td><td style="padding:4px 0;font-weight:600;">${escapeHtml(timeLabel)} hs</td></tr>
+            <tr><td style="padding:4px 0;color:#8A94A6;">Lugar</td><td style="padding:4px 0;font-weight:600;">${escapeHtml(venueLabel)}${cityLabel ? ` · ${escapeHtml(cityLabel)}` : ""}</td></tr>
+            ${addressLabel ? `<tr><td style="padding:4px 0;color:#8A94A6;">Dirección</td><td style="padding:4px 0;font-weight:600;">${escapeHtml(addressLabel)}</td></tr>` : ""}
+          </table>
+          <div style="margin-top:22px;padding:18px;border:1px dashed #d1d5db;text-align:center;">
+            ${qrBuffer
+              ? '<img src="cid:ticket-qr.png" alt="QR Ticket" style="width:220px;height:220px;display:block;margin:0 auto;" />'
+              : '<p style="margin:0;color:#6b7280;">No se pudo adjuntar el QR en este envío.</p>'}
+            <p style="margin:12px 0 0 0;font-size:11px;font-weight:700;letter-spacing:.5px;color:#111;">MOSTRÁ ESTE CÓDIGO AL INGRESAR</p>
+          </div>
+          <p style="margin-top:18px;color:#C2C8D4;font-size:10px;word-break:break-all;">${ticket.id}</p>
+        </div>
+        <div style="background:#f4f4f4;padding:20px;text-align:center;color:#999;font-size:12px;">© ${new Date().getFullYear()} Imagine Access</div>
       </div>
     `
 

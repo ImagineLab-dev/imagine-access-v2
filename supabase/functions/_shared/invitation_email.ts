@@ -25,13 +25,20 @@ export interface DatosInvitacion {
     idioma?: Idioma
 }
 
+// La identidad del producto: lima sobre negro, ángulos rectos, aire técnico.
+// Antes esto era azul (#4A9EFF) con esquinas redondeadas de 18px: el correo no
+// se parecía en nada a la app ni a la landing —el azul es justo el color que se
+// sacó de todo el resto—. `acentoRGB` existe para las superposiciones tenues
+// (rgba con alfa), porque en HTML de correo no hay variables de color.
 const MARCA = {
-    fondo: '#0B0F16',
-    superficie: '#131A26',
-    acento: '#4A9EFF',
+    fondo: '#0A0A0B',
+    superficie: '#141416',
+    acento: '#AED500',
+    acentoRGB: '174,213,0',
+    acentoTinta: '#0A0A0B',
     texto: '#FFFFFF',
-    textoTenue: 'rgba(255,255,255,.62)',
-    borde: 'rgba(255,255,255,.10)',
+    textoTenue: 'rgba(255,255,255,.60)',
+    borde: 'rgba(255,255,255,.12)',
 }
 
 const ROLES: Record<Idioma, Record<string, string>> = {
@@ -49,7 +56,7 @@ const T: Record<Idioma, Record<string, string>> = {
         credenciales: 'Tus datos de acceso',
         correo: 'Correo',
         clave: 'Contraseña temporal',
-        avisoClave: 'Cambiala apenas entres, desde Perfil → Seguridad. Esta contraseña es de un solo uso práctico: cualquiera que vea este correo puede entrar con ella.',
+        avisoClave: 'Al entrar, la app te va a pedir que elijas una contraseña propia. Esta temporal es de un solo uso: cualquiera que vea este correo puede entrar con ella hasta que la cambies.',
         entrar: 'Entrar a Imagine Access',
         instalarTitulo: 'Instalá la app en tu teléfono',
         instalarPor: 'Instalada funciona sin conexión y arranca más rápido. En la puerta, con señal mala, es la diferencia entre poder escanear y no poder.',
@@ -68,7 +75,7 @@ const T: Record<Idioma, Record<string, string>> = {
         credenciales: 'Your sign-in details',
         correo: 'Email',
         clave: 'Temporary password',
-        avisoClave: 'Change it as soon as you sign in, under Profile → Security. Treat it as single-use: anyone who sees this email can sign in with it.',
+        avisoClave: 'When you sign in, the app will ask you to choose your own password. This temporary one is single-use: anyone who sees this email can sign in with it until you change it.',
         entrar: 'Sign in to Imagine Access',
         instalarTitulo: 'Install the app on your phone',
         instalarPor: 'Once installed it works offline and starts faster. At the door with poor signal, that is the difference between scanning and not scanning.',
@@ -87,7 +94,7 @@ const T: Record<Idioma, Record<string, string>> = {
         credenciales: 'Seus dados de acesso',
         correo: 'E-mail',
         clave: 'Senha temporaria',
-        avisoClave: 'Altere assim que entrar, em Perfil → Seguranca. Trate como uso unico: qualquer pessoa que veja este e-mail pode entrar com ela.',
+        avisoClave: 'Ao entrar, o app vai pedir que voce escolha sua propria senha. Esta temporaria e de uso unico: qualquer pessoa que veja este e-mail pode entrar com ela ate voce troca-la.',
         entrar: 'Entrar no Imagine Access',
         instalarTitulo: 'Instale o app no seu telefone',
         instalarPor: 'Instalado funciona sem conexao e abre mais rapido. Na porta, com sinal ruim, e a diferenca entre conseguir escanear ou nao.',
@@ -116,7 +123,7 @@ function bloqueDato(etiqueta: string, valor: string, monospace = false): string 
 
 function bloqueInstalacion(titulo: string, pasos: string): string {
     return `
-    <div style="margin-top:14px;padding:14px 16px;background:rgba(255,255,255,.04);border-radius:10px;">
+    <div style="margin-top:14px;padding:14px 16px;background:rgba(255,255,255,.04);border-left:2px solid rgba(${MARCA.acentoRGB},.5);">
       <div style="color:${MARCA.acento};font-size:13px;font-weight:600;margin-bottom:8px;">${titulo}</div>
       <div style="color:${MARCA.textoTenue};font-size:14px;line-height:1.7;">${pasos}</div>
     </div>`
@@ -139,7 +146,7 @@ export function cuerpoInvitacion(datos: DatosInvitacion): string {
 
     return `
 <div style="background:${MARCA.fondo};padding:32px 16px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:560px;margin:0 auto;background:${MARCA.superficie};border:1px solid ${MARCA.borde};border-radius:18px;overflow:hidden;">
+  <div style="max-width:560px;margin:0 auto;background:${MARCA.superficie};border:1px solid ${MARCA.borde};border-top:3px solid ${MARCA.acento};overflow:hidden;">
 
     <div style="padding:28px 28px 8px;">
       <div style="color:${MARCA.acento};font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Imagine Access</div>
@@ -149,7 +156,7 @@ export function cuerpoInvitacion(datos: DatosInvitacion): string {
 
     <div style="padding:20px 28px 0;">
       <div style="color:${MARCA.textoTenue};font-size:12px;text-transform:uppercase;letter-spacing:.6px;">${t.tuRol}</div>
-      <div style="display:inline-block;margin-top:6px;padding:6px 14px;border-radius:999px;background:rgba(74,158,255,.14);color:${MARCA.acento};font-size:14px;font-weight:600;">${escapar(nombreRol)}</div>
+      <div style="display:inline-block;margin-top:6px;padding:6px 14px;border:1px solid rgba(${MARCA.acentoRGB},.55);background:rgba(${MARCA.acentoRGB},.10);color:${MARCA.acento};font-size:14px;font-weight:600;letter-spacing:.5px;">${escapar(nombreRol)}</div>
     </div>
 
     <div style="padding:24px 28px 0;">
@@ -162,7 +169,7 @@ export function cuerpoInvitacion(datos: DatosInvitacion): string {
     </div>
 
     <div style="padding:26px 28px 0;text-align:center;">
-      <a href="${escapar(datos.appUrl)}" style="display:inline-block;padding:14px 30px;background:${MARCA.acento};color:${MARCA.fondo};text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;">${t.entrar}</a>
+      <a href="${escapar(datos.appUrl)}" style="display:inline-block;padding:14px 30px;background:${MARCA.acento};color:${MARCA.acentoTinta};text-decoration:none;font-size:15px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">${t.entrar}</a>
     </div>
 
     <div style="padding:30px 28px 8px;">

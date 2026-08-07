@@ -223,6 +223,32 @@ class ProfileRepository {
     await _client.auth.updateUser(UserAttributes(password: nueva));
   }
 
+  /// Cambia la contraseña temporal por una definitiva y baja la bandera que
+  /// obliga a hacerlo (`must_change_password`).
+  ///
+  /// Va por una Edge Function y no por `updateUser` porque bajar la bandera
+  /// toca `app_metadata`, que el cliente no puede escribir: la función lo hace
+  /// con el service role en el mismo llamado. Al volver, quien llama tiene que
+  /// refrescar la sesión para que el JWT nuevo ya no traiga la bandera.
+  Future<void> establecerClaveDefinitiva(String nueva) async {
+    try {
+      final res = await _client.functions
+          .invoke('establecer_clave_definitiva', body: {'password': nueva})
+          .conLimite(TiempoLimite.normal, 'establecer_clave_definitiva');
+      final datos = Map<String, dynamic>.from((res.data as Map?) ?? const {});
+      if (datos['ok'] != true) {
+        throw ProfileException(
+            datos['error']?.toString() ?? 'No se pudo cambiar la contraseña');
+      }
+    } on FunctionException catch (e) {
+      final detalle = e.details;
+      final msg = (detalle is Map && detalle['error'] != null)
+          ? detalle['error'].toString()
+          : 'No se pudo cambiar la contraseña';
+      throw ProfileException(msg);
+    }
+  }
+
   /// Cierra la sesión en los demás dispositivos, manteniendo la actual.
   Future<void> signOutOtherSessions() async {
     await _client.auth.signOut(scope: SignOutScope.others);
