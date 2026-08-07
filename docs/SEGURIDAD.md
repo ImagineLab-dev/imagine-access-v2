@@ -114,15 +114,54 @@ que compara viejo contra nuevo y ya aborta la escalada —verificado: un admin n
 puede auto-ascenderse—. La defensa es sólida; su único riesgo es depender de un
 solo trigger. Pendiente: una prueba de regresión que falle si ese trigger se cae.
 
-### Deriva de permisos, el patrón de fondo
+### La causa raíz de la deriva (investigada el 07/08/2026)
 
-`anon` tiene `EXECUTE` sobre **las 30 funciones** `SECURITY DEFINER`, no solo las
-dos corregidas. La mayoría se protege sola (`is_superadmin` lee la tabla, los
-`get_*` filtran por org, las `superadmin_*` se auto-verifican), por eso el resto
-del aislamiento aguantó. Pero el hecho de que `anon` pueda *invocarlas* todas es
-deriva: las migraciones no lo declaran. Pendiente de bajo riesgo: revocar `anon`
-de las que no lo necesitan como defensa en profundidad, y auditar por qué
-producción derivó (¿un `GRANT ... TO PUBLIC` corrido a mano? ¿un restore?).
+`anon` tiene `EXECUTE` sobre **las 30 funciones** `SECURITY DEFINER`. **No fue un
+grant a mano ni un restore: es el comportamiento por defecto de Supabase.** Hay
+un `pg_default_acl` en el esquema `public` que otorga `EXECUTE ON FUNCTIONS` a
+`anon`, `authenticated` y `service_role`. O sea: **cada función nueva en `public`
+nace con permiso para `anon`.**
+
+Ahí está el error que dejó pasar el agujero de facturación. Las migraciones
+intentaban cerrar con:
+
+```sql
+REVOKE ALL ON FUNCTION ... FROM PUBLIC;   -- ineficaz
+```
+
+Pero `anon` no tiene el permiso vía `PUBLIC`: lo tiene **explícito**, puesto por
+el `pg_default_acl`. `REVOKE ... FROM PUBLIC` no toca un grant explícito a
+`anon`. Hay que revocar de `anon` por nombre, que es lo que hace la migración
+`20260807170000`:
+
+```sql
+REVOKE ALL ON FUNCTION ... FROM anon, authenticated;
+```
+
+**Regla para toda función nueva:** si es `SECURITY DEFINER`, escribe o expone
+datos, y no verifica al que la llama, su migración tiene que revocar de `anon,
+authenticated` explícitamente. `FROM PUBLIC` no alcanza.
+
+### Por qué NO se revocó `anon` de las otras 28
+
+Se evaluó y se descartó: **alto riesgo, valor nulo.** Seis de esas funciones
+—`is_admin`, `is_superadmin`, `get_my_organization_id`, `get_my_role`,
+`rol_del_claim`, `organization_is_active`— se usan **dentro de las políticas
+RLS**, que se evalúan con el rol que consulta. Revocarle `anon` el `EXECUTE`
+haría que una consulta anónima diera *error* en vez de devolver vacío: rompería
+la app para todo visitante sin sesión. Y las 30 funciones están verificadas: las
+dos peligrosas ya están cerradas, y el resto o filtra por org, o se auto-verifica,
+o es un trigger (donde el `EXECUTE` ni se chequea). No hay nada explotable que
+ganar.
+
+### Prueba de regresión
+
+`supabase/tests/aislamiento.sql` corre seis invariantes contra cualquier entorno
+—lectura y escritura entre organizaciones bloqueadas, auto-escalada a superadmin
+bloqueada por el trigger, claim forjado rechazado, `anon` sin acceso a las
+funciones de facturación, un solo superadmin—. Cada una en su transacción
+revertida, así que es seguro contra producción. Falla con una excepción que
+nombra la invariante rota. Convierte "lo verifiqué una vez" en algo repetible.
 
 ---
 
