@@ -61,13 +61,24 @@ class VeredictoAcceso extends StatefulWidget {
   });
 
   /// Lo que el cartel tiene que estar en pantalla antes de aceptar que lo
-  /// cierren.
+  /// cierren, cuando la persona PASA.
   ///
-  /// Sin esto, el dedo que ya venía bajando —o la palma al devolver el
+  /// Sin ningún mínimo, el dedo que ya venía bajando —o la palma al devolver el
   /// teléfono— cerraba el veredicto antes de que nadie lo leyera, y no había
-  /// forma de volver a verlo. Medio segundo no se siente como espera y alcanza
-  /// para que el ojo registre el color y la silueta.
-  static const Duration minimoEnPantalla = Duration(milliseconds: 500);
+  /// forma de volver a verlo.
+  ///
+  /// Es corto a propósito. Un gesto que ya estaba en curso tarda unos 200ms en
+  /// llegar; con esto no cierra. Y como el 90% de los escaneos de una noche son
+  /// este caso, cada milisegundo acá se multiplica por cuatrocientos: medio
+  /// segundo por persona son más de tres minutos de fila.
+  static const Duration minimoAlPasar = Duration(milliseconds: 250);
+
+  /// Lo mismo cuando la persona NO pasa, o su entrada ya se usó.
+  ///
+  /// Acá sí hay algo que leer —la hora del primer ingreso, el evento al que
+  /// pertenece el ticket— y el operario va a tener que decir algo en voz alta.
+  /// Que el cartel no se pueda cerrar todavía es lo que le da ese momento.
+  static const Duration minimoAlRechazar = Duration(milliseconds: 600);
 
   /// Llave del botón que cierra un rechazo. Existe para poder afirmar en un
   /// test que un toque en cualquier otro lado NO cierra el cartel, que es la
@@ -85,9 +96,20 @@ class _VeredictoAccesoState extends State<VeredictoAcceso> {
   @override
   void initState() {
     super.initState();
-    _reloj = Timer(VeredictoAcceso.minimoEnPantalla, () {
-      if (mounted) setState(() => _sePuedeCerrar = true);
-    });
+    // El mínimo depende del veredicto: quien pasa no tiene nada que leer, y
+    // quien no pasa sí. Se calcula acá y no en `build` porque el reloj arranca
+    // una sola vez.
+    final permitido = (widget.resultado['allowed'] as bool?) ??
+        (widget.resultado['success'] as bool?) ??
+        false;
+    _reloj = Timer(
+      permitido
+          ? VeredictoAcceso.minimoAlPasar
+          : VeredictoAcceso.minimoAlRechazar,
+      () {
+        if (mounted) setState(() => _sePuedeCerrar = true);
+      },
+    );
   }
 
   @override

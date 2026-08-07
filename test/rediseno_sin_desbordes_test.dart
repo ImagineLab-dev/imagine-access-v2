@@ -529,7 +529,7 @@ void main() {
         reason: 'un toque inmediato no debería cerrar el veredicto');
 
     await tester.pump(
-        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+        VeredictoAcceso.minimoAlRechazar + const Duration(milliseconds: 40));
     await tester.tap(find.byType(VeredictoAcceso));
     expect(cerrado, isTrue,
         reason: 'pasado el mínimo, un toque sí tiene que cerrarlo');
@@ -557,7 +557,7 @@ void main() {
       brillo: Brightness.dark,
     );
     await tester.pump(
-        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+        VeredictoAcceso.minimoAlRechazar + const Duration(milliseconds: 40));
 
     // Un toque arriba del todo, lejos del botón: el fondo del cartel.
     const enElFondo = Offset(195, 40);
@@ -589,7 +589,7 @@ void main() {
       brillo: Brightness.dark,
     );
     await tester.pump(
-        VeredictoAcceso.minimoEnPantalla + const Duration(milliseconds: 40));
+        VeredictoAcceso.minimoAlRechazar + const Duration(milliseconds: 40));
     await tester.tapAt(enElFondo);
     expect(cerradoPositivo, isTrue,
         reason: 'la coordenada tiene que ser un blanco real; si esto falla, '

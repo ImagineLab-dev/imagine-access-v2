@@ -458,16 +458,22 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             canPop: false,
             child: VeredictoAcceso(
               resultado: resultado,
-              onDismiss: () {
-                // Se re-arma ACÁ, antes de cerrar. `whenComplete` corre recién
-                // cuando termina la animación de salida de la ruta, y esperar
-                // eso le sumaba más de 100ms a cada escaneo — con una fila
-                // esperando, eso se paga por persona. `_resetScanner` es
-                // idempotente, así que el de `whenComplete` sigue siendo la red
-                // de seguridad sin costar nada.
-                _resetScanner();
-                Navigator.of(context, rootNavigator: true).pop();
-              },
+              // Cerrar es SOLO cerrar. El escáner se re-arma en un único
+              // lugar, `whenComplete`, y esto no es un detalle de estilo.
+              //
+              // La versión anterior llamaba a `_resetScanner()` acá, antes del
+              // `pop()`, para ahorrarse la animación de salida. Entre esas dos
+              // líneas el escáner ya estaba leyendo mientras
+              // `_veredictoEnPantalla` seguía en true, así que un código
+              // enganchado en esa rendija salía por el `return` de arriba de
+              // `_mostrarVeredicto`, dejaba `_isProcessing` en true para
+              // siempre, y el vigía tampoco rescataba porque su condición mira
+              // esa misma bandera. Escáner muerto hasta reiniciar la app.
+              //
+              // Con `transitionDuration: Duration.zero` el `pop()` termina en
+              // el acto, así que centralizar el re-armado no cuesta tiempo.
+              onDismiss: () =>
+                  Navigator.of(context, rootNavigator: true).pop(),
             ),
           );
         },
@@ -491,6 +497,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   }
 
   void _resetScanner() {
+    // La bandera se baja acá tambien, como seguro. Re-armar el escaner sin
+    // bajarla dejaria el guard de `_mostrarVeredicto` activo sin cartel en
+    // pantalla, que es la combinacion exacta que traba todo.
+    _veredictoEnPantalla = false;
     setState(() {
       _isProcessing = false;
       _ocupadoDesde = null;
