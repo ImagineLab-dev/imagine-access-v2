@@ -35,6 +35,15 @@ function isApiRequest(url) {
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
+    // `PRECACHE_MANIFEST.files` es solo el SHELL liviano, NO todo el build.
+    // `main.dart.js` (~5 MB) queda afuera a propósito: bloquear el install con
+    // él hacía que en iPhone la instalación no terminara antes de que iOS
+    // suspenda la app, el SW nuevo nunca quedara "esperando", y la
+    // actualización no se aplicara sola —el "si o si hay que forzar
+    // actualización"—. main.dart.js se cachea igual en el handler de `fetch`
+    // (caché en runtime) porque la página lo pide al cargar. Ver
+    // `tool/build_web.py` → INSTALL_EXCLUDE.
+    //
     // `reload` evita que el propio caché HTTP del navegador nos devuelva una
     // versión vieja de un archivo justo mientras estamos precacheando.
     await cache.addAll(

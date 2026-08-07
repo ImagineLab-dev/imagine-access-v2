@@ -135,6 +135,37 @@ def collect_precache_files() -> list:
     return files
 
 
+# Archivos que se sirven y se cachean, pero NO bloquean la instalación del
+# service worker.
+#
+# POR QUÉ
+#
+# El SW precachea en su evento `install` con `cache.addAll`, que no termina
+# hasta que bajaron TODOS los archivos. `main.dart.js` pesa ~5 MB: en 4G eso
+# tarda 20-40 s. En un iPhone con la PWA instalada, iOS suspende la app apenas
+# se sale, y si el `install` no alcanzó a terminar, el SW nuevo nunca queda
+# "esperando" —se reinstala desde cero en la próxima apertura—. Efecto: la
+# actualización no se aplica sola nunca, y hay que forzarla a mano. Es
+# exactamente el síntoma "si o si hay que forzar actualización".
+#
+# La solución es no bloquear el `install` con lo pesado. `main.dart.js` igual
+# se cachea: la página lo pide al cargar, y el handler de `fetch` del SW guarda
+# todo estático 200 que pase (caché en runtime). Así queda disponible offline
+# después de la primera carga online —que es el escenario real de una puerta:
+# la app se abrió con señal al menos una vez—.
+#
+# CLAVE: esto NO sale del cálculo de versión. Si saliera, un cambio SOLO en
+# `main.dart.js` no cambiaría el hash y el SW no se actualizaría. La versión se
+# computa sobre TODOS los archivos; esta lista solo decide qué se baja de forma
+# bloqueante.
+INSTALL_EXCLUDE = {"main.dart.js"}
+
+
+def split_shell(files: list) -> list:
+    """Los archivos que SÍ bloquean el install: todo menos lo pesado."""
+    return [f for f in files if f not in INSTALL_EXCLUDE]
+
+
 def compute_version(files: list) -> str:
     digest = hashlib.sha256()
     for rel in files:
@@ -261,18 +292,23 @@ def main() -> None:
     remove_flutter_service_worker()
     strip_debug_symbols()
     files = collect_precache_files()
+    # La versión se calcula sobre TODOS los archivos (un cambio en cualquiera
+    # dispara la actualización), pero el precache bloqueante del install NO
+    # incluye lo pesado: ver INSTALL_EXCLUDE.
     version = compute_version(files)
-    inject_manifest(files, version)
+    shell = split_shell(files)
+    inject_manifest(shell, version)
     copy_htaccess(url)
     # Después del manifest, nunca antes: ver el comentario de la función.
     copy_landing()
 
     total = sum((BUILD_DIR / ("index.html" if f == "/" else f)).stat().st_size
-                for f in files
+                for f in shell
                 if (BUILD_DIR / ("index.html" if f == "/" else f)).exists())
 
     print(f"\nListo. Versión {version}")
-    print(f"  {len(files)} archivos en precache, {total / 1048576:.1f} MB")
+    print(f"  {len(shell)} archivos en precache bloqueante, {total / 1048576:.1f} MB "
+          f"(main.dart.js se cachea en runtime, no bloquea el install)")
     print(f"  Salida: {BUILD_DIR}")
 
 
