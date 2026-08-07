@@ -63,8 +63,11 @@
   La marca del producto es oscura (#0A0A0B), la app es oscura, y el contexto es
   nocturno. Un modo claro pelearía con la identidad en vez de servirla.
 
-  Sistema de radios, documentado y uniforme:
-    superficies 16px · botones pastilla · campos 10px
+  Sistema de radios: TODO en ángulo recto, 0px, igual que la app.
+  No es una preferencia estética: `app_theme.dart` lo declara como la
+  decisión de marca más visible, porque las esquinas redondeadas son la firma
+  que más delata a una plantilla. Este archivo declaraba `--r-surface: 0px` y
+  dibujaba los botones en pastilla.
 -->
 <style>
   /* `swap`: la página se dibuja YA con la fuente del sistema y cambia cuando
@@ -186,11 +189,11 @@
     margin-bottom: 18px;
   }
 
-  /* ---------- Botones: pastilla, contraste verificado ---------- */
+  /* ---------- Botones: ángulo recto, contraste verificado ---------- */
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
     gap: 9px; white-space: nowrap;
-    padding: 14px 26px; border-radius: 999px;
+    padding: 14px 26px; border-radius: var(--r-field);
     font: 600 .97rem/1 var(--sans); letter-spacing: -.01em;
     text-decoration: none; cursor: pointer; border: 1px solid transparent;
     transition: transform .18s cubic-bezier(.16,1,.3,1),
@@ -207,12 +210,15 @@
 
   .btn-sm { padding: 10px 19px; font-size: .9rem; }
 
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-field); }
 
   /* ---------- Navegación: una línea, 68px ---------- */
   header {
     position: sticky; top: 0; z-index: 40; height: 68px;
-    background: rgba(11,15,22,.82);
+    /* El mismo negro que el cuerpo. Era `rgba(11,15,22,.82)`, un negro
+       anavajado hacia el azul: la barra que acompaña todo el scroll se veía
+       de otro color que la página que cubre. */
+    background: rgba(10,10,11,.82);
     backdrop-filter: saturate(160%) blur(14px);
     border-bottom: 1px solid var(--line);
   }
@@ -220,8 +226,29 @@
     header { background: var(--bg); backdrop-filter: none; }
   }
   .nav { height: 68px; display: flex; align-items: center; gap: 30px; }
-  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 640; letter-spacing: -.02em; }
-  .brand img { width: 29px; height: 29px; border-radius: 8px; }
+  /* La marca es TIPOGRÁFICA, no una imagen.
+
+     Acá había un `logo.png`: un escudo azul, redondeado, con un QR adentro.
+     Los dos rasgos que `app_theme.dart` nombra como el enemigo en su primer
+     comentario. Y llevaba `border-radius: 8px` en CSS, que era redondear algo
+     que ya venía redondeado — la señal de que el activo, no el estilo, era el
+     problema.
+
+     La cabecera de la app no usa ninguna imagen: dibuja el nombre en Space
+     Grotesk (`app_shell.dart`, `CabeceraApp`). Esto hace lo mismo, así que las
+     dos cabeceras pasan a ser la misma marca sin necesidad de arte nuevo, y
+     además la página deja de cargar un PNG para mostrar dos palabras.
+
+     El PNG sigue existiendo para el ícono de la pestaña y el `apple-touch-icon`,
+     donde una imagen SÍ hace falta. Reemplazarlo por uno de la identidad actual
+     sigue pendiente. */
+  .brand {
+    display: inline-flex; align-items: baseline; gap: 8px;
+    text-decoration: none; font-family: var(--sans);
+    font-weight: 700; letter-spacing: -.02em;
+  }
+  .brand .marca-a { color: var(--text); }
+  .brand .marca-b { color: var(--accent); }
   .nav-links { display: flex; gap: 28px; margin-left: auto; }
   .nav-links a { text-decoration: none; color: var(--muted); font-size: .94rem; transition: color .15s; }
   .nav-links a:hover { color: var(--text); }
@@ -277,9 +304,16 @@
   .paso { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start; }
   .paso-n {
     font: 600 1.5rem/1 var(--mono); color: var(--accent);
-    width: 46px; height: 46px; border-radius: 999px; flex: none;
+    width: 46px; height: 46px; flex: none;
     display: grid; place-items: center;
-    border: 1px solid rgba(74,158,255,.32); background: rgba(74,158,255,.08);
+    /* Cuadrado y neutro. Era un círculo con relleno y borde AZULES: dos
+       acentos peleando dentro de 46px, y una pastilla en la identidad cuya
+       decisión más visible es el ángulo recto.
+
+       El número ya va en lima. Ponerle además un fondo de color era pedirle
+       al mismo elemento que grite dos veces. */
+    border-radius: var(--r-field);
+    border: 1px solid var(--line-2); background: var(--surface-2);
   }
   .paso p { margin-top: 8px; color: var(--muted); font-size: .98rem; }
   @media (max-width: 760px) { .pasos-grid { grid-template-columns: 1fr; gap: 32px; } }
@@ -293,16 +327,20 @@
   .offline::before {
     content: ""; position: absolute; inset: 0; z-index: 0;
     background:
-      radial-gradient(78% 130% at 6% 46%, rgba(239,68,68,.11), transparent 60%),
-      radial-gradient(64% 108% at 84% 12%, rgba(74,158,255,.09), transparent 64%),
+      /* Los dos lavados dicen algo: el rojo es la señal que se cae, el lima
+         es la puerta que sigue. Se conservan; lo que cambia es que ahora son
+         los colores del sistema y no el rojo por defecto de Tailwind
+         (#EF4444) y un azul que esta marca no tiene. */
+      radial-gradient(78% 130% at 6% 46%, rgba(204,51,57,.13), transparent 60%),
+      radial-gradient(64% 108% at 84% 12%, rgba(174,213,0,.07), transparent 64%),
       var(--surface);
   }
   .offline .wrap { position: relative; z-index: 1; }
   .offline-grid { max-width: 700px; }
   .senal {
     display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px;
-    padding: 8px 15px; border-radius: 999px;
-    border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.11);
+    padding: 8px 15px; border-radius: var(--r-field);
+    border: 1px solid rgba(204,51,57,.45); background: rgba(204,51,57,.13);
     font: 600 .82rem/1 var(--mono); letter-spacing: .04em; color: var(--bad-suave);
   }
 
@@ -332,11 +370,15 @@
   .cel-icono { color: var(--accent); margin-bottom: 3px; }
   /* Variación visual real en 3 de 6 celdas, no seis cajas de texto iguales. */
   .cel-ancha { grid-column: span 2; }
+  /* Superficie plana, sin resplandor.
+     Era un gradiente radial azul al 20% con borde azul: exactamente el "glow
+     de plantilla" que `app_theme.dart` nombra como el enemigo en su primer
+     comentario —"Inter, glass, gradiente azul/violeta, todo redondeado"—.
+     Que la celda destaque lo resuelve la superficie más clara y el borde más
+     marcado, que es como destaca todo lo demás en este sistema. */
   .cel-acento {
-    background:
-      radial-gradient(120% 130% at 8% 0%, rgba(74,158,255,.2), transparent 62%),
-      var(--surface-2);
-    border-color: rgba(74,158,255,.26);
+    background: var(--surface-2);
+    border-color: var(--line-2);
   }
   /* Celda con el panel real de la app. La captura NO se oscurece ni se
      desatura como se haría con una foto de ambiente: es la interfaz y el punto
@@ -366,7 +408,11 @@
     border: 1px solid var(--line); border-radius: var(--r-surface);
     padding: 32px; background: var(--bg); display: flex; flex-direction: column;
   }
-  .plan-destacado { border-color: rgba(74,158,255,.4); box-shadow: 0 0 0 1px rgba(74,158,255,.14); }
+    /* El plan que se empuja va en lima, no en azul. Acá el acento SÍ se gana el
+     lugar: dice "este". Y se va el `box-shadow: 0 0 0 1px`, un halo sin
+     desplazamiento ni desenfoque que no es profundidad sino decoración; el
+     borde de 2px hace el mismo trabajo sin fingir una sombra. */
+  .plan-destacado { border-color: var(--accent); border-width: 2px; }
   .plan-etiqueta { font: 600 .78rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .plan-destacado .plan-etiqueta { color: var(--accent); }
   .plan-cifra { display: flex; align-items: baseline; gap: 9px; margin: 20px 0 6px; }
@@ -551,9 +597,8 @@
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="#top">
-      <img src="img/logo.png" alt="">
-      Imagine Access
+    <a class="brand" href="#top" aria-label="Imagine Access, ir al inicio">
+      <span class="marca-a">Imagine</span><span class="marca-b">Access</span>
     </a>
     <div class="nav-links">
       <a href="#funciona">Cómo funciona</a>
@@ -870,9 +915,8 @@
 
 <footer>
   <div class="wrap foot">
-    <a class="brand" href="#top">
-      <img src="img/logo.png" alt="" style="width:24px;height:24px">
-      Imagine Access
+    <a class="brand" href="#top" aria-label="Imagine Access, volver arriba">
+      <span class="marca-a">Imagine</span><span class="marca-b">Access</span>
     </a>
     <nav>
       <a href="#funciona">Cómo funciona</a>
