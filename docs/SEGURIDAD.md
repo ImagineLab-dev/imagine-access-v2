@@ -46,6 +46,86 @@ producto, por eso no se aplicó.
 
 ---
 
+## Crítico — corregido el 07/08/2026
+
+### Cualquiera con la clave pública podía regalarse suscripciones pagas
+
+Lo encontró una auditoría adversarial del aislamiento entre organizaciones —diez
+agentes, simulando sesiones reales a nivel de base de datos, cada uno intentando
+*romper* la separación—. El aislamiento entre tenants resultó **sólido** (16/16
+lecturas cruzadas bloqueadas, todas las escrituras cruzadas bloqueadas, 18/18
+intentos de escalar a superadmin bloqueados, `anon`/`authenticated` sin
+`bypassrls`). Pero aparecieron dos túneles de escritura de **facturación**, uno
+crítico.
+
+**`apply_subscription_payment` era invocable por `anon`.** La función es
+`SECURITY DEFINER` (owner `postgres`, superusuario: salta RLS). Con `EXECUTE`
+para `anon`, cualquiera con la clave pública —la que viaja en el bundle, sin
+login— podía otorgarle a **cualquier** organización una suscripción anual y
+reactivar orgs vencidas.
+
+Reproducido contra la org de un cliente real, revertido:
+
+```
+9º2:  trial → annual, vence 2027  + un evento de pago falso insertado
+      (ejecutado como anon, sin sesión)
+```
+
+**Causa raíz: deriva de producción, no un bug de código.** La migración otorga la
+función **solo a `service_role`**. Alguien le dio `EXECUTE` a `anon` a mano
+después de correr la migración. El único control era el trigger
+`guard_billing_columns`, que trata `auth.uid() IS NULL` como camino confiable —y
+el rol `anon` de PostgREST también produce `uid` NULL, así que caía en el bypass.
+
+**`record_email_sent`**, misma deriva y severidad alta: `anon` podía inflar el
+contador de emails de otra org (empujarla sobre su cupo) o bajar el propio en
+negativo.
+
+**Corregido:** `REVOKE ALL ... FROM anon, authenticated` en las dos, dejándolas
+solo para `service_role`. El webhook de dLocal usa `service_role`, así que ningún
+pago real se rompe. Verificado: el mismo exploit ahora da `permission denied`.
+Queda como migración `20260807170000_cerrar_fugas_facturacion_y_org.sql` para que
+un reset no reintroduzca la deriva.
+
+> **La trampa que casi lo esconde.** Un verificador reprodujo el exploit y al
+> leer el resultado *como el atacante* vio 0 filas —parecía falso positivo—.
+> Pero la escritura SÍ había ocurrido: una policy de SELECT le ocultaba al
+> atacante la fila que él mismo acababa de escribir. Hubo que leer el estado como
+> superusuario para verlo. Es la misma trampa del 204-sobre-0-filas, del otro
+> lado.
+
+### Cualquier miembro podía editar el nombre de su propia organización
+
+La policy `ALL` "Users see own organization" era permisiva y redundante (ya
+existía "Org member read" para el SELECT), pero al ser `ALL` autorizaba también
+UPDATE y DELETE a **cualquier** miembro de la org —incluido un rol bajo como
+`rrpp`, ni dueño ni admin—. No cruzaba organizaciones (siempre la propia), pero
+un miembro cualquiera no debería poder renombrar la entidad. **Corregido:**
+borrada la policy `ALL`; INSERT/UPDATE/DELETE quedan solo para el dueño, el SELECT
+intacto. Verificado en transacción revertida antes de aplicar.
+
+### Nota sobre `users_profile` self-update
+
+La auditoría marcó que su `WITH CHECK (user_id = uid())` no impide, a nivel RLS,
+que alguien se suba el rol. Es correcto marcarlo, pero **un `WITH CHECK` no puede
+arreglarlo**: solo ve la fila nueva, no la vieja, así que no puede exigir "el rol
+no cambió". La herramienta correcta es el trigger `guard_profile_self_update`,
+que compara viejo contra nuevo y ya aborta la escalada —verificado: un admin no
+puede auto-ascenderse—. La defensa es sólida; su único riesgo es depender de un
+solo trigger. Pendiente: una prueba de regresión que falle si ese trigger se cae.
+
+### Deriva de permisos, el patrón de fondo
+
+`anon` tiene `EXECUTE` sobre **las 30 funciones** `SECURITY DEFINER`, no solo las
+dos corregidas. La mayoría se protege sola (`is_superadmin` lee la tabla, los
+`get_*` filtran por org, las `superadmin_*` se auto-verifican), por eso el resto
+del aislamiento aguantó. Pero el hecho de que `anon` pueda *invocarlas* todas es
+deriva: las migraciones no lo declaran. Pendiente de bajo riesgo: revocar `anon`
+de las que no lo necesitan como defensa en profundidad, y auditar por qué
+producción derivó (¿un `GRANT ... TO PUBLIC` corrido a mano? ¿un restore?).
+
+---
+
 ## Crítico — corregido el 06/08/2026
 
 ### Los límites de tasa se saltaban con una cabecera
