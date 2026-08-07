@@ -12,6 +12,8 @@
   "clearField": "Clear",
   "goBack": "Back",
   "chooseColor": "Choose color",
+  "scannerStuckQuestion": "Not reading?",
+  "restartScannerAction": "Restart scanner",
   "adminRRPP": "Admin / RRPP",
   "doorAccess": "Door Access",
   "email": "Email",

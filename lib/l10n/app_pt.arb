@@ -12,6 +12,8 @@
   "clearField": "Limpar",
   "goBack": "Voltar",
   "chooseColor": "Escolher cor",
+  "scannerStuckQuestion": "Não lê?",
+  "restartScannerAction": "Reiniciar leitor",
   "adminRRPP": "Admin / RRPP",
   "doorAccess": "Acesso Porta",
   "email": "E-mail",

@@ -453,6 +453,33 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     setState(() => _scanResult = resultado);
   }
 
+  /// Reinicio manual del escáner, para el botón "¿No lee?".
+  ///
+  /// Hace a mano lo que el vigía hace solo a los 12 segundos: apaga y prende el
+  /// lector nativo con una sesión nueva, libera el estado de ocupado, y
+  /// reinicia la cámara. No recarga la app —eso es lento y pierde la sesión— ni
+  /// fuerza una actualización: un escáner trabado se arregla reiniciando el
+  /// lector, no bajando código nuevo.
+  ///
+  /// Existe porque un portero no puede esperar 12 segundos con una fila
+  /// enfrente: si ve que no lee, lo reinicia en el acto.
+  void _reiniciarManual() {
+    HapticFeedback.mediumImpact();
+    detenerLectorNativo(_sesionLector);
+    _sesionLector = 0;
+    _resetScanner();
+    try {
+      if (_cameraController.value.isInitialized) {
+        _cameraController.stop();
+        _cameraController.start();
+      }
+    } catch (_) {
+      // Si la cámara no coopera, el lector nativo igual se reenciende abajo.
+    }
+    _detectionWindowStart = DateTime.now();
+    _encenderLectorNativo();
+  }
+
   void _resetScanner() {
     _veredictoDesde = null;
     setState(() {
@@ -607,26 +634,73 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
             bottom: 16,
             left: 20,
             right: 20,
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
-                  border: Border.all(color: AppTheme.darkBorder),
-                ),
-                child: Text(
-                  l10n.alignQrInFrame.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontMono,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: AppTheme.darkText,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.darkCardElevated.withValues(alpha: 0.9),
+                    border: Border.all(color: AppTheme.darkBorder),
+                  ),
+                  child: Text(
+                    l10n.alignQrInFrame.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: AppTheme.fontMono,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: AppTheme.darkText,
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                // Salida de emergencia para cuando no lee. Discreta —no compite
+                // con la mira— pero siempre a la vista, con un objetivo táctil
+                // de 44px de alto. Reinicia el lector en el acto; no recarga la
+                // app ni fuerza actualización.
+                Semantics(
+                  button: true,
+                  label: '${l10n.scannerStuckQuestion} ${l10n.restartScannerAction}',
+                  child: InkWell(
+                    onTap: _reiniciarManual,
+                    child: Container(
+                      height: 44,
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${l10n.scannerStuckQuestion} ',
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontMono,
+                              fontSize: 11,
+                              letterSpacing: 0.4,
+                              color: AppTheme.darkText.withValues(alpha: 0.55),
+                            ),
+                          ),
+                          const Icon(Icons.refresh,
+                              size: 13, color: AppTheme.lima),
+                          const SizedBox(width: 5),
+                          Text(
+                            l10n.restartScannerAction.toUpperCase(),
+                            style: const TextStyle(
+                              fontFamily: AppTheme.fontMono,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.6,
+                              color: AppTheme.lima,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 

@@ -45,6 +45,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chooseColor => 'Elegir color';
 
   @override
+  String get scannerStuckQuestion => '¿No lee?';
+
+  @override
+  String get restartScannerAction => 'Reiniciar escáner';
+
+  @override
   String get adminRRPP => 'Admin / RRPP';
 
   @override

@@ -172,6 +172,18 @@ abstract class AppLocalizations {
   /// **'Choose color'**
   String get chooseColor;
 
+  /// No description provided for @scannerStuckQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Not reading?'**
+  String get scannerStuckQuestion;
+
+  /// No description provided for @restartScannerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart scanner'**
+  String get restartScannerAction;
+
   /// No description provided for @adminRRPP.
   ///
   /// In en, this message translates to:
