@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mapa del sitio de imaginecloud.digital.
+
+  Una sola URL, y es a propósito.
+
+  Este dominio sirve DOS cosas distintas: en la raíz, la aplicación —una
+  cáscara de JavaScript que sin ejecutar no tiene contenido que un buscador
+  pueda mostrar—, y en /landing/, la página que explica y vende el producto.
+
+  Solo la segunda merece estar acá. Listar la raíz sería pedirle a Google que
+  indexe una página cuyo texto visible son 201 caracteres, y las rutas internas
+  de la aplicación (/scanner, /dashboard, /tickets…) devuelven todas esa misma
+  cáscara: listarlas sería publicar quince copias de la misma página vacía.
+
+  Tampoco se listan las imágenes: las tres del producto ya están enlazadas
+  desde la landing con su `alt`, que es como se descubren.
+
+  `lastmod` hay que actualizarlo cuando cambie el contenido de la landing. Una
+  fecha vieja no penaliza, pero una fecha que dice "cambió hoy" cuando no
+  cambió nada le enseña al rastreador a no creerle a este archivo.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://imaginecloud.digital/landing/</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -25,6 +25,12 @@
 
   <title>Imagine Access</title>
 
+  <!-- Canonical de la raíz. El subdominio `super-admin.imaginecloud.digital`
+       apunta al MISMO `public_html`, así que esta página también se sirve
+       idéntica desde dos nombres. Sin esta línea, un buscador ve dos sitios
+       iguales y reparte la fuerza del dominio entre los dos. -->
+  <link rel="canonical" href="https://imaginecloud.digital/">
+
   <!--
     ZXing self-hosteado.
 
@@ -166,6 +172,42 @@
   </div>
 
   <div id="turnstile-container"></div>
+
+  <!-- PUENTE HACIA LA LANDING. No es decoración: es cómo se descubre.
+
+       Esta raíz sirve la aplicación, que es una cáscara de JavaScript sin
+       contenido que un buscador pueda indexar. La página que explica y vende
+       el producto vive en /landing/, y hasta el 07/08/2026 NADA la enlazaba:
+       era una isla. Un rastreador llega al dominio, encuentra una cáscara
+       vacía, no ve ninguna salida, y se va.
+
+       Este enlace es la salida. Va en el HTML plano —no lo dibuja Flutter—
+       así que existe antes de que corra una sola línea de la aplicación, que
+       es exactamente cuando el rastreador mira.
+
+       Se oculta a la vista con `clip`, la técnica que usan los saltos de
+       accesibilidad: el elemento sigue en el árbol, sigue siendo enfocable y
+       sigue siendo un enlace real para el rastreador. NO se usa
+       `display:none` ni `visibility:hidden`, que además de sacarlo del árbol
+       accesible son las dos formas que un buscador puede leer como intento de
+       esconderle contenido.
+
+       Al llegar por teclado se vuelve visible: para alguien que navega sin
+       mouse es un atajo legítimo a la información del producto. -->
+  <a href="/landing/" id="ir-a-landing">Qué es Imagine Access</a>
+  <style>
+    #ir-a-landing {
+      position: absolute; left: 8px; top: 8px;
+      width: 1px; height: 1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+      color: #AED500; background: #0A0A0B; text-decoration: none;
+      font: 600 14px/1 system-ui, sans-serif; padding: 10px 14px; z-index: 10000;
+    }
+    #ir-a-landing:focus {
+      width: auto; height: auto; overflow: visible;
+      clip: auto; clip-path: none; border: 1px solid #AED500;
+    }
+  </style>
 
   <script src="flutter_bootstrap.js" async></script>
   <script src="js/splash.js"></script>
