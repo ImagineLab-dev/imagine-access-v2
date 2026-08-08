@@ -21,13 +21,18 @@
 'use strict';
 
 (function () {
-  var CLAVE_DESCARTE = 'pwa-install-dismissed';
   var ID = 'pwa-install-banner';
-  // Antes eran 14 días: un "Ahora no" dejaba la app sin ofrecerse dos semanas.
-  // Para gente que DEBE instalarla (sirve offline en la puerta) eso es
-  // demasiado. Se baja a 3, y además el ítem de Ajustes queda disponible
-  // siempre que no esté instalada, como camino permanente.
-  var DIAS_SILENCIO = 3;
+
+  // Descarte SOLO por sesión, no persistente.
+  //
+  // Antes "Ahora no" guardaba en localStorage un silencio de 3-14 días: un solo
+  // toque escondía la oferta de instalar por días —justo lo contrario de lo
+  // pedido, que SIEMPRE reaparezca mientras no esté instalada—. Verificado con
+  // una captura headless: el banner aparece bien en un perfil limpio, así que
+  // cuando no aparecía era por este silencio (o porque ya estaba instalada).
+  // Ahora "Ahora no" solo lo cierra para esta sesión; al recargar o reabrir la
+  // app, si sigue sin instalarse, vuelve a ofrecerse.
+  var descartadaEnSesion = false;
 
   // --------------------------------------------------------------------------
   // Textos
@@ -93,21 +98,11 @@
   }
 
   function silenciado() {
-    try {
-      var hasta = parseInt(localStorage.getItem(CLAVE_DESCARTE) || '0', 10);
-      return hasta > Date.now();
-    } catch (_) {
-      return false;
-    }
+    return descartadaEnSesion;
   }
 
   function silenciar() {
-    try {
-      localStorage.setItem(
-        CLAVE_DESCARTE,
-        String(Date.now() + DIAS_SILENCIO * 24 * 60 * 60 * 1000),
-      );
-    } catch (_) { /* modo privado: se vuelve a ofrecer, es aceptable */ }
+    descartadaEnSesion = true;
   }
 
   // --------------------------------------------------------------------------
@@ -373,9 +368,8 @@
     instalar: function () {
       if (yaInstalada()) return 'instalada';
 
-      // Pedirlo a mano borra el silencio: si alguien entra a buscarlo, es que
-      // lo quiere.
-      try { localStorage.removeItem(CLAVE_DESCARTE); } catch (_) {}
+      // Pedirlo a mano lo reabre aunque se haya cerrado en esta sesión.
+      descartadaEnSesion = false;
 
       if (eventoGuardado) {
         eventoGuardado.prompt();
