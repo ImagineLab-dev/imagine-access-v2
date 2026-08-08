@@ -2,21 +2,23 @@
 //
 // REGLA CENTRAL: este endpoint NO confía en el cuerpo que recibe.
 //
-// Cualquiera puede hacer un POST acá — la URL lleva la anon key, que es
-// pública, y dLocal no firma sus avisos con un secreto compartido. Si
-// acreditáramos el pago leyendo el JSON entrante, regalar suscripciones sería
-// tan fácil como mandar un curl.
+// Cualquiera puede hacer un POST acá — la URL no lleva ningún secreto, solo
+// `?org=&plan=`. dLocal SÍ firma sus avisos (Authorization: V2-HMAC-SHA256) y
+// esa firma se verifica más abajo como defensa en profundidad; pero NO es la
+// barrera principal, a propósito: si acreditáramos el pago leyendo el JSON
+// entrante —firmado o no—, un error en la verificación o un formato inesperado
+// podría regalar o negar suscripciones.
 //
 // Entonces el aviso se trata como lo que es: una señal de "andá a mirar". La
 // confirmación sale de consultar la API de dLocal con nuestras credenciales, y
 // solo si ahí figura una suscripción activa se extiende el vencimiento.
 //
-// Efecto secundario deseable: no hace falta conocer el formato exacto del
-// cuerpo. No está documentado en la cuenta y no se puede probar sin un pago
-// real, así que depender de su forma sería construir sobre una suposición.
+// Efecto secundario deseable: para ACREDITAR no hace falta depender del formato
+// del cuerpo. La verificación de firma sí lee el cuerpo crudo, pero solo para
+// registrar autenticidad, nunca para decidir el cobro.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { listarSuscripciones, planesDeLaOrganizacion } from '../_shared/dlocal.ts'
+import { listarSuscripciones, planesDeLaOrganizacion, verificarFirmaWebhook } from '../_shared/dlocal.ts'
 import { enviarEventoMeta } from '../_shared/meta_capi.ts'
 
 const ESTADOS_VIGENTES = ['ACTIVE', 'ACTIVATED', 'PAID', 'SUCCESS', 'COMPLETED']
@@ -32,8 +34,23 @@ Deno.serve(async (req) => {
       return json({ ok: false, mensaje: 'Falta el parámetro org' }, 400)
     }
 
-    const cuerpo = await req.json().catch(() => ({}))
-    console.log('dlocal_webhook recibido', { organizationId, plan, cuerpo })
+    // Texto CRUDO, no `req.json()`: la firma se calcula sobre los bytes exactos
+    // que mandó dLocal, y re-serializar el JSON cambiaría espacios u orden de
+    // claves y la haría fallar siempre.
+    const cuerpoCrudo = await req.text().catch(() => '')
+    let cuerpo: Record<string, unknown> = {}
+    try {
+      cuerpo = cuerpoCrudo ? JSON.parse(cuerpoCrudo) : {}
+    } catch (_) { /* cuerpo no-JSON: la re-consulta no lo necesita */ }
+
+    // Firma del aviso. Defensa en profundidad: se registra, NO se rechaza —la
+    // barrera real es la re-consulta a la API de más abajo—. Ver
+    // verificarFirmaWebhook para el porqué del fail-open.
+    const firma = verificarFirmaWebhook(req.headers.get('Authorization'), cuerpoCrudo)
+    if (firma === 'invalida') {
+      console.warn('dlocal_webhook: FIRMA NO COINCIDE (se sigue por re-consulta)', { organizationId })
+    }
+    console.log('dlocal_webhook recibido', { organizationId, plan, firma, cuerpo })
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,

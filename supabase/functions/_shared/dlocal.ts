@@ -6,6 +6,8 @@
 // La SECRET_KEY nunca sale del servidor. Si aparece en el bundle del cliente,
 // cualquiera puede crear planes y consultar los cobros de todos los tenants.
 
+import { createHmac } from 'https://deno.land/std@0.168.0/node/crypto.ts'
+
 const BASE = 'https://api.dlocalgo.com/v1'
 
 function credenciales(): string {
@@ -75,6 +77,57 @@ export function crearPlan(params: {
 
 export function obtenerPlan(planId: number): Promise<PlanDLocal> {
   return llamar(`/subscription/plan/${planId}`)
+}
+
+/**
+ * Verifica la firma de un aviso (webhook) de dLocal Go.
+ *
+ * dLocal firma cada aviso en la cabecera
+ *   `Authorization: V2-HMAC-SHA256, Signature: <hex>`
+ * donde `<hex>` = HMAC-SHA256 en minúsculas, con la SECRET_KEY como clave, del
+ * mensaje `API_KEY + cuerpo_crudo` (concatenación directa, sin separador).
+ * Confirmado contra la doc oficial (payments/notifications) el 07/08/2026.
+ *
+ * Devuelve:
+ *   'valida'   — la firma coincide: el aviso vino de dLocal.
+ *   'invalida' — hay firma pero NO coincide.
+ *   'ausente'  — no vino firma, o faltan las credenciales para calcularla.
+ *
+ * OJO: es defensa en profundidad, NO la barrera principal. El webhook no
+ * acredita nada leyendo el aviso; confirma consultando la API de dLocal con
+ * nuestras claves. Por eso hoy se registra pero no se rechaza: así una
+ * diferencia de formato no deja sin acreditar a un cliente que sí pagó. Cuando
+ * un aviso real confirme el formato en los logs, se puede pasar a rechazar los
+ * 'invalida'.
+ *
+ * El [cuerpoCrudo] tiene que ser el texto EXACTO recibido, no un JSON
+ * re-serializado: cualquier cambio de espacios u orden de claves cambia el hash.
+ */
+export function verificarFirmaWebhook(
+  authHeader: string | null,
+  cuerpoCrudo: string,
+): 'valida' | 'invalida' | 'ausente' {
+  if (!authHeader) return 'ausente'
+  const m = authHeader.match(/Signature:\s*([0-9a-fA-F]+)/i)
+  if (!m) return 'ausente'
+  const recibida = m[1].toLowerCase()
+
+  const key = Deno.env.get('DLOCAL_API_KEY')
+  const secret = Deno.env.get('DLOCAL_SECRET_KEY')
+  if (!key || !secret) return 'ausente'
+
+  const esperada = createHmac('sha256', secret)
+    .update(key + cuerpoCrudo)
+    .digest('hex')
+    .toLowerCase()
+
+  // Comparación en tiempo constante: no revela por dónde difiere.
+  if (recibida.length !== esperada.length) return 'invalida'
+  let diff = 0
+  for (let i = 0; i < recibida.length; i++) {
+    diff |= recibida.charCodeAt(i) ^ esperada.charCodeAt(i)
+  }
+  return diff === 0 ? 'valida' : 'invalida'
 }
 
 /** Suscripciones de un plan. Es la fuente de verdad, no el aviso del webhook. */
