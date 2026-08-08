@@ -947,6 +947,7 @@
     "description": "Shown after the browser install dialog opens"
   },
   "installIOS": "On iPhone: Share button, then \"Add to Home Screen\"",
+  "installInstructions": "Follow the steps shown to install the app",
   "@installIOS": {
     "description": "iPhone has no install dialog; it is manual from the Share sheet"
   },

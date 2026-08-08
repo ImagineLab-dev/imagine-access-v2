@@ -3657,6 +3657,12 @@ abstract class AppLocalizations {
   /// **'On iPhone: Share button, then \"Add to Home Screen\"'**
   String get installIOS;
 
+  /// No description provided for @installInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the steps shown to install the app'**
+  String get installInstructions;
+
   /// The browser has not fired beforeinstallprompt yet
   ///
   /// In en, this message translates to:

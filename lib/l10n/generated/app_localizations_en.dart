@@ -1923,6 +1923,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'On iPhone: Share button, then \"Add to Home Screen\"';
 
   @override
+  String get installInstructions => 'Follow the steps shown to install the app';
+
+  @override
   String get installNotReady =>
       'Your browser is not offering it yet. Use it for a moment and try again.';
 }

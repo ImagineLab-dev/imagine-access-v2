@@ -1932,6 +1932,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'No iPhone: botão Compartilhar e depois \"Adicionar à Tela de Início\"';
 
   @override
+  String get installInstructions =>
+      'Siga os passos indicados para instalar o app';
+
+  @override
   String get installNotReady =>
       'O navegador ainda não oferece. Use o app um pouco e tente de novo.';
 }

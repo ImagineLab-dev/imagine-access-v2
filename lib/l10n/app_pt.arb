@@ -877,5 +877,6 @@
   "installAppDesc": "Fica na tela inicial e abre como qualquer outro",
   "installOpened": "Siga o que o navegador pede para concluir",
   "installIOS": "No iPhone: botão Compartilhar e depois \"Adicionar à Tela de Início\"",
+  "installInstructions": "Siga os passos indicados para instalar o app",
   "installNotReady": "O navegador ainda não oferece. Use o app um pouco e tente de novo."
 }

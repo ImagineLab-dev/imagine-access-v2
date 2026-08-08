@@ -1932,6 +1932,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'En iPhone: botón Compartir y después \"Agregar a inicio\"';
 
   @override
+  String get installInstructions =>
+      'Seguí los pasos del recuadro para instalar la app';
+
+  @override
   String get installNotReady =>
       'El navegador todavía no lo ofrece. Usá la app un momento y volvé a intentar.';
 }

@@ -23,7 +23,11 @@
 (function () {
   var CLAVE_DESCARTE = 'pwa-install-dismissed';
   var ID = 'pwa-install-banner';
-  var DIAS_SILENCIO = 14;
+  // Antes eran 14 días: un "Ahora no" dejaba la app sin ofrecerse dos semanas.
+  // Para gente que DEBE instalarla (sirve offline en la puerta) eso es
+  // demasiado. Se baja a 3, y además el ítem de Ajustes queda disponible
+  // siempre que no esté instalada, como camino permanente.
+  var DIAS_SILENCIO = 3;
 
   // --------------------------------------------------------------------------
   // Textos
@@ -42,6 +46,7 @@
       iosPaso1: 'Tocá el botón Compartir del navegador',
       iosPaso2: 'y elegí «Añadir a pantalla de inicio».',
       compartir: 'Compartir',
+      generico: 'Abrí el menú de tu navegador y elegí «Instalar app» o «Añadir a pantalla de inicio».',
     },
     en: {
       titulo: 'Install Imagine Access',
@@ -51,6 +56,7 @@
       iosPaso1: "Tap your browser's Share button",
       iosPaso2: 'and choose "Add to Home Screen".',
       compartir: 'Share',
+      generico: 'Open your browser menu and choose "Install app" or "Add to Home Screen".',
     },
     pt: {
       titulo: 'Instale o Imagine Access',
@@ -60,6 +66,7 @@
       iosPaso1: 'Toque no botão Compartilhar do navegador',
       iosPaso2: 'e escolha "Adicionar à Tela de Início".',
       compartir: 'Compartilhar',
+      generico: 'Abra o menu do navegador e escolha «Instalar app» ou «Adicionar à Tela de Início».',
     },
   };
 
@@ -113,9 +120,10 @@
     caja.style.cssText = [
       'position:fixed', 'left:12px', 'right:12px', 'bottom:12px',
       'z-index:2147483646', 'max-width:520px', 'margin:0 auto',
-      'padding:16px 18px', 'border-radius:16px',
-      'background:#131A26', 'color:#fff',
+      'padding:16px 18px', 'border-radius:14px',
+      'background:#141416', 'color:#fff',
       'border:1px solid rgba(255,255,255,.12)',
+      'border-top:3px solid #AED500',
       'box-shadow:0 12px 40px rgba(0,0,0,.55)',
       'font:400 14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
       'animation:pwa-install-in 260ms ease-out',
@@ -200,7 +208,7 @@
     instalar.textContent = t.instalar;
     instalar.style.cssText = [
       'padding:10px 22px', 'border:0', 'border-radius:10px', 'cursor:pointer',
-      'background:#4A9EFF', 'color:#0B0F16',
+      'background:#AED500', 'color:#0A0A0B',
       'font:600 14px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
     ].join(';');
 
@@ -247,7 +255,7 @@
     svg.setAttribute('height', '17');
     svg.setAttribute('aria-label', t.compartir);
     svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', '#4A9EFF');
+    svg.setAttribute('stroke', '#AED500');
     svg.setAttribute('stroke-width', '1.8');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
@@ -273,6 +281,34 @@
   }
 
   // --------------------------------------------------------------------------
+  // Camino C: cualquier otro navegador, con instrucciones genéricas
+  // --------------------------------------------------------------------------
+  // Firefox y Safari de escritorio NUNCA disparan `beforeinstallprompt`, y en
+  // Chromium a veces tarda o no llega. Sin este camino, esos navegadores no
+  // mostraban NADA: la opción de instalar quedaba invisible pese a no estar
+  // instalada. Acá siempre hay algo que mostrar.
+  function mostrarInstruccionesGenericas() {
+    if (document.getElementById(ID)) return;
+    var t = textos();
+    var caja = crearBanner();
+    caja.appendChild(encabezado(t));
+
+    var pasos = document.createElement('div');
+    pasos.style.cssText =
+      'padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.06);' +
+      'color:rgba(255,255,255,.85);font-size:13px;line-height:1.5';
+    pasos.textContent = t.generico;
+    caja.appendChild(pasos);
+
+    var acciones = document.createElement('div');
+    acciones.style.cssText = 'display:flex;justify-content:flex-end;margin-top:8px';
+    acciones.appendChild(botonSecundario(t, function () { silenciar(); cerrar(); }));
+    caja.appendChild(acciones);
+
+    document.body.appendChild(caja);
+  }
+
+  // --------------------------------------------------------------------------
   // Arranque
   // --------------------------------------------------------------------------
   window.addEventListener('appinstalled', function () {
@@ -285,8 +321,21 @@
 
     // En iOS se muestra con retraso: el aviso pisando la carga inicial es
     // molesto, y conviene que el usuario vea primero de qué se trata la app.
-    // En el resto se espera a `beforeinstallprompt`, que llega solo.
-    if (esIOS()) setTimeout(mostrarInstruccionesIOS, 4000);
+    if (esIOS()) {
+      setTimeout(mostrarInstruccionesIOS, 4000);
+      return;
+    }
+
+    // En el resto se espera a `beforeinstallprompt`. Si no llegó en unos
+    // segundos —Firefox y Safari de escritorio no lo disparan nunca—, se
+    // muestra el banner nativo (si el evento sí apareció) o las instrucciones
+    // genéricas. Así la opción NUNCA queda invisible en un dispositivo sin
+    // instalar, sea cual sea el navegador.
+    setTimeout(function () {
+      if (yaInstalada() || silenciado() || document.getElementById(ID)) return;
+      if (eventoGuardado) mostrarNativo();
+      else mostrarInstruccionesGenericas();
+    }, 4500);
   });
 
   // --------------------------------------------------------------------------
@@ -337,7 +386,10 @@
         mostrarInstruccionesIOS();
         return 'ios';
       }
-      return 'no-listo';
+      // Cualquier otro navegador: instrucciones genéricas. Antes devolvía
+      // 'no-listo' y no mostraba nada, dejando al usuario sin ninguna salida.
+      mostrarInstruccionesGenericas();
+      return 'instrucciones';
     },
   };
 })();

@@ -20,9 +20,13 @@ class EstadoInstalacion {
   /// iPhone: no hay diálogo, se instala a mano desde Compartir.
   final bool esIOS;
 
-  /// En iPhone se ofrece siempre —las instrucciones sirven en cualquier
-  /// momento—; en el resto, solo cuando el navegador ya avisó que se puede.
-  bool get sePuedeOfrecer => !instalada && (listo || esIOS);
+  /// Se ofrece SIEMPRE que no esté instalada, sea cual sea el navegador. Si el
+  /// diálogo nativo no está disponible, `pedirInstalacion()` muestra
+  /// instrucciones (iPhone o genéricas), así que la opción nunca queda sin
+  /// hacer nada. Antes exigía `listo` —que el navegador hubiera disparado
+  /// `beforeinstallprompt`—, y en Firefox/Safari de escritorio, o en Chromium
+  /// antes de que llegara el evento, la opción de instalar quedaba invisible.
+  bool get sePuedeOfrecer => !instalada;
 }
 
 JSObject? get _api =>

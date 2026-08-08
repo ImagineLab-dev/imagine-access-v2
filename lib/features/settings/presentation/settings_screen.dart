@@ -268,6 +268,7 @@ class _InstalarTileState extends State<_InstalarTile> {
           final texto = switch (resultado) {
             'pedido' => l10n.installOpened,
             'ios' => l10n.installIOS,
+            'instrucciones' => l10n.installInstructions,
             'instalada' => l10n.upToDate,
             _ => l10n.installNotReady,
           };
