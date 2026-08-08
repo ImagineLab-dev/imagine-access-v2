@@ -8,7 +8,12 @@ import 'package:imagine_access/core/ui/empty_state.dart';
 import 'package:imagine_access/core/ui/glass_card.dart';
 import 'package:imagine_access/core/ui/glass_scaffold.dart';
 import 'package:imagine_access/core/ui/responsive.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:imagine_access/features/superadmin/data/tenant_repository.dart';
+import 'package:imagine_access/features/auth/presentation/auth_controller.dart';
+import 'package:imagine_access/features/events/data/event_repository.dart';
+import 'package:imagine_access/features/events/presentation/event_state.dart';
+import 'package:imagine_access/features/profile/data/profile_repository.dart';
 import 'package:imagine_access/l10n/generated/app_localizations.dart';
 import '../../../core/ui/status_badge.dart';
 
@@ -188,9 +193,42 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
     try {
       await ref.read(tenantRepositoryProvider).impersonate(t.id);
       if (!mounted) return;
-      // Se invalida todo el árbol de datos: los providers tienen cacheada la
-      // organización anterior y sin esto el panel mostraría datos mezclados.
+
+      // Impersonar cambió la organización del PERFIL en el servidor, y como
+      // get_my_organization_id() la lee de ahí, RLS ya scopea al cliente. Pero
+      // el cliente sigue con la organización anterior cacheada y en el JWT vivo,
+      // y organizationIdProvider la lee antes que nada: sin sincronizar acá, el
+      // panel pide datos de una organización mientras el servidor responde por
+      // otra. Ese mismatch es lo que hacía que "no funcione" —lista de eventos
+      // vacía, o el panel del evento rechazado con Forbidden—.
+      //
+      // El invalidate(tenantsProvider) de antes NO alcanzaba: el comentario
+      // decía "se invalida todo el árbol" pero el código solo tocaba la lista de
+      // organizaciones.
+
+      // 1) JWT: el trigger sync_profile_to_auth ya escribió la org nueva del
+      //    lado del servidor; refrescar la sesión trae el token con el cliente.
+      final refrescada = await Supabase.instance.client.auth.refreshSession();
+      if (refrescada.user != null) {
+        ref.read(userProvider.notifier).state = refrescada.user;
+      }
+
+      // 2) Caché local de la organización, que organizationIdProvider lee primero.
+      await ref
+          .read(userOrganizationProvider.notifier)
+          .setOrganization(t.id, t.name, t.slug);
+
+      // 3) Soltar el evento elegido y la caché de eventos de la org anterior.
+      await ref.read(selectedEventProvider.notifier).clearEvent();
+      ref.read(eventRepositoryProvider).clearCache();
+
+      // 4) Recargar todo lo que depende de la organización.
+      ref.invalidate(eventsProvider);
+      ref.invalidate(profileProvider);
+      ref.invalidate(organizationDetailsProvider);
       ref.invalidate(tenantsProvider);
+
+      if (!mounted) return;
       context.go('/dashboard');
     } catch (_) {
       _aviso(l10n.error, error: true);
