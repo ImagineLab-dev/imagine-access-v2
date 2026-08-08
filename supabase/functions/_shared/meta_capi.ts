@@ -73,6 +73,12 @@ export interface EventoMeta {
 
     /** Datos propios del evento (`donde`, `texto`…). Se mandan tal cual. */
     datos?: Record<string, unknown> | null;
+
+    /** Código de prueba de Meta (`TEST…`). Si viene, el evento va SOLO a
+     *  "Probar eventos" y NO cuenta como conversión real. Sirve para verificar
+     *  un envío de punta a punta sin ensuciar los datos. Tiene prioridad sobre
+     *  la variable de entorno `META_TEST_EVENT_CODE`. */
+    testEventCode?: string | null;
 }
 
 /**
@@ -129,9 +135,10 @@ export async function enviarEventoMeta(evento: EventoMeta): Promise<void> {
             ],
         };
 
-        // Solo mientras se prueba desde el administrador de eventos. En cuanto
-        // se saca la variable, los eventos pasan a contar de verdad.
-        const testCode = Deno.env.get('META_TEST_EVENT_CODE');
+        // Código de prueba: por parámetro explícito (para verificar un envío
+        // sin ensuciar datos reales) o por variable de entorno. Con él, el
+        // evento va SOLO a "Probar eventos" y no cuenta como conversión real.
+        const testCode = evento.testEventCode || Deno.env.get('META_TEST_EVENT_CODE');
         if (testCode) cuerpo.test_event_code = testCode;
 
         const res = await fetch(

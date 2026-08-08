@@ -78,10 +78,20 @@ Deno.serve(async (req) => {
             return respuesta(cors, 400)
         }
 
-        const { nombre, eventId, urlOrigen, fbp, fbc, momento, datos } = cuerpo as Record<
+        const { nombre, eventId, urlOrigen, fbp, fbc, momento, datos, test_event_code } = cuerpo as Record<
             string,
             unknown
         >
+
+        // Código de prueba opcional, SOLO con el formato de Meta (`TEST…`). Si
+        // viene, el evento va al bucket de "Probar eventos" y no cuenta como
+        // real. Es inofensivo aunque el endpoint sea público: mandar algo al
+        // bucket de prueba solo afecta a quien lo manda, no a la atribución.
+        const testEventCode =
+            typeof test_event_code === 'string' &&
+                /^TEST[A-Za-z0-9]{2,24}$/.test(test_event_code)
+                ? test_event_code
+                : null
 
         if (typeof nombre !== 'string' || !EVENTOS_PERMITIDOS.has(nombre)) {
             console.log('[meta_evento] nombre no permitido', String(nombre).slice(0, 40))
@@ -137,6 +147,7 @@ Deno.serve(async (req) => {
             userAgent: req.headers.get('user-agent'),
             momento: cuando,
             datos: saneados(datos),
+            testEventCode,
         })
 
         return respuesta(cors, 202)
