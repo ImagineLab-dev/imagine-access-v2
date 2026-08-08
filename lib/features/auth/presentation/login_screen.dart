@@ -142,7 +142,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             );
         // Alta de cuenta. Es el evento del que más volumen vas a tener, y con
         // pocas compras al mes es el único con el que Meta puede aprender algo.
-        eventoMeta('CompleteRegistration');
+        //
+        // Va con value + currency: Meta los EXIGE para calcular el ROAS —sin
+        // ellos el diagnóstico marca CompleteRegistration al 100% "falta el
+        // campo del valor / de divisa"—. El valor es un PROXY del potencial de
+        // un registro: el precio mensual del plan (USD 25), la misma cifra que
+        // ya usan ViewContent e InitiateCheckout. NO es un ingreso real —ese lo
+        // reporta Purchase desde el webhook de dLocal cuando el cobro se
+        // confirma—, sino la señal de valor con la que la campaña de registro
+        // optimiza. El plumbing ya lo reenvía por el pixel y por la CAPI
+        // (meta_web → imagineMeta.evento → meta_evento, que conserva value y
+        // currency en `datos`).
+        eventoMeta('CompleteRegistration', valor: 25, moneda: 'USD');
 
         // Check if email verification is required (no session = OTP sent)
         final session = Supabase.instance.client.auth.currentSession;
