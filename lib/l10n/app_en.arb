@@ -796,6 +796,7 @@
   },
   "extendSubscription": "Change subscription",
   "viewAsTenant": "View as this client",
+  "returnToMyOrg": "Back to my organization",
   "viewAsTenantWarning": "You will see the app with this organization's data. It is recorded in the audit log.",
   "auditLog": "Audit log",
   "noTenants": "No organizations yet",

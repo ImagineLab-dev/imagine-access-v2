@@ -759,6 +759,7 @@
   },
   "extendSubscription": "Cambiar suscripción",
   "viewAsTenant": "Entrar como este cliente",
+  "returnToMyOrg": "Volver a mi organización",
   "viewAsTenantWarning": "Vas a ver la app con los datos de esta organización. Queda registrado en la auditoría.",
   "auditLog": "Registro de auditoría",
   "noTenants": "No hay organizaciones todavía",

@@ -1703,6 +1703,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAsTenant => 'View as this client';
 
   @override
+  String get returnToMyOrg => 'Back to my organization';
+
+  @override
   String get viewAsTenantWarning =>
       'You will see the app with this organization\'s data. It is recorded in the audit log.';
 

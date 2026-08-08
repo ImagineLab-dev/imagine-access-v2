@@ -3292,6 +3292,12 @@ abstract class AppLocalizations {
   /// **'View as this client'**
   String get viewAsTenant;
 
+  /// No description provided for @returnToMyOrg.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to my organization'**
+  String get returnToMyOrg;
+
   /// No description provided for @viewAsTenantWarning.
   ///
   /// In en, this message translates to:

@@ -1713,6 +1713,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get viewAsTenant => 'Entrar como este cliente';
 
   @override
+  String get returnToMyOrg => 'Volver a mi organización';
+
+  @override
   String get viewAsTenantWarning =>
       'Vas a ver la app con los datos de esta organización. Queda registrado en la auditoría.';
 

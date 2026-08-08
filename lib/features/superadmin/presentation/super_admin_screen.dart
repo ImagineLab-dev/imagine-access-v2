@@ -193,46 +193,67 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
     try {
       await ref.read(tenantRepositoryProvider).impersonate(t.id);
       if (!mounted) return;
-
-      // Impersonar cambió la organización del PERFIL en el servidor, y como
-      // get_my_organization_id() la lee de ahí, RLS ya scopea al cliente. Pero
-      // el cliente sigue con la organización anterior cacheada y en el JWT vivo,
-      // y organizationIdProvider la lee antes que nada: sin sincronizar acá, el
-      // panel pide datos de una organización mientras el servidor responde por
-      // otra. Ese mismatch es lo que hacía que "no funcione" —lista de eventos
-      // vacía, o el panel del evento rechazado con Forbidden—.
-      //
-      // El invalidate(tenantsProvider) de antes NO alcanzaba: el comentario
-      // decía "se invalida todo el árbol" pero el código solo tocaba la lista de
-      // organizaciones.
-
-      // 1) JWT: el trigger sync_profile_to_auth ya escribió la org nueva del
-      //    lado del servidor; refrescar la sesión trae el token con el cliente.
-      final refrescada = await Supabase.instance.client.auth.refreshSession();
-      if (refrescada.user != null) {
-        ref.read(userProvider.notifier).state = refrescada.user;
-      }
-
-      // 2) Caché local de la organización, que organizationIdProvider lee primero.
-      await ref
-          .read(userOrganizationProvider.notifier)
-          .setOrganization(t.id, t.name, t.slug);
-
-      // 3) Soltar el evento elegido y la caché de eventos de la org anterior.
-      await ref.read(selectedEventProvider.notifier).clearEvent();
-      ref.read(eventRepositoryProvider).clearCache();
-
-      // 4) Recargar todo lo que depende de la organización.
-      ref.invalidate(eventsProvider);
-      ref.invalidate(profileProvider);
-      ref.invalidate(organizationDetailsProvider);
-      ref.invalidate(tenantsProvider);
-
+      // Impersonar cambió la org del PERFIL en el servidor; esto sincroniza el
+      // cliente para que no quede pidiendo datos de la organización anterior.
+      await _sincronizarContextoOrg(t.id, t.name, t.slug);
       if (!mounted) return;
       context.go('/dashboard');
     } catch (_) {
       _aviso(l10n.error, error: true);
     }
+  }
+
+  /// Vuelve a la organización que el super-admin POSEE (deja de "ver como
+  /// cliente"). Impersonar sobreescribe la org del perfil sin guardar cuál era
+  /// la propia, así que volver se resuelve en el servidor: la RPC busca la
+  /// organización cuyo dueño es uno mismo y deja el perfil ahí.
+  Future<void> _volverAMiOrg(AppLocalizations l10n) async {
+    try {
+      final org =
+          await ref.read(tenantRepositoryProvider).volverAMiOrganizacion();
+      if (!mounted) return;
+      await _sincronizarContextoOrg(
+        org['id'] as String,
+        (org['name'] as String?) ?? '',
+        (org['slug'] as String?) ?? '',
+      );
+      if (!mounted) return;
+      context.go('/dashboard');
+    } catch (_) {
+      _aviso(l10n.error, error: true);
+    }
+  }
+
+  /// Sincroniza el cliente con la organización que el servidor ya dejó en el
+  /// perfil.
+  ///
+  /// El servidor scopea por `get_my_organization_id()`, que lee del perfil; pero
+  /// el cliente tiene la org anterior cacheada y en el JWT vivo, y
+  /// `organizationIdProvider` la lee antes que nada. Sin esto, el panel pide
+  /// datos de una organización mientras el servidor responde por otra —lista de
+  /// eventos vacía, o el panel del evento rechazado con Forbidden—.
+  ///
+  /// Lo comparten "Ver como cliente" y "Volver a mi organización".
+  Future<void> _sincronizarContextoOrg(
+      String id, String name, String slug) async {
+    // 1) JWT: el trigger sync_profile_to_auth ya escribió la org nueva del lado
+    //    del servidor; refrescar la sesión trae el token con esa organización.
+    final refrescada = await Supabase.instance.client.auth.refreshSession();
+    if (refrescada.user != null) {
+      ref.read(userProvider.notifier).state = refrescada.user;
+    }
+    // 2) Caché local, que organizationIdProvider lee primero.
+    await ref
+        .read(userOrganizationProvider.notifier)
+        .setOrganization(id, name, slug);
+    // 3) Soltar el evento elegido y la caché de eventos de la org anterior.
+    await ref.read(selectedEventProvider.notifier).clearEvent();
+    ref.read(eventRepositoryProvider).clearCache();
+    // 4) Recargar todo lo que depende de la organización.
+    ref.invalidate(eventsProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(organizationDetailsProvider);
+    ref.invalidate(tenantsProvider);
   }
 
   @override
@@ -243,6 +264,13 @@ class _SuperAdminScreenState extends ConsumerState<SuperAdminScreen> {
     return GlassScaffold(
       titulo: l10n.superAdmin,
       acciones: [
+        // Deja de "ver como cliente" y vuelve a la organización propia. Siempre
+        // visible: es inofensivo tocarlo estando ya en la propia.
+        IconButton(
+          icon: const Icon(Icons.home_outlined),
+          tooltip: l10n.returnToMyOrg,
+          onPressed: () => _volverAMiOrg(l10n),
+        ),
         IconButton(
           icon: const Icon(Icons.refresh),
           tooltip: l10n.refresh,

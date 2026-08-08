@@ -142,6 +142,15 @@ class TenantRepository {
     });
   }
 
+  /// Deja de impersonar: devuelve la organización del super-admin a la que él
+  /// POSEE (la del `owner_id = auth.uid()`). Como impersonar sobreescribe la org
+  /// del perfil sin memoria de la propia, la RPC la resuelve del lado del
+  /// servidor y devuelve `{id, name, slug}` para que el cliente sincronice.
+  Future<Map<String, dynamic>> volverAMiOrganizacion() async {
+    final res = await _client.rpc('superadmin_return_to_own_org');
+    return Map<String, dynamic>.from(res as Map);
+  }
+
   Future<List<AuditEntry>> recentAudit({int limit = 30}) async {
     final filas = await _client
         .from('superadmin_audit')
